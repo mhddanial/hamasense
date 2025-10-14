@@ -114,7 +114,7 @@ export default function Register() {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Sudah memiliki akun?{' Silahkan '}
-                            <TextLink href={login()} tabIndex={6} className='font-bold'>
+                            <TextLink href={login()} tabIndex={6}>
                                 MASUK
                             </TextLink>
                         </div>
