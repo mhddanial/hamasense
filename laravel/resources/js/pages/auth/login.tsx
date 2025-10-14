@@ -83,7 +83,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="p-5 w-full"
                                 tabIndex={4}
                                 variant={'default'}
                                 disabled={processing}
@@ -111,7 +111,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     <path d="M36.3425 16.7358H35V16.6667H20V23.3333H29.4192C28.7592 25.1975 27.56 26.805 26.0133 27.9758C26.0142 27.975 26.015 27.975 26.0158 27.9742L31.1742 32.3392C30.8092 32.6708 36.6667 28.3333 36.6667 20C36.6667 18.8825 36.5517 17.7917 36.3425 16.7358Z" fill="#1976D2" />
                                 </svg>
                             </div>
-                            <span className="px-4 py-3 text-center">Lanjutkan dengan Google</span>
+                            <span className="px-4 py-3 text-center text-sm">Lanjutkan dengan Google</span>
                         </a>
 
                         <div className="text-center text-sm text-muted-foreground">

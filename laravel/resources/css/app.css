@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Wittgenstein:ital,wght@0,400..900;1,400..900&display=swap');
+
 @import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';
@@ -8,8 +10,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    --font-logo:
+        'Wittgenstein', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Open Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
