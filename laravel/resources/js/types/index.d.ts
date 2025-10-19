@@ -1,6 +1,6 @@
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
-
+import { Config } from 'ziggy-js';
 export interface Auth {
     user: User;
 }
@@ -27,6 +27,7 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    ziggy: Config & { location: string };
     [key: string]: unknown;
 }
 
@@ -40,4 +41,13 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+declare global {
+    function route(
+        name: string,
+        params?: any,
+        absolute?: boolean,
+        config?: Config,
+    ): string;
 }
