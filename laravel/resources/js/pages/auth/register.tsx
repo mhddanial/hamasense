@@ -27,7 +27,7 @@ export default function Register() {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Nama</Label>
+                                <Label htmlFor="name" className='dark:text-background'>Nama Lengkap</Label>
                                 <Input
                                     id="name"
                                     type="text"
@@ -36,7 +36,8 @@ export default function Register() {
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"
-                                    placeholder="Nama lengkap"
+                                    placeholder="John Doe"
+                                    className='dark:placeholder:text-muted-foreground dark:text-background'
                                 />
                                 <InputError
                                     message={errors.name}
@@ -45,7 +46,7 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Alamat email</Label>
+                                <Label htmlFor="email" className='dark:text-background'>Alamat email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -54,12 +55,13 @@ export default function Register() {
                                     autoComplete="email"
                                     name="email"
                                     placeholder="email@example.com"
+                                    className='dark:placeholder:text-muted-foreground dark:text-background'
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Katasandi</Label>
+                                <Label htmlFor="password" className='dark:text-background'>Katasandi</Label>
                                 <Input
                                     id="password"
                                     type="password"
@@ -68,12 +70,13 @@ export default function Register() {
                                     autoComplete="new-password"
                                     name="password"
                                     placeholder="Buat katasandi"
+                                    className='dark:placeholder:text-muted-foreground dark:text-background'
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
+                                <Label htmlFor="password_confirmation" className='dark:text-background'>
                                     Konfirmasi Katasandi
                                 </Label>
                                 <Input
@@ -84,6 +87,7 @@ export default function Register() {
                                     autoComplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Konfirmasi katasandi"
+                                    className='dark:placeholder:text-muted-foreground dark:text-background'
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -96,12 +100,12 @@ export default function Register() {
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember" className='text-sm text-muted-foreground'>Dengan ini, saya menyetujui syarat dan ketentuan yang berlaku</Label>
+                                <Label htmlFor="remember" className='text-sm text-muted-foreground dark:text-background'>Dengan ini, saya menyetujui syarat dan ketentuan yang berlaku</Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full"
+                                className="mt-2 w-full dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >
@@ -114,7 +118,7 @@ export default function Register() {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Sudah memiliki akun?{' Silahkan '}
-                            <TextLink href={login()} tabIndex={6} className='font-bold'>
+                            <TextLink href={login()} tabIndex={6} className='font-bold dark:text-background'>
                                 MASUK
                             </TextLink>
                         </div>
