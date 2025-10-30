@@ -27,13 +27,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <Form
                 {...AuthenticatedSessionController.store.form()}
                 resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-6 md:pb-15"
             >
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Alamat Email</Label>
+                                <Label htmlFor="email" className='dark:text-background'>Alamat Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -43,13 +43,14 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="email@example.com"
+                                    className='dark:placeholder:text-muted-foreground dark:text-background'
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Katasandi</Label>
+                                    <Label htmlFor="password" className='dark:text-background' >Katasandi</Label>
                                 </div>
                                 <Input
                                     id="password"
@@ -59,6 +60,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="Masukkan katasandi Anda"
+                                    className='dark:placehoder:text-muted-foreground dark:text-background'
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -69,11 +71,11 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember">Ingat saya</Label>
+                                <Label htmlFor="remember" className='dark:text-background'>Ingat saya</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="ml-auto text-sm dark:text-muted-foreground dark:hover:text-background"
                                             tabIndex={5}
                                         >
                                             Lupa katasandi?
@@ -83,7 +85,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                             <Button
                                 type="submit"
-                                className="p-5 w-full"
+                                className="p-5 w-full dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
                                 tabIndex={4}
                                 variant={'default'}
                                 disabled={processing}
@@ -116,7 +118,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Belum memiliki akun?{' '}
-                            <TextLink href={register()} tabIndex={5} className='font-bold'>
+                            <TextLink href={register()} tabIndex={5} className='font-bold dark:text-background'>
                                 DAFTAR DISINI
                             </TextLink>
                         </div>
