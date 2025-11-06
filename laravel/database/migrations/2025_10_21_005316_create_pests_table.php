@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pests', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('scientific_name');
             $table->text('description');
             $table->timestamps();
         });
