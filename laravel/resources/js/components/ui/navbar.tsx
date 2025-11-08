@@ -8,6 +8,8 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "motion/react";
+import { Link } from "@inertiajs/react";
+import { home } from "@/routes/index"
 
 /* Helper: inject visible only to custom components (bukan DOM) */
 const injectVisible = (children: React.ReactNode, visible: boolean) =>
@@ -55,8 +57,6 @@ interface MobileNavMenuProps {
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
-  // ✅ gunakan global scroll agar bekerja di mobile & desktop
-  // (target ke elemen "fixed" sering tidak memicu perubahan di mobile)
   const { scrollY } = useScroll();
 
   const [visible, setVisible] = useState<boolean>(false);
@@ -109,7 +109,7 @@ export const NavItems = ({ items, className, onItemClick, visible }: NavItemsPro
       )}
     >
       {items.map((item, idx) => (
-        <a
+        <Link
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
           className={cn("relative px-4 py-2", visible ? "text-zinc-700" : "text-white")}
@@ -126,7 +126,7 @@ export const NavItems = ({ items, className, onItemClick, visible }: NavItemsPro
             />
           )}
           <span className="relative z-100">{item.name}</span>
-        </a>
+        </Link>
       ))}
     </motion.div>
   );
@@ -201,7 +201,7 @@ export const MobileNavToggle = ({
 
 export const NavbarLogo = ({ visible }: { visible?: boolean }) => {
   return (
-    <a href="#" className="relative z-[1000] mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal">
+    <Link href={home.url()} className="relative z-[1000] mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal">
       <img src="/app-logo.png" alt="logo" width={45} height={45} />
       <span
         className={cn(
@@ -211,55 +211,37 @@ export const NavbarLogo = ({ visible }: { visible?: boolean }) => {
       >
         HAMASENSE
       </span>
-    </a>
+    </Link>
   );
 };
 
 export const NavbarButton = ({
   href,
-  as: Tag = "a",
+  as: Tag = Link,
   children,
   className,
-  variant = "primary",
   visible,
-  cta,
   ...props
 }: {
   href?: string;
   as?: React.ElementType;
   children: React.ReactNode;
   className?: string;
-  variant?: "primary" | "secondary" | "gradient";
   visible?: boolean;
-  cta?: "register" ;
-} & (React.ComponentPropsWithoutRef<"a"> | React.ComponentPropsWithoutRef<"button">)) => {
+} & (React.ComponentPropsWithoutRef<'a'> | React.ComponentPropsWithoutRef<'button'>)) => {
   const baseStyles =
-    "px-4 py-2 rounded-md text-sm font-bold relative cursor-pointer transition duration-200 inline-block text-center";
+    'px-4 py-2 rounded-md text-sm font-bold relative cursor-pointer transition duration-200 inline-block text-center';
 
-  const state = visible
-    ? { text: "text-black", border: "border-black/20", hoverBorder: "hover:border-black/40", ghostBg: "hover:bg-black/5" }
-    : { text: "text-white", border: "border-white/20", hoverBorder: "hover:border-white/40", ghostBg: "hover:bg-white/10" };
-
-  const isRegister = cta === "register";  
-
-  let variantStyles = "";
-  if (isRegister) {
-    variantStyles = visible
-      ? "bg-[#266055] text-white hover:bg-[#266055]/90 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,255,255,0.1)_inset]"
-      : `bg-transparent border ${state.border} ${state.hoverBorder} ${state.ghostBg} ${state.text}`;
-  } else {
-    variantStyles =
-      variant === "primary"
-        ? visible
-          ? "bg-white text-black shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
-          : `bg-transparent border ${state.border} ${state.hoverBorder} ${state.ghostBg} ${state.text}`
-        : variant === "secondary"
-        ? `bg-transparent border ${state.border} ${state.hoverBorder} ${state.ghostBg} ${state.text}`
-        : "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]";
-  }
+  // Gaya fix sesuai requirement:
+  const styleTop = 'bg-white text-slate-600 hover:bg-white/90';
+  const styleScrolled = 'bg-primary text-slate-100 hover:bg-primary/90';
 
   return (
-    <Tag href={href || undefined} className={cn(baseStyles, variantStyles, className)} {...props}>
+    <Tag
+      href={href || undefined}
+      className={cn(baseStyles, visible ? styleScrolled : styleTop, className)}
+      {...props}
+    >
       {children}
     </Tag>
   );

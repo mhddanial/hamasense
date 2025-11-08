@@ -95,7 +95,7 @@ export default function Welcome() {
             image: '/images/tomato_late_blight.jpg'
         },
         {
-            id: 5,
+            id: 2,
             plantName: "Cabai",
             disease: "Bercak Bakteri (Bacterial Spot)",
             severity: "Sedang",
