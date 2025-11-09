@@ -18,7 +18,9 @@ Route::get('/articles', [HomeController::class, 'articles'])->name('articles.ind
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        return Inertia::render('dashboardUser', [
+            'user' => Auth::user(),
+        ]);
     })->name('dashboard');
 });
 

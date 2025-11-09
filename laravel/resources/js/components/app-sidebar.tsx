@@ -52,26 +52,31 @@ const mainNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+        <aside className="hidden md:flex w-64 flex-none text-white">
+            <Sidebar
+                collapsible="icon"
+                variant="inset"
+            >
+                <SidebarHeader>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size="lg" asChild>
+                                <Link href={dashboard()} prefetch>
+                                    <AppLogo />
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
+                <SidebarContent>
+                    <NavMain items={mainNavItems} />
+                </SidebarContent>
 
-            <SidebarFooter>
-                <NavUser />
-            </SidebarFooter>
-        </Sidebar>
+                <SidebarFooter>
+                    <NavUser />
+                </SidebarFooter>
+            </Sidebar>
+        </aside>
     );
 }
