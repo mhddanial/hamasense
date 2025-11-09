@@ -22,6 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'user' => Auth::user(),
         ]);
     })->name('dashboard');
+
+    Route::get('info-hama', function () {
+        return Inertia::render('infoHama');
+    })->name('info-hama');
 });
 
 // Google OAuth

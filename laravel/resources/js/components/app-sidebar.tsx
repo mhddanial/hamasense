@@ -34,7 +34,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Info Hama',
-        href: "/hama",
+        href: "/info-hama",
         icon: Bug,
     },
     {
