@@ -1,22 +1,22 @@
-// resources/js/Pages/About/Index.tsx
 import HomeLayout from '@/layouts/home-layout';
 import type { AboutPageProps } from '@/types/home';
+import { Hero } from '@/components/home/hero';
 
 export default function AboutIndex(props: AboutPageProps) {
     return (
-        <HomeLayout title="Tentang" navItems={props.navItems}>
+        <HomeLayout title="Tentang" navItems={props.navItems }
+            hero={{
+                size: 'half',
+                bg: { imageUrl: '/images/bg-hero.png', overlay: 'bg-gradient-to-b from-black/60 via-black/40 to-black/70' },
+                content: (
+                    <Hero
+                        title={`Tentang Kami`}
+                        showPills={false}
+                    />
+                ),
+                }}>
             <section className="mx-auto max-w-5xl px-6 py-16">
-                <h1 className="text-3xl font-bold mb-2">{props.hero.title}</h1>
-                <p className="text-gray-600 mb-8">{props.hero.subtitle}</p>
 
-                <div className="space-y-8">
-                {props.sections.map((s, i) => (
-                    <div key={i}>
-                    <h2 className="text-xl font-semibold mb-2">{s.title}</h2>
-                    <p className="text-gray-700">{s.body}</p>
-                    </div>
-                ))}
-                </div>
             </section>
         </HomeLayout>
     );

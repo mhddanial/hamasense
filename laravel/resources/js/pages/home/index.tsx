@@ -18,7 +18,7 @@ export default function HomeIndex(props: HomePageProps) {
             title="Selamat Datang di HAMASENSE"
             navItems={props.navItems}
             hero={{
-                size: 'full', // <- FULL SCREEN di home
+                size: 'full',
                 bg: { imageUrl: '/images/bg-hero.png', overlay: 'bg-gradient-to-b from-black/60 via-black/40 to-black/70' },
                 content: (
                 <Hero

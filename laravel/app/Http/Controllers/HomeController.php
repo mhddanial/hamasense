@@ -151,11 +151,6 @@ class HomeController extends Controller
                 'title' => 'Tentang HAMASENSE',
                 'subtitle' => 'Misi kami membantu petani & pehobi ...',
             ],
-            'sections' => [
-                ['title' => 'Misi', 'body' => '...'],
-                ['title' => 'Teknologi', 'body' => '...'],
-                ['title' => 'Komunitas', 'body' => '...'],
-            ],
         ]);
     }
 
