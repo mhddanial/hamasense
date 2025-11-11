@@ -172,4 +172,68 @@ class HomeController extends Controller
             // ],
         ]);
     }
+
+    public function articlesShow($slug)
+    {
+        // 1) DUMMY DATA – bisa dipindah ke file config/ atau service jika mau
+        $articles = collect([
+            [
+                'id' => 42,
+                'title' => 'Rotasi Tanaman Efektif untuk Menekan Busuk Daun pada Tomat',
+                'slug' => 'rotasi-tanaman-busuk-daun-tomat',
+                'excerpt' => 'Panduan praktis menerapkan rotasi tanaman, sanitasi lahan, dan pemantauan mikroklimat…',
+                'category' => 'Budidaya',
+                'author' => 'Rina Putri',
+                'date' => '2025-07-12',
+                'image' => '/images/tomato_late_blight.jpg',
+                'readingTime' => '6 menit',
+                // Konten paragraf
+                'body' => [
+                    'Rotasi tanaman yang tepat dapat menekan insiden busuk daun pada tomat secara signifikan dengan cara memutus siklus patogen di lahan dan menurunkan inokulum di tanah maupun sisa tanaman. Praktik ini efektif bila dipadukan dengan sanitasi, manajemen kelembapan, dan penggunaan varietas toleran serta fungisida protektan saat kondisi rawan.',
+                ],
+                // Referensi sumber (untuk anti-hoaks)
+                'references' => [
+                    [
+                        'id' => 1,
+                        'source' => 'Food and Agriculture Organization (FAO)',
+                        'title' => 'Integrated Pest Management for Tomato: Late Blight',    
+                        'author' => 'FAO Plant Production and Protection Division',
+                        'url' => 'https://www.fao.org/',
+                        'accessedAt' => '2025-11-08',
+                    ],
+                    [
+                        'id' => 2,
+                        'source' => 'University Extension',
+                        'title' => 'Managing Late Blight in Tomatoes',
+                        'author' => 'Dept. of Plant Pathology',
+                        'url' => 'https://example-extension.edu/late-blight',
+                        'accessedAt' => '2025-11-09',
+                    ],
+                    [
+                        'id' => 3,
+                        'source' => 'Journal of Plant Disease Management',
+                        'title' => 'Crop Rotation and Disease Suppression in Solanaceae',
+                        'author' => 'S. Rahman et al.',
+                        'url' => 'https://doi.org/10.0000/jpdm.2025.12345',
+                        'accessedAt' => '2025-11-10',
+                    ],
+                ],
+            ],
+            // …kalau mau tambah artikel dummy lain di sini
+        ]);
+
+        // 2) Cari artikel berdasarkan slug
+        $article = $articles->firstWhere('slug', $slug);
+
+        // 3) 404 kalau tidak ketemu (biar siap produksi)
+        if (!$article) {
+            abort(404);
+        }
+
+        // 4) Kirim ke halaman React (Inertia)
+        return Inertia::render('articles/show', [
+            'navItems' => $this->navItems,
+            'article'  => $article,
+        ]);
+    }
 }

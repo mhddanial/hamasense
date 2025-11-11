@@ -92,7 +92,7 @@ export function DetectionExamples({
 
             {/* Detail Dialog */}
             <Dialog open={selectedIndex !== null} onOpenChange={() => setSelectedIndex(null)}>
-                <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+                <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto z-[2000]">
                 {selectedIndex !== null && (
                     <>
                     <DialogHeader>
