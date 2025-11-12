@@ -5,12 +5,18 @@ import HomeLayout from '@/layouts/home-layout';
 import type { ArticlesPageProps } from '@/types/home';
 import { Head, Link } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Calendar, Clock, FolderOpen, User, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, FolderOpen, User, ExternalLink } from 'lucide-react';
 import { Hero } from '@/components/home/hero';
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from '@/components/ui/breadcrumb';
 
-// =====================
-// Types (sesuaikan dengan payload dari controller)
-// =====================
+
 type Reference = {
   id: number;
   source: string;
@@ -97,32 +103,44 @@ const LazyImage: React.FC<{ src: string; alt: string; className?: string }> = ({
 export default function ArticleShow(props: ArticleShowProps) {
   const { article, navItems } = props;
 
-  // progress bar saat scroll
-  const [progress, setProgress] = useState(0); // 0 - 100
+  // ===== Smooth scroll progress (requestAnimationFrame + transform scaleX) =====
+  const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = () => {
+    let ticking = false;
+
+    const update = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const docHeight =
         document.documentElement.scrollHeight -
         document.documentElement.clientHeight;
-      const pct =
-        docHeight > 0
-          ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100))
-          : 0;
-      setProgress(pct);
+      const ratio = docHeight > 0 ? Math.min(1, Math.max(0, scrollTop / docHeight)) : 0;
+
+      if (progressRef.current) {
+        // Gunakan transform agar GPU-accelerated dan halus
+        progressRef.current.style.transform = `scaleX(${ratio})`;
+      }
+      ticking = false;
     };
 
-    handler();
-    window.addEventListener('scroll', handler, { passive: true });
-    window.addEventListener('resize', handler);
+    const onScrollOrResize = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
+
+    // init
+    update();
+    window.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize);
     return () => {
-      window.removeEventListener('scroll', handler);
-      window.removeEventListener('resize', handler);
+      window.removeEventListener('scroll', onScrollOrResize);
+      window.removeEventListener('resize', onScrollOrResize);
     };
   }, []);
 
-  // breadcrumbs sederhana
+  // breadcrumbs (pakai shadcn)
   const breadcrumbs = useMemo(
     () => [
       { href: '/articles', label: 'Artikel' },
@@ -141,7 +159,7 @@ export default function ArticleShow(props: ArticleShowProps) {
           imageUrl: '/images/bg-hero.png',
           overlay: 'bg-gradient-to-b from-black/60 via-black/40 to-black/70',
         },
-        content: <Hero className="md:mt-10" title={article.title} showPills={false} />,
+        content: <Hero className="md:pt-36" title={article.title} showPills={false} />,
       }}
     >
       <Head title={article.title}>
@@ -151,28 +169,32 @@ export default function ArticleShow(props: ArticleShowProps) {
         <meta property="og:image" content={article.image} />
       </Head>
 
-      <div className="fixed inset-x-0 top-0 z-[1101] h-2 bg-transparent">
+      {/* Progress bar fix di atas navbar (z lebih tinggi) */}
+      <div className="fixed inset-x-0 top-0 z-[1101] h-1 bg-transparent">
         <div
-          className="h-full bg-gradient-to-r from-primary to-primary/60 transition-[width] duration-150"
-          style={{ width: `${progress}%` }}
+          ref={progressRef}
+          className="h-full origin-left bg-gradient-to-r from-primary to-primary/60 will-change-transform"
+          style={{ transform: 'scaleX(0)' }}
         />
       </div>
 
       <section className="mx-auto max-w-4xl px-6 pt-8 pb-16 lg:pt-12">
-        {/* Breadcrumbs */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-gray-500">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {breadcrumbs.map((bc, i) => (
-            <span key={bc.href} className="flex items-center gap-2">
-              <Link href={bc.href} className="hover:text-primary">
-                {bc.label}
-              </Link>
-              {i < breadcrumbs.length - 1 && (
-                <span className="text-gray-400">/</span>
-              )}
-            </span>
-          ))}
-        </nav>
+        {/* Breadcrumbs (shadcn) */}
+        <div className="mb-6">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href={breadcrumbs[0].href}>{breadcrumbs[0].label}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{breadcrumbs[1].label}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
 
         {/* Header */}
         <header className="mb-6">
@@ -202,11 +224,7 @@ export default function ArticleShow(props: ArticleShowProps) {
 
         {/* Cover */}
         <div className="mb-8 overflow-hidden rounded-2xl bg-gray-100">
-          <LazyImage
-            src={article.image}
-            alt={article.title}
-            className="h-full w-full object-cover"
-          />
+          <LazyImage src={article.image} alt={article.title} className="h-full w-full object-cover" />
         </div>
 
         {/* Body */}
@@ -222,31 +240,17 @@ export default function ArticleShow(props: ArticleShowProps) {
         {/* References */}
         {Array.isArray(article.references) && article.references.length > 0 && (
           <section className="mt-12">
-            <h2 className="mb-4 text-xl font-bold text-[#1b1b18]">
-              Referensi Sumber
-            </h2>
+            <h2 className="mb-4 text-xl font-bold text-[#1b1b18]">Referensi Sumber</h2>
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                      #
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                      Sumber
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                      Judul
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                      Penulis
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                      Tautan
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                      Diakses
-                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">#</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Sumber</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Penulis</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Tautan</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Diakses</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -255,9 +259,7 @@ export default function ArticleShow(props: ArticleShowProps) {
                       <td className="px-4 py-3 text-gray-600">{i + 1}</td>
                       <td className="px-4 py-3 text-gray-900">{ref.source}</td>
                       <td className="px-4 py-3 text-gray-700">{ref.title}</td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {ref.author || '-'}
-                      </td>
+                      <td className="px-4 py-3 text-gray-600">{ref.author || '-'}</td>
                       <td className="px-4 py-3">
                         <a
                           href={ref.url}
@@ -268,27 +270,21 @@ export default function ArticleShow(props: ArticleShowProps) {
                           Kunjungi <ExternalLink className="h-4 w-4" />
                         </a>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {formatDate(ref.accessedAt)}
-                      </td>
+                      <td className="px-4 py-3 text-gray-600">{formatDate(ref.accessedAt)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <p className="mt-3 text-xs text-gray-500">
-              *Kami menampilkan referensi untuk memastikan konten terverifikasi
-              dan mengurangi risiko penyebaran hoaks.
+              *Kami menampilkan referensi untuk memastikan konten terverifikasi dan mengurangi risiko penyebaran hoaks.
             </p>
           </section>
         )}
 
         {/* Footer back link */}
         <div className="mt-10 flex items-center justify-between border-t pt-6">
-          <Link
-            href="/articles"
-            className="text-sm font-medium text-primary hover:underline"
-          >
+          <Link href="/articles" className="text-sm font-medium text-primary hover:underline">
             ← Kembali ke daftar artikel
           </Link>
         </div>
