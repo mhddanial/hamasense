@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import pest from '@/routes/pest';
 
 export default function KelolaDataHama() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
   const [selectedLevel, setSelectedLevel] = useState('Semua Tingkat');
 
+  const { props } = usePage();
+
+  const { pests } = props;
   const hamaData = [
     {
       id: 1,
@@ -62,10 +67,10 @@ export default function KelolaDataHama() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Kelola Data Hama</h1>
             <p className="text-gray-600">Manage database hama dan penyakit tanaman</p>
           </div>
-          <button className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
+          <Link href='/admin/pest/create' className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
             <Plus className="w-5 h-5" />
             Tambah Hama
-          </button>
+          </Link>
         </div>
 
         {/* Filters */}
@@ -131,7 +136,43 @@ export default function KelolaDataHama() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredData.map((item) => (
+                {pests?.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 italic">{item.scientific_name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">item.kategori</td>
+                    <td className="px-6 py-4">
+                      
+                      sadasd`{/* <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${item.tingkatColor}`}>
+                        {item.tingkatBahaya}
+                      </span> */}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-2">
+                        {/* {item.tanaman.map((tanaman, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
+                          >
+                            {tanaman}
+                          </span>
+                        ))} */}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-3">
+                        <Link href={`/admin/pest/${item.id}`} className="text-gray-600 hover:text-green-600 transition-colors">
+                          <Edit2 className="w-5 h-5" />
+                        </Link>
+                        <button className="text-gray-600 hover:text-red-600 transition-colors">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {/* {filteredData.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.namaHama}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 italic">{item.namaIlmiah}</td>
@@ -164,7 +205,7 @@ export default function KelolaDataHama() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                ))} */}
               </tbody>
             </table>
           </div>

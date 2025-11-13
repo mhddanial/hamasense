@@ -12,12 +12,14 @@ class ArticleController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        $articles = Article::where('writer_id', $user->id);
+        // $articles = Article::where('writer_id', $user->id)->get();
 
-        return response()->json([
-            'result' => $articles
+        $articles = Article::all();
+
+        return Inertia::render('admin/article/index', [
+            'articles' => $articles
         ]);
     }
 

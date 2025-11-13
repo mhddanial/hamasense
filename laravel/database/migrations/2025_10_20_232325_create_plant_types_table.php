@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('plant_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('scientific_name');
+            $table->text('detail');
             $table->timestamps();
         });
     }

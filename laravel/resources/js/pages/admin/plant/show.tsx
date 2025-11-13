@@ -1,62 +1,59 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Upload, Paperclip } from 'lucide-react';
-import { useForm } from '@inertiajs/react';
+import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare } from 'lucide-react';
+import { useForm, usePage } from '@inertiajs/react';
 
-export default function HamaSenseAdd() {
-  const [activeMenu, setActiveMenu] = useState('Kelola Hama');
-  const {data, setData, post} = useForm({
-    name: '',
-    scientific_name: '',
-    // kategori: '',
-    description: ''
+export default function EditInformasiTanaman() {
+  const [activeMenu, setActiveMenu] = useState('Kelola Tanaman');
+  const [formData, setFormData] = useState({
+    namaTumbuhan: 'Tomat',
+    namaLatin: 'Solanum lycopersicum',
+    kategori: 'Buah',
+    detail: 'Tomat (Solanum lycopersicum) adalah buah yang sering digunakan sebagai sayuran dalam masakan. Tanaman ini berasal dari Amerika Selatan dan termasuk keluarga Solanaceae.'
   });
-  const [uploadedImage, setUploadedImage] = useState(null);
+
+  
+
+  const { props } = usePage();
+  const { plant } = props;
+
+  console.log(plant)
+
+  const { data, setData, submit } = useForm({
+    name: plant.name,
+    scientific_name: plant.scientific_name,
+    detail: plant.detail
+  }); 
+
+  
 
   const menuItems = [
     { icon: Home, label: 'Beranda' },
     { icon: Users, label: 'Kelola Pengguna' },
     { icon: Sprout, label: 'Kelola Tanaman' },
-    { icon: Bug, label: 'Kelola Hama' },
-    { icon: FileText, label: 'Kelola Artikel' },
-    { icon: MessageSquare, label: 'Kelola Komunitas' }
+    { icon: Bug, label: 'Info Hama' },
+    { icon: MessageSquare, label: 'Komunitas' },
+    { icon: FileText, label: 'Artikel' }
   ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleUpdate = () => {
+    console.log('Updated Data:', formData);
+    alert('Data tanaman berhasil diupdate!');
+  };
+
+  const handleDelete = (id) => {
+    if (confirm('Apakah Anda yakin ingin menghapus tanaman ini?')) {
+      
+      submit('delete', `/admin/plant/${id}`)
+
+      console.log('Deleted');
+      alert('Data tanaman berhasil dihapus!');
     }
   };
-
-  const handleSubmit = () => {
-    console.log('Form Data:', data);
-    console.log('Uploaded Image:', uploadedImage);
-    alert('Data berhasil ditambahkan!');
-  };
-
-  const handleCancel = () => {
-    setData({
-      name: '',
-      scientific_name: '',
-      // kategori: '',
-      description: ''
-    });
-    setUploadedImage(null);
-  };
-
-  const create = async () => {
-    post('/api/pest');
-  }
-
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -129,51 +126,18 @@ export default function HamaSenseAdd() {
 
         {/* Content */}
         <div className="p-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-5xl">
-            <h1 className="text-2xl font-bold mb-8">Tambahkan Hama</h1>
+          <div className="bg-white rounded-lg shadow-sm p-8 max-w-6xl mx-auto">
+            <h1 className="text-3xl font-bold mb-8">Edit Informasi tanaman</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column - Upload */}
+              {/* Left Column - Image */}
               <div>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <h3 className="text-lg font-semibold mb-4">Upload Foto</h3>
-                  
-                  {uploadedImage ? (
-                    <div className="mb-4">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Preview" 
-                        className="w-full h-64 object-cover rounded-lg mb-4"
-                      />
-                      <button
-                        onClick={() => setUploadedImage(null)}
-                        className="text-sm text-red-500 hover:text-red-700"
-                      >
-                        Hapus gambar
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="mb-6">
-                      <div className="flex justify-center mb-4">
-                        <Upload className="w-12 h-12 text-gray-400" />
-                      </div>
-                      <p className="text-gray-600 mb-2">Seret atau unggah gambar</p>
-                      <p className="text-sm text-gray-400 mb-4">
-                        atau klik tombol dibawah ini untuk memilih file
-                      </p>
-                    </div>
-                  )}
-                  
-                  <label className="inline-flex items-center gap-2 px-6 py-2 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <Paperclip className="w-4 h-4" />
-                    <span>Pilih File</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                  </label>
+                <div className="rounded-lg overflow-hidden">
+                  <img
+                    src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&h=600&fit=crop"
+                    alt="Tomat"
+                    className="w-full h-auto object-cover"
+                  />
                 </div>
               </div>
 
@@ -183,73 +147,70 @@ export default function HamaSenseAdd() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Hama
+                        Name
                       </label>
                       <input
                         type="text"
                         name="name"
                         value={data.name}
                         onChange={handleInputChange}
-                        placeholder="Kutu Daun"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Latin
+                        scientific name
                       </label>
                       <input
                         type="text"
                         name="scientific_name"
                         value={data.scientific_name}
                         onChange={handleInputChange}
-                        placeholder="Aphididae"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
                       />
                     </div>
                   </div>
-{/* 
-                  <div>
+
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Kategori
                     </label>
                     <input
                       type="text"
                       name="kategori"
-                      value={data.kategori}
+                      value={formData.kategori}
                       onChange={handleInputChange}
-                      placeholder="Serangga"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div> */}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      description
+                      Detail
                     </label>
                     <textarea
-                      name="description"
-                      value={data.description}
+                      name="detail"
+                      value={data.detail}
                       onChange={handleInputChange}
-                      placeholder="Tubuh kecil (1-3 mm), hijau muda atau hitam, biasanya berkumpul di bawah daun atau pucuk muda."
-                      rows="5"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                      rows="8"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                     ></textarea>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 pt-2">
                     <button 
-                      onClick={handleCancel}
-                      className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      onClick={() => {
+                        handleDelete(plant.id)
+                      }}
+                      className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                     >
-                      Batal
+                      Hapus
                     </button>
                     <button 
-                      onClick={create}
-                      type='button'
-                      className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                      onClick={handleUpdate}
+                      className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
                     >
-                      Tambahkan
+                      Update
                     </button>
                   </div>
                 </div>

@@ -11,23 +11,23 @@ class PestController extends Controller
 {
     public function index()
     {
-        return response()->json(Pest::all());
-    }
-
-    public function dashboard()
-    {
-        return Inertia::render('admin/pest/kelola_hama');
+        return Inertia::render('admin/pest/index', [
+            'pests' => Pest::all()
+        ]);
     }
 
     public function create()
     {
-        return Inertia::render('admin/pest/add_hama');
+        return Inertia::render('admin/pest/create');
     }
 
-    public function edit()
+    public function show(Request $request, Pest $pest)
     {
-        return Inertia::render('admin/pest/u_d_hama', [
-            'message' => 'testing'
+
+
+        return Inertia::render('admin/pest/show', [
+            'message' => 'testing',
+            'pest' => $pest
         ]);
     }
 
@@ -52,17 +52,14 @@ class PestController extends Controller
             $new_pest = Pest::create($field);
 
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'New Pest Added Successfully',
-                'result' => $new_pest
-            ]);
+
+            return redirect('admin/pest')->with('success', 'New Pest Added Successfully!');
+
         } catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+
+            return redirect('admin/pest')->with('error', 'Error when adding new Pest data: ', $e->getMessage());
+
         }
     }
 
@@ -78,19 +75,13 @@ class PestController extends Controller
             ]);
 
             $pest->update($field);
-
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'Pest\'s data updated successfully',
-                'result' => $pest
-            ]);
+            return redirect('admin/pest')->with('success', 'Pest Updated Successfully!');
+
         }catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+
+            return redirect('admin/pest')->with('error', 'Error when updating pest: ' . $e->getMessage());
         }
     }
 
@@ -100,18 +91,13 @@ class PestController extends Controller
         
         try{
             $pest->delete();
-
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'Article deleted successfully',
-            ]);
+
+            return redirect('admin/pest')->with('success', 'Pest Deleted Successfully!');
         }catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+
+            return redirect('admin/pest')->with('error', 'Error when deleting pest: ' . $e->getMessage());
         }
     }
 
