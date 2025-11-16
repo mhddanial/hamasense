@@ -1,0 +1,42 @@
+# === Python / FastAPI ===
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Model artifacts / checkpoints
+*.pkl
+*.ckpt
+*.onnx
+*.tflite
+
+# TensorFlow, Keras logs
+logs/
+checkpoint/
+*.log
+
+# Byte-compiled / cache
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# FastAPI / Uvicorn cache
+*.db
+*.sqlite3
+
+# dotenv / secrets
+.env
+.env.*
+
+# PyCharm / VSCode
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,17 @@
+# Core ML
+tensorflow==2.19.0          # sesuaikan dengan versi yang benar di environment kamu
+numpy==1.26.4               # jika TF komplain, sesuaikan numpy mengikuti rekomendasi TF
+
+# Image preprocessing
+Pillow==10.3.0
+
+# API
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9     # untuk upload file via multipart/form-data
+pydantic==2.8.2             # dipakai oleh FastAPI
+
+# (opsional, tapi biasanya ter-install sebagai dependency)
+starlette==0.38.2
+
+google-generativeai==0.7.2
