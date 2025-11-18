@@ -1,8 +1,10 @@
-[
-    "cassava_green_mite",
-    "pepper_bell_bacterial_spot",
-    "pepper_bell_healthy",
-    "tomato_bacterial_spot",
-    "tomato_healthy",
-    "tomato_spider_mites_two_spotted_spider_mite"
-]
+{
+  "class_indices": {
+    "cassava_green_mite": 0,
+    "pepper_bell_bacterial_spot": 1,
+    "pepper_bell_healthy": 2,
+    "tomato_bacterial_spot": 3,
+    "tomato_healthy": 4,
+    "tomato_spider_mites_two_spotted_spider_mite": 5
+  }
+}

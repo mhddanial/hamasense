@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, detect } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Home, ScanEye, History, Bug, MessageSquare, Newspaper } from 'lucide-react';
@@ -24,7 +24,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Deteksi',
-        href: "/deteksi",
+        href: detect(),
         icon: ScanEye,
     },
     {
@@ -34,7 +34,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Info Hama',
-        href: "/info-hama",
+        href: "/hama",
         icon: Bug,
     },
     {
@@ -52,31 +52,27 @@ const mainNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <aside className="hidden md:flex w-64 flex-none text-white">
-            <Sidebar
-                collapsible="icon"
-                variant="inset"
-            >
-                <SidebarHeader>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton size="lg" asChild>
-                                <Link href={dashboard()} prefetch>
-                                    <AppLogo />
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarHeader>
+        <Sidebar collapsible="icon" variant="inset">
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <Link href={dashboard()} prefetch>
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
 
-                <SidebarContent>
-                    <NavMain items={mainNavItems} />
-                </SidebarContent>
+            <SidebarContent>
+                <NavMain items={mainNavItems} />
+            </SidebarContent>
 
-                <SidebarFooter>
-                    <NavUser />
-                </SidebarFooter>
-            </Sidebar>
-        </aside>
+            <SidebarFooter>
+                <NavUser />
+            </SidebarFooter>
+        </Sidebar>
+
     );
 }

@@ -14,10 +14,14 @@ Route::get('/articles/{slug}', [HomeController::class, 'articlesShow'])->name('a
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboardUser', [
+        return Inertia::render('dashboard', [
             'user' => Auth::user(),
         ]);
     })->name('dashboard');
+
+    Route::get('detect', function () {
+        return Inertia::render('detect/index');
+    })->name('detect');
 
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
