@@ -1,7 +1,7 @@
 import os
 import json
 import tempfile
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,23 +15,23 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
-
 # =====================================================
 # LOAD .env FILE
 # =====================================================
 load_dotenv()
 
-
 # =====================================================
 # KONFIGURASI DARI .env
 # =====================================================
-MODEL_PATH = os.getenv("MODEL_PATH", "best_model_finetuned_6class.h5")
+MODEL_PATH = os.getenv("MODEL_PATH", "best_model_finetuned.keras")
 CLASS_JSON_PATH = os.getenv("CLASS_JSON_PATH", "class_indices.json")
 
-PROB_THRESH = float(os.getenv("PROB_THRESH", 0.60))
-MARGIN_THRESH = float(os.getenv("MARGIN_THRESH", 0.15))
+# Threshold dasar (bisa di-override via .env)
+PROB_THRESH = float(os.getenv("PROB_THRESH", 0.80))
+MARGIN_THRESH = float(os.getenv("MARGIN_THRESH", 0.25))
+
 ENTROPY_THRESH_RAW = os.getenv("ENTROPY_THRESH")
-ENTROPY_THRESH = float(ENTROPY_THRESH_RAW) if ENTROPY_THRESH_RAW else None
+ENTROPY_THRESH = float(ENTROPY_THRESH_RAW) if ENTROPY_THRESH_RAW else 0.70
 
 IMG_H = os.getenv("IMG_H")
 IMG_W = os.getenv("IMG_W")
@@ -41,9 +41,7 @@ if IMG_H and IMG_W:
 else:
     IMG_SIZE = None  # nanti dibaca dari model
 
-
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
-
 
 # =====================================================
 # UTIL
@@ -66,12 +64,14 @@ def load_class_names_from_class_indices(json_path: str):
     if "class_indices" not in data:
         raise ValueError("JSON harus berisi key 'class_indices'.")
 
+    # data["class_indices"] = { "nama_kelas": index, ... }
     items = sorted(data["class_indices"].items(), key=lambda kv: kv[1])
     indices = [idx for _, idx in items]
 
     if indices != list(range(len(indices))):
         raise ValueError(f"Urutan index tidak valid: {indices}")
 
+    # return list nama kelas dengan urutan index 0..N-1
     return [name for name, _ in items]
 
 
@@ -91,9 +91,9 @@ print(f"Memuat model dari: {MODEL_PATH}")
 if not os.path.exists(MODEL_PATH):
     raise RuntimeError(f"Model '{MODEL_PATH}' tidak ditemukan.")
 
+# compile=False supaya tidak perlu load optimizer / loss
 model = load_model(MODEL_PATH, compile=False)
 print("Model berhasil dimuat.")
-
 
 # Tentukan ukuran input
 if IMG_SIZE is None:
@@ -106,24 +106,25 @@ if IMG_SIZE is None:
 
 print(f"Model input IMG_SIZE = {IMG_SIZE}")
 
-
 # =====================================================
 # LOAD CLASS NAMES
 # =====================================================
 class_names = load_class_names_from_class_indices(CLASS_JSON_PATH)
 
 if len(class_names) != model.output_shape[-1]:
-    raise ValueError(f"Jumlah kelas JSON ≠ output model")
+    raise ValueError(
+        f"Jumlah kelas di JSON ({len(class_names)}) "
+        f"≠ output model ({model.output_shape[-1]})"
+    )
 
 print(f"Classes ({len(class_names)}): {class_names}")
-
 
 # =====================================================
 # FASTAPI SETUP
 # =====================================================
 app = FastAPI(
     title="Pest Detection API (CNN + MobileNetV2)",
-    description="API berbasis FastAPI untuk pendeteksian hama daun.",
+    description="API berbasis FastAPI untuk pendeteksian hama/penyakit daun.",
     version="1.0.0",
 )
 
@@ -135,69 +136,98 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # =====================================================
 # RESPONSE SCHEMA
 # =====================================================
-class TopKPrediction(BaseModel):
-    label: str
-    probability: float
-
-
 class PredictionResponse(BaseModel):
     source: str
     predicted_label: Optional[str]
     confidence: Optional[float]
-    top_k: List[TopKPrediction]
     should_abstain: bool
-    abstain_reasons: List[str]
+    abstain_reasons: list[str]
     entropy: Optional[float]
 
 
 # =====================================================
 # INFERENCE FUNCTION
 # =====================================================
-def run_inference(image_path: str, top_k: int = 3) -> PredictionResponse:
+def run_inference(image_path: str) -> PredictionResponse:
+    # Load & preprocess
     img = image.load_img(image_path, target_size=IMG_SIZE)
     img_array = np.expand_dims(image.img_to_array(img), 0) / 255.0
 
+    # Prediksi
     predictions = model.predict(img_array)
     score = predictions[0]
 
+    # Ambil top-2 untuk analisis margin (internal saja, tidak ditampilkan ke user)
     sorted_idx = np.argsort(score)[::-1]
     top1, top2 = sorted_idx[:2]
     p1, p2 = float(score[top1]), float(score[top2])
 
-    Hnorm = normalized_entropy(score) if ENTROPY_THRESH is not None else None
+    # Entropy ter-normalisasi (0..1)
+    Hnorm = normalized_entropy(score)
 
+    # --- OOD / ketidakpastian kuat ---
+    # 1) Model tidak cukup yakin pada satu kelas
     is_low_prob = p1 < PROB_THRESH
+
+    # 2) Dua kelas teratas kemungkinannya mirip (model bimbang dua kelas)
     is_small_gap = (p1 - p2) < MARGIN_THRESH
-    is_high_entropy = Hnorm is not None and Hnorm > ENTROPY_THRESH
 
-    should_abstain = is_low_prob or is_small_gap or is_high_entropy
+    # 3) Distribusi prediksi menyebar ke banyak kelas (model bingung)
+    is_high_entropy = Hnorm > ENTROPY_THRESH
 
-    reasons = []
+    # 4) Tidak ada kelas yang benar-benar menonjol
+    is_softmax_flat = p1 < 0.40
+
+    # 5) Variansi kecil → semua kelas dapat nilai hampir sama
+    is_low_variance = float(np.var(score)) < 0.005
+
+    should_abstain = any(
+        [is_low_prob, is_small_gap, is_high_entropy, is_softmax_flat, is_low_variance]
+    )
+
+    reasons: list[str] = []
+
     if is_low_prob:
-        reasons.append(f"Probabilitas terlalu rendah ({p1*100:.2f}%)")
-    if is_small_gap:
-        reasons.append(f"Margin Top1-Top2 terlalu kecil ({(p1-p2)*100:.2f}%)")
-    if is_high_entropy:
-        reasons.append(f"Entropi terlalu tinggi ({Hnorm:.2f})")
+        reasons.append(
+            f"Model tidak cukup yakin terhadap hasil prediksi (kepercayaan hanya {p1:.2f})."
+        )
 
-    top_k_list = [
-        TopKPrediction(label=class_names[idx], probability=float(score[idx]))
-        for idx in sorted_idx[:top_k]
-    ]
+    if is_small_gap:
+        reasons.append(
+            "Model kesulitan membedakan dua kemungkinan kelas yang paling mirip, "
+            "sehingga hasil prediksi kurang meyakinkan."
+        )
+
+    if is_high_entropy:
+        reasons.append(
+            f"Model membagi kemungkinan ke banyak kelas sekaligus (entropi {Hnorm:.2f}), "
+            "menandakan ketidakpastian yang tinggi."
+        )
+
+    if is_softmax_flat:
+        reasons.append(
+            "Tidak ada kelas yang benar-benar dominan. "
+            "Ini bisa terjadi jika gambar tidak sesuai domain (misalnya bukan daun tanaman)."
+        )
+
+    if is_low_variance:
+        reasons.append(
+            "Pola pada gambar sulit dikenali sehingga semua kelas terlihat mirip bagi model. "
+            "Coba gunakan gambar yang lebih jelas dan fokus pada daun."
+        )
 
     return PredictionResponse(
         source=os.path.basename(image_path),
         predicted_label=None if should_abstain else class_names[top1],
         confidence=None if should_abstain else p1,
-        top_k=top_k_list,
         should_abstain=should_abstain,
         abstain_reasons=reasons,
         entropy=Hnorm,
     )
+
 
 
 # =====================================================
@@ -214,12 +244,14 @@ async def predict(
     temp_path = None
 
     try:
+        # Kasus upload file
         if file:
             suffix = "." + file.filename.split(".")[-1]
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                 tmp.write(await file.read())
                 temp_path = tmp.name
         else:
+            # Kasus URL
             if not is_url(image_url):
                 raise HTTPException(400, "URL tidak valid.")
             suffix = os.path.splitext(image_url)[1] or ".jpg"
@@ -243,4 +275,7 @@ def home():
         "model": MODEL_PATH,
         "classes": class_names,
         "img_size": IMG_SIZE,
+        "prob_threshold": PROB_THRESH,
+        "margin_threshold": MARGIN_THRESH,
+        "entropy_threshold": ENTROPY_THRESH,
     }
