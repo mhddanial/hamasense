@@ -35,6 +35,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { useForm } from "@inertiajs/react";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -49,6 +50,11 @@ export default function DetectPage() {
   // file aktif (dipakai untuk kirim ke backend)
   const [file, setFile] = useState<File | null>(null);
 
+  // Ganti state manual dengan useForm Inertia
+  const { data, setData, post, processing, errors } = useForm({
+    image: null as File | null,
+  });
+  
   // original file & preview untuk bisa recrop dari gambar awal
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null); // preview yang ditampilkan di UI
@@ -317,7 +323,7 @@ export default function DetectPage() {
                           <span className="rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur">
                             Preview Gambar
                           </span>
-                          <div className="flex gap-2">
+                          <div className="flex">
                             <Button
                               type="button"
                               size="icon"
@@ -331,17 +337,6 @@ export default function DetectPage() {
                               }}
                             >
                               <CropIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              className="h-8 w-8 border-white/60 bg-black/40 text-white hover:bg-black/70"
-                              onClick={() =>
-                                document.getElementById("file-input")?.click()
-                              }
-                            >
-                              <Upload className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>

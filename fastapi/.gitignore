@@ -25,10 +25,6 @@ checkpoint/
 *.pyd
 __pycache__/
 
-# FastAPI / Uvicorn cache
-*.db
-*.sqlite3
-
 # dotenv / secrets
 .env
 .env.*

@@ -38,7 +38,7 @@ export default function Dashboard({user} : {user: {name: string}}) {
 
                 {/* MAIN CONTENT */}
                 <div className="flex flex-col basis-0 grow min-w-0">
-                    <main className="grow min-w-0 px-4 sm:px-6 md:px-6 md:px-10 lg:px-20 py-6 sm:py-10">
+                    <main className="grow min-w-0 px-4 sm:px-6 md:px-6 lg:px-20 py-6 sm:py-10">
                         <Head title="Beranda"/>
 
                         {/* Header */}

@@ -173,7 +173,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function articlesShow($slug)
+    public function articleShow($slug)
     {
         // 1) DUMMY DATA – bisa dipindah ke file config/ atau service jika mau
         $articles = collect([

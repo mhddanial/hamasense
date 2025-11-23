@@ -4,12 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\DetectController;
 
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/articles', [HomeController::class, 'articles'])->name('articles.index');
-Route::get('/articles/{slug}', [HomeController::class, 'articlesShow'])->name('articles.show');
+Route::get('/articles/{slug}', [HomeController::class, 'articleShow'])->name('articles.show');
 
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -19,9 +20,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('dashboard');
 
-    Route::get('detect', function () {
-        return Inertia::render('detect/index');
-    })->name('detect');
+    Route::get('detect', [DetectController::class, 'index'])->name('detect');
+    Route::post('detect', [DetectController::class, 'store'])->name('detect.store');
+
+    // Testing halaman deteksi frontend
+    Route::get('/detect-result', function () {
+        return Inertia::render('detect/test-result');
+    })->name('detect.result');
 
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
