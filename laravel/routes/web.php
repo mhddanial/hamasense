@@ -33,6 +33,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
     })->name('infoHama');
+
+    Route::get('/riwayat-deteksi', function() {
+        return Inertia::render('riwayatDeteksi');
+    })->name('riwayatDeteksi');
 });
 
 // Google OAuth

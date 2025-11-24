@@ -10,11 +10,12 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, detect } from '@/routes';
+import { dashboard, detect, infoHama, riwayatDeteksi } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Home, ScanEye, History, Bug, MessageSquare, Newspaper } from 'lucide-react';
 import AppLogo from './app-logo';
+import RiwayatDeteksi from '@/pages/riwayatDeteksi';
 
 const mainNavItems: NavItem[] = [
     {
@@ -29,12 +30,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Riwayat',
-        href: "/riwayat",
+        href: riwayatDeteksi(),
         icon: History,
     },
     {
         title: 'Info Hama',
-        href: "/info-hama",
+        href: infoHama(),
         icon: Bug,
     },
     {
