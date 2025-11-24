@@ -22,6 +22,7 @@ import {
   Camera,
 } from "lucide-react";
 import { detect } from "@/routes";
+import { Separator } from "@radix-ui/react-separator";
 
 // ==========================================
 // 1. DEFINISI TIPE DATA
@@ -98,7 +99,7 @@ export default function ResultPage({ result }: Props) {
 
   // Helper warna progress bar
   const getProgressColor = (score: number) => {
-    if (score >= 80) return "bg-emerald-500";
+    if (score >= 80) return "bg-slate-100";
     if (score >= 50) return "bg-yellow-500";
     return "bg-red-500";
   };
@@ -128,12 +129,6 @@ export default function ResultPage({ result }: Props) {
                     Laporan deteksi AI berdasarkan citra daun yang Anda unggah.
                 </p>
             </div>
-            {/* Indikator Mode Preview (Hanya muncul jika pakai dummy) */}
-            {!result && (
-                <Badge variant="secondary" className="w-fit h-fit bg-yellow-100 text-yellow-800 border-yellow-200">
-                    Preview Mode (Data Dummy)
-                </Badge>
-            )}
           </div>
         </div>
 
@@ -141,18 +136,43 @@ export default function ResultPage({ result }: Props) {
           {/* KOLOM KIRI: Gambar & Status */}
           <div className="space-y-6 lg:col-span-1">
             <Card className="overflow-hidden border-2 border-primary/10 shadow-sm">
-              <CardHeader className="bg-muted/30 pb-4">
+              <CardHeader className="bg-muted/30">
                 <CardTitle className="text-base">Gambar yang Diunggah</CardTitle>
               </CardHeader>
-              <div className="relative aspect-[4/3] w-full bg-black/5">
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground bg-muted">
-                  <div className="flex flex-col items-center gap-2">
-                    <Leaf className="w-12 h-12 opacity-20" />
-                    <span className="text-xs font-mono">{activeResult.source}</span>
-                  </div>
+              
+              <div className="relative aspect-[4/3] w-full bg-neutral-100 overflow-hidden group">
+                {/* Logika Gambar:
+                  1. Jika pakai Data Dummy (Preview Mode), kita arahkan ke path manual.
+                  2. Jika data asli, nanti URL-nya dikirim dari backend via props 'image_url'.
+                  
+                  Disini kita hardcode path sesuai request Anda untuk simulasi dummy.
+                */}
+                <img 
+                  // Ganti 'tomato_early_blight_0026.JPG' sesuai nama file asli Anda di folder public
+                  src={result ? `/storage/images/${result.source}` : "/images/tomato_early_blight_0026.JPG"} 
+                  alt="Daun Terdeteksi"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => {
+                    // Fallback jika gambar tidak ditemukan (biar tidak pecah)
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "https://placehold.co/600x400?text=Gambar+Tidak+Ditemukan";
+                  }}
+                />
+
+                {/* Overlay Gradient saat Hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                    <Badge variant="secondary" className="bg-white/90 text-black backdrop-blur-sm">
+                        Lihat Ukuran Penuh
+                    </Badge>
                 </div>
               </div>
+
               <CardContent className="p-4 space-y-4">
+                {/* Menampilkan nama file asli kecil di bawah gambar */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center bg-muted/50 p-2 rounded-md">
+                    <span className="truncate max-w-[200px]">{activeResult.source}</span>
+                </div>
+
                 <Button className="w-full" variant="default" asChild>
                   <Link href={detect()}>
                     <Camera className="mr-2 h-4 w-4" />
@@ -179,7 +199,7 @@ export default function ResultPage({ result }: Props) {
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div>
                     <CardDescription>Terdeteksi sebagai</CardDescription>
-                    <CardTitle className="text-3xl font-bold text-emerald-950 dark:text-emerald-50 mt-1">
+                    <CardTitle className="text-3xl font-bold text-emerald-950">
                       {formatLabel(activeResult.predicted_label || "Tidak Diketahui")}
                     </CardTitle>
                     {advice?.description && (
@@ -206,7 +226,7 @@ export default function ResultPage({ result }: Props) {
                   </div>
                   <Progress
                     value={confidencePercent}
-                    className={`h-3 bg-primary dark:bg-neutral-800 ${getProgressColor(confidencePercent)}`}
+                    className={`h-3 bg-primary ${getProgressColor(confidencePercent)}`}
                   />
                 </div>
               </CardContent>

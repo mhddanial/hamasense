@@ -10,7 +10,7 @@ import { Head } from '@inertiajs/react';
 export default function RiwayatDeteksi() {
     const breadcrumbs : BreadcrumbItem[] = [
         {
-            title: 'riwayat-deteksi',
+            title: 'Riwayat Deteksi',
             href: riwayatDeteksi().url,
         },
     ]

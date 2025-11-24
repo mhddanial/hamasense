@@ -8,12 +8,6 @@ __pycache__/
 env/
 venv/
 
-# Model artifacts / checkpoints
-*.pkl
-*.ckpt
-*.onnx
-*.tflite
-
 # TensorFlow, Keras logs
 logs/
 checkpoint/

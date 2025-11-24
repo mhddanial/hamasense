@@ -24,7 +24,6 @@ import {
   Camera,
 } from "lucide-react";
 
-// Tipe data sesuai respon JSON FastAPI Anda
 interface DetectionResult {
   source: string;
   predicted_label: string;

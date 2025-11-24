@@ -11,7 +11,7 @@ import { infoHama } from '@/routes';
 export default function InfoHama() {
     const breadcrumbs : BreadcrumbItem[] = [
         {
-            title: 'info-hama',
+            title: 'Info Hama',
             href: infoHama().url,
         },
     ];

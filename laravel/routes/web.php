@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DetectController;
+use App\Http\Controllers\CommunityPostController;
 
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -29,14 +30,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('detect.result');
 
     Route::post('/detect/store', [DetectController::class, 'store'])->name('detect.store');
+    
+    Route::get('/riwayat-deteksi', function() {
+        return Inertia::render('riwayatDeteksi');
+    })->name('riwayatDeteksi');
 
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
     })->name('infoHama');
 
-    Route::get('/riwayat-deteksi', function() {
-        return Inertia::render('riwayatDeteksi');
-    })->name('riwayatDeteksi');
+    Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
 });
 
 // Google OAuth

@@ -40,7 +40,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Komunitas',
-        href: "/komunitas",
+        href: "/community",
         icon: MessageSquare,
     },
     {
