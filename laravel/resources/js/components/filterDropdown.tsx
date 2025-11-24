@@ -1,4 +1,10 @@
 import React from 'react';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 
 interface filterDropdownProps {
     options: string[];
@@ -8,18 +14,25 @@ interface filterDropdownProps {
 
 const FilterDropdown: React.FC<filterDropdownProps> = ({options, value, onChange}) => {
     return (
-        <div className="flex items-center gap-2">
-            <select
-                className='border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600'
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-            >
-                {options.map((item) => (
-                    <option key={item} value={item}>
-                        {item}
-                    </option>
-                ))}
-            </select>
+        <div className="flex items-center">
+            <DropdownMenu>
+                <DropdownMenuTrigger className="flex justify-between border rounded-lg px-3 py-2 text-left min-w-[170px] items-center focus:outline-none">
+                    {value}
+                    <span className="ml-2">▾</span>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                    {options.map((item) => (
+                        <DropdownMenuItem
+                            key={item}
+                            onSelect={() => onChange(item)}
+                            className="cursor-pointer"
+                        >
+                            {item}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 };

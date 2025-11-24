@@ -1,8 +1,8 @@
 export function SummarySection() {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* CARD 1 */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border">
                 <div className="flex-justify-between items-center mb-3">
                     <h4 className="font-semibold">Lanjutkan Perawatan</h4>
                     <button className="text-sm text-emerald-700 dark:text-emerald-400">

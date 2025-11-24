@@ -8,7 +8,7 @@ import {
 
 export function WeatherAlertCard() {
     return (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-yellow-400 rounded-xl p-4 mb-6 text-black">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-yellow-300/80 rounded-xl p-4 shadow-sm border border-yellow-400/50">
             <div className="flex items-center gap-3">
                 <CloudHail size={40} />
                 <div>

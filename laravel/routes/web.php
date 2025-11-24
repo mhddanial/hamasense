@@ -28,9 +28,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('detect/test-result');
     })->name('detect.result');
 
+    Route::post('/detect/store', [DetectController::class, 'store'])->name('detect.store');
+
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
-    })->name('info-hama');
+    })->name('infoHama');
 });
 
 // Google OAuth

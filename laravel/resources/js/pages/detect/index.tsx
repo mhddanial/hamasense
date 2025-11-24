@@ -71,6 +71,9 @@ export default function DetectPage() {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
+  const [result, setResult] = useState<any | null>(null);
+  const [isLoadingDetect, setIsLoadingDetect] = useState(false);
+
   const onCropComplete = useCallback((_: Area, croppedArea: Area) => {
     setCroppedAreaPixels(croppedArea);
   }, []);
@@ -94,6 +97,7 @@ export default function DetectPage() {
 
     setPreviewUrl(null);
     setOriginalPreviewUrl(null);
+    setResult(null);
   };
 
   const handleFileSelected = (selectedFile: File | null) => {
@@ -232,19 +236,56 @@ export default function DetectPage() {
     }, 200);
   };
 
-  const handleDetectClick = async () => {
+  const handlePredict = async () => {
     if (!file) {
       alert("Silakan unggah atau ambil foto terlebih dahulu.");
       return;
     }
 
-    // TODO: kirim ke backend pakai Inertia / axios
-    // const formData = new FormData();
-    // formData.append("image", file);
-    // await axios.post(route("detect.store"), formData);
+    setIsLoadingDetect(true);
+    setResult(null);
+    setStatus("uploading");
+    setProgress(5);
 
-    await simulateUpload();
+    try {
+      // Menyiapkan form data: backend FastAPI mengharapkan field "File"
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const AI_URL = (window as any).AI_API_URL || "http://127.0.0.1:8000/predict";
+
+      const resp = await fetch(AI_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => null);
+        console.error("FastAPI error response:", text)
+        throw new Error("Gagal memproses gambar (server error)");
+      }
+
+      setProgress(60);
+
+      const data = await resp.json();
+      setResult(data);
+
+      setProgress(100);
+      setStatus("done");
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat mendeteksi. Cek console untuk detail");
+      setStatus("idle");
+      setProgress(0);
+    } finally {
+      setIsLoadingDetect(false);
+    }
+
   };
+  
+  const handleDetectClick = async () => {
+    await handlePredict();
+  }
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
