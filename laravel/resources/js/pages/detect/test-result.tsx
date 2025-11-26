@@ -1,3 +1,4 @@
+import { route } from "ziggy-js";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import {
@@ -21,7 +22,6 @@ import {
   Save,
   Camera,
 } from "lucide-react";
-import { detect } from "@/routes";
 import { Separator } from "@radix-ui/react-separator";
 
 // ==========================================
@@ -114,7 +114,7 @@ export default function ResultPage({ result }: Props) {
         <div className="flex flex-col gap-2">
           {/* Link kembali kita arahkan ke detect.index, pastikan route ini ada di Laravel */}
           <Link
-            href={detect()}
+            href={route("detect.index")}
             className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -174,7 +174,7 @@ export default function ResultPage({ result }: Props) {
                 </div>
 
                 <Button className="w-full" variant="default" asChild>
-                  <Link href={detect()}>
+                  <Link href={route("detect.index")}>
                     <Camera className="mr-2 h-4 w-4" />
                     Ambil Foto Ulang
                   </Link>

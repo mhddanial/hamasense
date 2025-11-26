@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class DetectController extends Controller
@@ -14,38 +15,40 @@ class DetectController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi Input
         $request->validate([
-            'image' => 'required|image|max:10240',
+            'image' => 'required|image|max:10240', // Validasi 10MB
         ]);
 
         try {
-            // 2. Ambil file dari request
             $image = $request->file('image');
-            
-            // 3. Kirim ke FastAPI (Python Service)
+            $filename = $image->getClientOriginalName() ?: 'image.jpg';
+
+            // Post ke FastAPI AI service
             $response = Http::attach(
-                'file', file_get_contents($image), $image->getClientOriginalName()
+                'file', 
+                file_get_contents($image->getRealPath()), 
+                $filename
             )->post('http://127.0.0.1:8080/predict');
 
-            // Cek jika API Python error
             if ($response->failed()) {
+                // Log error untuk debugging developer
+                \Log::error('AI Service Error: ' . $response->body());
                 return back()->withErrors(['api' => 'Gagal menghubungi layanan AI. Coba lagi nanti.']);
             }
 
             $result = $response->json();
+            $imageData = base64_encode(file_get_contents($image->getRealPath()));
+            $imageSrc = 'data:' . $image->getMimeType() . ';base64,' . $imageData;
 
-            // 4. (Opsional) Simpan ke Database History di sini
-            // DetectionHistory::create([...]);
-
-            // 5. Render Halaman Hasil dengan Data
+            // Render halaman hasil
             return Inertia::render('detect/result', [
                 'result' => $result,
-                'image_url' => null // Nanti kita handle preview di frontend atau upload ke storage jika perlu
+                'image_url' => $imageSrc 
             ]);
 
         } catch (\Exception $e) {
-            return back()->withErrors(['system' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+            \Log::error('System Error: ' . $e->getMessage());
+            return back()->withErrors(['system' => 'Terjadi kesalahan sistem.']);
         }
     }
 }

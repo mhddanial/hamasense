@@ -21,21 +21,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('dashboard');
 
-    Route::get('detect', [DetectController::class, 'index'])->name('detect');
-    Route::post('detect', [DetectController::class, 'store'])->name('detect.store');
+    Route::get('/detect', [DetectController::class, 'index'])->name('detect.index');
+    Route::post('/detect', [DetectController::class, 'store'])->name('detect.store');
 
     // Testing halaman deteksi frontend
-    Route::get('/detect-result', function () {
+    Route::get('/detect-test', function () {
         return Inertia::render('detect/test-result');
-    })->name('detect.result');
-
-    Route::post('/detect/store', [DetectController::class, 'store'])->name('detect.store');
+    });
     
     Route::get('/riwayat-deteksi', function() {
         return Inertia::render('riwayatDeteksi');
     })->name('riwayatDeteksi');
 
-    Route::get('info-hama', function () {
+    Route::get('/info-hama', function () {
         return Inertia::render('infoHama');
     })->name('infoHama');
 
