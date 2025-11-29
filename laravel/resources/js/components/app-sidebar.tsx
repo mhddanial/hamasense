@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, detect } from '@/routes';
+import { community, dashboard, detect } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Home, ScanEye, History, Bug, MessageSquare, Newspaper } from 'lucide-react';
@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Komunitas',
-        href: "/komunitas",
+        href: community(),
         icon: MessageSquare,
     },
     {

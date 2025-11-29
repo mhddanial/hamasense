@@ -23,6 +23,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('detect/index');
     })->name('detect');
 
+    Route::get('community', function () {
+        return Inertia::render('community/index');
+    })->name('community');
+
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
     })->name('info-hama');
