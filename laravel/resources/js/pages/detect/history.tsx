@@ -4,14 +4,14 @@ import FilterDropdown from '@/components/filterDropdown';
 import DetectionList from '@/components/detectionList';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { riwayatDeteksi } from '@/routes';
 import { Head } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 
 export default function RiwayatDeteksi() {
     const breadcrumbs : BreadcrumbItem[] = [
         {
             title: 'Riwayat Deteksi',
-            href: riwayatDeteksi().url,
+            href: route('detect.history'),
         },
     ]
 

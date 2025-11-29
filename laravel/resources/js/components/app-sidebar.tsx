@@ -11,12 +11,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, infoHama, riwayatDeteksi } from '@/routes';
+import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Home, ScanEye, History, Bug, MessageSquare, Newspaper } from 'lucide-react';
+import { Home, ScanEye, History, Bug, MessageSquare } from 'lucide-react';
 import AppLogo from './app-logo';
-import RiwayatDeteksi from '@/pages/riwayatDeteksi';
 
 const mainNavItems: NavItem[] = [
     {
@@ -31,23 +30,18 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Riwayat',
-        href: riwayatDeteksi(),
+        href: route('detect.history'),
         icon: History,
     },
     {
         title: 'Info Hama',
-        href: infoHama(),
+        href: route('pest.index'),
         icon: Bug,
     },
     {
         title: 'Komunitas',
-        href: "/community",
+        href: route('community.index'),
         icon: MessageSquare,
-    },
-    {
-        title: 'Artikel',
-        href: "/artikel",
-        icon: Newspaper,
     },
 ];
 

@@ -37,6 +37,8 @@ class DetectController extends Controller
             }
 
             $result = $response->json();
+            
+            // Mempersiapkan data gambar untuk ditampilkan kembali
             $imageData = base64_encode(file_get_contents($image->getRealPath()));
             $imageSrc = 'data:' . $image->getMimeType() . ';base64,' . $imageData;
 
@@ -50,5 +52,10 @@ class DetectController extends Controller
             \Log::error('System Error: ' . $e->getMessage());
             return back()->withErrors(['system' => 'Terjadi kesalahan sistem.']);
         }
+    }
+
+    public function listHistory()
+    {
+        return Inertia::render('detect/history');
     }
 }

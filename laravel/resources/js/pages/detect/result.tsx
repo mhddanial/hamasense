@@ -75,15 +75,15 @@ export default function ResultPage({ result, image_url }: Props) {
             Kembali ke Deteksi
           </Link>
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-            Laporan Analisis Tanaman
+            Hasil Analisis Tanaman
           </h1>
           <p className="text-muted-foreground">
-            Hasil diagnosa AI berdasarkan citra daun yang diunggah.
+            Berikut adalah hasil analisis berdasarkan gambar yang Anda unggah.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* KOLOM KIRI: Gambar Preview */}
+          {/* KOLOM KIRI: Gambar Preview */}  
           <div className="space-y-6 lg:col-span-1">
             <Card className="overflow-hidden border-2 border-primary/10 shadow-sm">
               <CardHeader className="bg-muted/30 pb-4">

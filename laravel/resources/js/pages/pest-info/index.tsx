@@ -5,14 +5,14 @@ import PestList from '@/components/pestList'
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
 import { Head } from '@inertiajs/react';
-import { infoHama } from '@/routes';
+import { route } from 'ziggy-js';
 
 
-export default function InfoHama() {
+export default function PestInfo() {
     const breadcrumbs : BreadcrumbItem[] = [
         {
             title: 'Info Hama',
-            href: infoHama().url,
+            href: route('pest.index')
         },
     ];
 

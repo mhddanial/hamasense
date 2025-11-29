@@ -23,19 +23,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/detect', [DetectController::class, 'index'])->name('detect.index');
     Route::post('/detect', [DetectController::class, 'store'])->name('detect.store');
+    Route::get('/detect-history', [DetectController::class, 'listHistory'])->name('detect.history');
 
-    // Testing halaman deteksi frontend
-    Route::get('/detect-test', function () {
-        return Inertia::render('detect/test-result');
-    });
-    
-    Route::get('/riwayat-deteksi', function() {
-        return Inertia::render('riwayatDeteksi');
-    })->name('riwayatDeteksi');
-
-    Route::get('/info-hama', function () {
-        return Inertia::render('infoHama');
-    })->name('infoHama');
+    Route::get('/pest-info', function () {
+        return Inertia::render('pest-info/index');
+    })->name('pest.index');
 
     Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
 });
