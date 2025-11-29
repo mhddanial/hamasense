@@ -8,12 +8,6 @@ __pycache__/
 env/
 venv/
 
-# Model artifacts / checkpoints
-*.pkl
-*.ckpt
-*.onnx
-*.tflite
-
 # TensorFlow, Keras logs
 logs/
 checkpoint/
@@ -24,10 +18,6 @@ checkpoint/
 *.pyo
 *.pyd
 __pycache__/
-
-# FastAPI / Uvicorn cache
-*.db
-*.sqlite3
 
 # dotenv / secrets
 .env

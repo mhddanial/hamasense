@@ -1,9 +1,18 @@
 # Core ML
 tensorflow==2.19.0          # sesuaikan dengan versi yang benar di environment kamu
 numpy==1.26.4               # jika TF komplain, sesuaikan numpy mengikuti rekomendasi TF
+scikit-learn==1.4.2
 
+matplotlib==3.8.4
+seaborn==0.13.2
+pandas==2.2.2
+
+
+h5py==3.11.0
+protobuf==4.25.3
+opt_einsum==3.3.0
 # Image preprocessing
-Pillow==10.3.0
+pillow==10.4.0
 
 # API
 fastapi==0.115.0
@@ -15,3 +24,7 @@ pydantic==2.8.2             # dipakai oleh FastAPI
 starlette==0.38.2
 
 google-generativeai==0.7.2
+
+
+
+

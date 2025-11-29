@@ -1,4 +1,6 @@
 import React from 'react';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface SearchBarButton {
     value: string;
@@ -7,13 +9,15 @@ interface SearchBarButton {
 
 const SearchBar: React.FC<SearchBarButton> = ({value, onChange}) => {
     return (
-        <input
-            type="text"
-            placeholder="Cari hama berdasarkan nama, nama ilmiah, atau tanaman..."
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="flex-1 border rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-green-600"
-        />
+        <div className="relative w-full">
+            <Search className="absolute left-3 top-4.5 -translate-y-1/2 text-gray-500" />
+            <Input
+                placeholder="Cari hama berdasarkan nama, nama ilmiah, atau tanaman"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="pl-12"
+            />
+        </div>
     )
 }
 

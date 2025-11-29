@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { Head } from "@inertiajs/react";
+import { useCallback, useState, useEffect } from "react";
+import { Head, useForm } from "@inertiajs/react";
 import Cropper, { type Area } from "react-easy-crop";
 import {
   Camera,
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import AppLayout from "@/layouts/app-layout";
-import { detect } from "@/routes";
+import { route } from "ziggy-js";
 import { type BreadcrumbItem } from "@/types";
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern";
 
@@ -39,7 +39,7 @@ import { Slider } from "@/components/ui/slider";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: "Deteksi",
-    href: detect().url,
+    href: route("detect.index"),
   },
 ];
 
@@ -49,12 +49,22 @@ export default function DetectPage() {
   // file aktif (dipakai untuk kirim ke backend)
   const [file, setFile] = useState<File | null>(null);
 
+  // Ganti state manual dengan useForm Inertia
+  const { data, setData, post, processing, errors, progress: uploadProgress } = useForm({
+    image: null as File | null,
+  });
+  
+  // Setiap kali user selesai crop atau upload (state 'file' berubah), update data form
+  useEffect(() => {
+    setData("image", file);
+  }, [file]);
+
   // original file & preview untuk bisa recrop dari gambar awal
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null); // preview yang ditampilkan di UI
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(
     null
-  ); // URL gambar original, dipakai sumber crop
+  );
 
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [progress, setProgress] = useState(0);
@@ -64,6 +74,9 @@ export default function DetectPage() {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  const [result, setResult] = useState<any | null>(null);
+  const [isLoadingDetect, setIsLoadingDetect] = useState(false);
 
   const onCropComplete = useCallback((_: Area, croppedArea: Area) => {
     setCroppedAreaPixels(croppedArea);
@@ -88,6 +101,7 @@ export default function DetectPage() {
 
     setPreviewUrl(null);
     setOriginalPreviewUrl(null);
+    setResult(null);
   };
 
   const handleFileSelected = (selectedFile: File | null) => {
@@ -208,36 +222,36 @@ export default function DetectPage() {
       setIsCropping(false);
     }
   };
+  
+  const handleDetectClick = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const simulateUpload = async () => {
-    if (!file) return;
-    setStatus("uploading");
-    setProgress(10);
-
-    const interval = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setStatus("done");
-          return 100;
-        }
-        return p + 10;
-      });
-    }, 200);
-  };
-
-  const handleDetectClick = async () => {
     if (!file) {
       alert("Silakan unggah atau ambil foto terlebih dahulu.");
       return;
     }
 
-    // TODO: kirim ke backend pakai Inertia / axios
-    // const formData = new FormData();
-    // formData.append("image", file);
-    // await axios.post(route("detect.store"), formData);
-
-    await simulateUpload();
+    // Reset status UI manual jika Anda masih ingin menggunakannya untuk visualisasi
+    setStatus("uploading");
+  
+    // Kirim ke controller Laravel menggunakan Inertia
+    post(route("detect.store"), { 
+      forceFormData: true,
+      onProgress: (progressEvent) => {
+        // Sinkronisasi progress bar inertia ke state local Anda (opsional)
+        if (progressEvent?.percentage) {
+          setProgress(progressEvent.percentage);
+        }
+      },
+      onSuccess: () => {
+        setStatus("done");
+      },
+      onError: (errors) => {
+        console.error("Error dari Laravel:", errors);
+        setStatus("idle");
+        alert("Gagal mendeteksi. " + (errors.image || errors.system || errors.api || "Terjadi kesalahan."));
+      },
+    });
   };
 
   return (
@@ -317,7 +331,7 @@ export default function DetectPage() {
                           <span className="rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur">
                             Preview Gambar
                           </span>
-                          <div className="flex gap-2">
+                          <div className="flex">
                             <Button
                               type="button"
                               size="icon"
@@ -331,17 +345,6 @@ export default function DetectPage() {
                               }}
                             >
                               <CropIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              className="h-8 w-8 border-white/60 bg-black/40 text-white hover:bg-black/70"
-                              onClick={() =>
-                                document.getElementById("file-input")?.click()
-                              }
-                            >
-                              <Upload className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>

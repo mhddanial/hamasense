@@ -13,11 +13,11 @@ const shortcuts = [
 
 export function ShortcutCards() {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {shortcuts.map((item) => (
                 <div
                     key={item.title}
-                    className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm hover:shadow-md transition"
+                    className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border hover:shadow-lg transition"
                 >
                     <div className="flex justify-between items-center gap-2">
                         <div>{item.icon}</div>
