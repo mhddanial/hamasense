@@ -19,41 +19,140 @@ import {
   ShieldCheck,
   Save,
   Camera,
+  AlertTriangle,
 } from "lucide-react";
+
+interface APIAdvice {
+  label: string;
+  confidence: number;
+  data: {
+    description: string;
+    symptoms: string[];
+    treatment: string[];
+    prevention: string[];
+  };
+  notes: string | null;
+}
 
 interface FastApiResult {
   source: string;
-  predicted_label: string;
-  confidence: number;
+  predicted_label: string | null;
+  confidence: number | null;
   should_abstain: boolean;
   abstain_reasons: string[];
-  entropy: number;
-  info: {
-    label: string;
-    confidence: number;
-    data: {
-      description: string;
-      symptoms: string[];
-      treatment: string[];
-      prevention: string[];
-    };
-    notes: string | null;
-  };
+  entropy: number | null;
+  info: APIAdvice | null;
 }
 
 interface Props {
-  result: FastApiResult;
+  result: FastApiResult | null;
+  error: string | null;
+  abstain_reasons?: string[];
   image_url: string | null;
 }
 
-export default function ResultPage({ result, image_url }: Props) {
-  // Ambil data utama dari object 'info'
-  const { label, data: advice } = result.info;
-  
-  // Format confidence (0.999 -> 100)
+export default function ResultPage({ result, error, abstain_reasons, image_url }: Props) {
+  const isAbstain =
+    error ||
+    !result ||
+    result.should_abstain ||
+    result.confidence === null ||
+    result.predicted_label === null;
+
+  // Jika abstain → tampilkan UI fallback error
+  if (isAbstain) {
+    return (
+      <AppLayout breadcrumbs={[{ title: "Hasil Deteksi", href: "#" }]}>
+        <Head title="Gagal Mendeteksi" />
+        
+        <div className="flex flex-col gap-6 p-4 md:px-12 md:py-8">
+          
+          {/* HEADER */}
+          <Link
+            href={route("detect.index")}
+            className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kembali ke Deteksi
+          </Link>
+
+          <h1 className="text-2xl font-bold">Hasil Tidak Dapat Dipastikan</h1>
+          <p className="text-muted-foreground max-w-xl">
+            Sistem tidak dapat memastikan jenis penyakit atau hama pada gambar ini.
+            Silakan unggah gambar yang lebih jelas atau ambil foto ulang.
+          </p>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            
+            {/* GAMBAR */}
+            <Card className="overflow-hidden border-2 border-destructive/20">
+              <CardHeader className="bg-destructive/10 pb-4">
+                <CardTitle className="text-base">Gambar yang Diunggah</CardTitle>
+              </CardHeader>
+              <div className="relative aspect-[4/3] bg-black/5">
+                {image_url ? (
+                  <img
+                    src={image_url}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <Leaf className="w-12 h-12 opacity-20 mb-2" />
+                    <span className="text-xs">Gambar tidak tersedia</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* INFO ERROR */}
+            <Card className="lg:col-span-2 border-l-4 border-l-red-500">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2 text-red-700">
+                  <AlertTriangle className="w-5 h-5" />
+                  Analisis Tidak Dapat Dilanjutkan
+                </CardTitle>
+                <CardDescription>
+                  Berikut beberapa kemungkinan penyebab:
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <ul className="space-y-2">
+                  {(abstain_reasons || result?.abstain_reasons || []).map((r, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <div className="mt-1.5 h-2 w-2 rounded-full bg-red-400"></div>
+                      {r}
+                    </li>
+                  ))}
+
+                  {/* Jika API error general */}
+                  {error && (
+                    <li className="text-sm text-muted-foreground italic">{error}</li>
+                  )}
+                </ul>
+
+                <Button
+                  className="mt-6 w-full bg-primary"
+                  asChild
+                >
+                  <Link href={route("detect.index")}>
+                    <Camera className="mr-2 h-4 w-4" />
+                    Coba Lagi
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+
+  const { label, data: advice } = result.info!;
   const confidencePercent = Math.round((result.confidence || 0) * 100);
 
-  // Helper warna progress bar
   const getProgressColor = (score: number) => {
     if (score >= 80) return "bg-primary";
     if (score >= 50) return "bg-yellow-500";

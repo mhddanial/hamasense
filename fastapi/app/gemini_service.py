@@ -130,8 +130,8 @@ async def get_gemini_advice(
     
     # Bersihkan nama model jika user hanya menulis "gemini-2.0-flash" tanpa "models/"
     if not env_model.startswith("models/") and "gemini" in env_model:
-         # Biarkan library menangani aliasing, atau force prefix jika perlu
-         pass
+        # Biarkan library menangani aliasing, atau force prefix jika perlu
+        pass
 
     # --- SAFETY SETTINGS: FORMAT SDK ENUM (WAJIB UNTUK GEMINI 2.0/2.5) ---
     # Menggunakan Object Enum memastikan setting ini dipahami oleh server Google

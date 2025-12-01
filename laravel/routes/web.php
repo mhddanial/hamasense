@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DetectController;
 use App\Http\Controllers\CommunityPostController;
+use App\Http\Controllers\DashboardController;
 
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -15,23 +16,19 @@ Route::get('/articles/{slug}', [HomeController::class, 'articleShow'])->name('ar
 
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard', [
-            'user' => Auth::user(),
-        ]);
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/weather-location', [DashboardController::class, 'updateWeatherByGPS'])
+    ->name('weather.update-location');
 
     Route::get('/detect', [DetectController::class, 'index'])->name('detect.index');
     Route::post('/detect', [DetectController::class, 'store'])->name('detect.store');
     Route::get('/detect-history', [DetectController::class, 'listHistory'])->name('detect.history');
 
-    Route::get('community', function () {
-        return Inertia::render('community/index');
-    })->name('community');
+    Route::get('/pest-info', function () {
+        return Inertia::render('pest-info/index');
+    })->name('pest.index');
 
-    Route::get('info-hama', function () {
-        return Inertia::render('infoHama');
-    })->name('info-hama');
+    Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
 });
 
 // Google OAuth
@@ -41,3 +38,5 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
+
+
