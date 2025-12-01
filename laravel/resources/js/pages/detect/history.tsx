@@ -7,7 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 
-export default function RiwayatDeteksi() {
+export default function DetectionHistory() {
     const breadcrumbs : BreadcrumbItem[] = [
         {
             title: 'Riwayat Deteksi',
@@ -72,10 +72,9 @@ export default function RiwayatDeteksi() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Riwayat Deteksi"/>
             <div className="flex min-h-screen w-full bg-[#F4F5F7]">
-
-                <main className="flex-1 p-8 overflow-y-auto">
+                <main className="flex-1 p-5 overflow-y-auto">
                     <div className="max-w-6xl mx-auto">
-                        <h1 className="text-2xl font-bold">Riwayat Detesi</h1>
+                        <h1 className="text-2xl font-bold">Riwayat Deteksi</h1>
                         <p className="flex text-gray-600 mb-10">
                             Temukan riwayat perawatan dari tanaman anda
                         </p>

@@ -135,7 +135,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                 {/* Efek Glow Background */}
                 <div className="absolute top-0 right-0 -mr-6 -mt-6 h-32 w-32 rounded-full bg-emerald-100/40 blur-3xl transition-all group-hover:bg-emerald-200/40" />
                 
-                <CardContent className="p-5 flex flex-col justify-between h-full relative z-10">
+                <CardContent className="flex flex-col justify-between relative z-10">
                     
                     {/* Header: Lokasi & Tombol GPS */}
                     <div className="flex justify-between items-start">
@@ -218,7 +218,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
             </Card>
 
             {/* KANAN: Analisa Risiko & Rekomendasi (8 Kolom) */}
-            <div className="md:col-span-8 flex flex-col gap-4">
+            <div className="md:col-span-8 gap-4 space-y-3">
                 
                 {/* Alert Status Risiko */}
                 <Alert className={cn("flex-1 flex flex-col justify-center border shadow-sm", riskStyles[weather.risk_level])}>
@@ -239,7 +239,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
 
                 {/* Card Rekomendasi AI */}
                 <Card className="bg-white border border-slate-200 shadow-sm">
-                    <CardContent className="p-5 flex gap-4 items-start">
+                    <CardContent className="flex gap-4 items-start">
                         <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 shrink-0">
                             <Bug className="h-6 w-6" />
                         </div>

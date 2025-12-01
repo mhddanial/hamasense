@@ -99,7 +99,7 @@ export default function Dashboard({ user, weather }: DashboardProps) {
                 <div className="relative flex-1 overflow-visible rounded-xl">
                     <div className="space-y-8">
                         {/* --- Widget cuaca --- */}
-                        <section>
+                        <section className="w-full">
                             <div className="mb-3 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold tracking-tight">Kondisi Cuaca Saat Ini</h3>
                             </div>
