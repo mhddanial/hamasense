@@ -1,36 +1,19 @@
-    import React, { useState } from "react";
-import { Head, Link } from "@inertiajs/react";
+import React, { useState } from 'react';
+import { Search, Plus, Heart, MessageSquare, Flag, Bookmark, MoreHorizontal, TrendingUp, Clock, Award } from 'lucide-react';
+import { Head } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
-import {
-  Search,
-  Plus,
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
-  MapPin,
-  MoreHorizontal,
-  BadgeCheck,
-  TrendingUp,
-  Users,
-  MessageSquare,
-  Filter,
-  Tag,
-} from "lucide-react";
+import { type BreadcrumbItem } from "@/types";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardFooter,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -38,326 +21,419 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// ==========================================
-// 1. DUMMY DATA (Untuk Preview Tampilan)
-// ==========================================
-const POSTS = [
+interface User {
+  id: number;
+  name: string;
+  avatar: string;
+  role?: string;
+}
+
+interface Post {
+  id: number;
+  author: User;
+  timestamp: string;
+  category: string;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+  isBookmarked: boolean;
+}
+
+interface TopContributor {
+  id: number;
+  name: string;
+  avatar: string;
+  posts: number;
+  likes: number;
+  comments: number;
+  score: number;
+}
+
+const breadcrumbs: BreadcrumbItem[] = [
   {
-    id: 1,
-    user: {
-      name: "Budi Hartono",
-      username: "@budipetani",
-      avatar: "https://i.pravatar.cc/150?u=budi",
-      verified: true,
-      location: "Malang, Jawa Timur",
-    },
-    type: "share", // share | ask
-    time: "2 jam yang lalu",
-    content:
-      "Selamat pagi teman-teman! Kemarin saya berhasil mengatasi serangan kutu daun di tanaman tomat menggunakan campuran sabun dan minyak nimba. Hasil sangat memuaskan dalam 3 hari! Ada yang pernah mencoba metode organik lainnya?",
-    image: "/images/tomato_early_blight_0026.JPG", // Pakai gambar yg ada di public folder anda
-    tags: ["organik", "kutu-daun", "tomat", "tips"],
-    stats: { likes: 24, comments: 8, shares: 3 },
-    isLiked: false,
-  },
-  {
-    id: 2,
-    user: {
-      name: "Sari Indrawati",
-      username: "@sarigarden",
-      avatar: "https://i.pravatar.cc/150?u=sari",
-      verified: false,
-      location: "Bandung, Jawa Barat",
-    },
-    type: "ask",
-    time: "4 jam yang lalu",
-    content:
-      "Bantuan dong teman-teman! Tanaman cabai saya daunnya menguning dan ada bintik-bintik putih. Sudah 1 minggu tapi belum membaik. Kira-kira hama apa ya? Dan bagaimana cara mengatasinya?",
-    image: null,
-    tags: ["cabai", "help", "daun-kuning"],
-    stats: { likes: 12, comments: 15, shares: 2 },
-    isLiked: true,
+    title: "Komunitas",
+    href: "/komunitas",
   },
 ];
 
-const CONTRIBUTORS = [
-  { rank: 1, name: "Budi Hartono", posts: 45, likes: 234, avatar: "https://i.pravatar.cc/150?u=budi" },
-  { rank: 2, name: "Ahmad Fauzi", posts: 38, likes: 189, avatar: "https://i.pravatar.cc/150?u=ahmad" },
-  { rank: 3, name: "Sari Indrawati", posts: 29, likes: 156, avatar: "https://i.pravatar.cc/150?u=sari" },
-  { rank: 4, name: "Rina Susanti", posts: 24, likes: 134, avatar: "https://i.pravatar.cc/150?u=rina" },
-];
+export default function KomunitasPage() {
+  const [activeTab, setActiveTab] = useState<'trending' | 'terbaru' | 'mengikuti'>('trending');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-const TRENDING_TAGS = [
-  "organik", "tomat", "tips", "cabai", "kutu-daun", "pestisida", "ai", "teknologi"
-];
+  const [posts, setPosts] = useState<Post[]>([
+    {
+      id: 1,
+      author: {
+        id: 1,
+        name: 'Andi Prasetyo',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Andi',
+        role: 'Ahli'
+      },
+      timestamp: '5 jam yang lalu',
+      category: 'Budidaya Sayuran',
+      content: 'Selamat pagi, teman-teman! Beberapa hari lalu tanaman cabai saya sempat terserang hama thrips yang menyebabkan daun menggulung dan layu. Saya mencoba metode organik dengan semprotan bawang putih dan daun cair alami setiap pagi selama 4 hari. Hasilnya cukup efektif — daun baru tumbuh sehat kembali dan bunga mulai bermunculan lagi 🌱',
+      image: 'https://images.unsplash.com/photo-1583846112476-f60b035e2a33?w=600&q=80',
+      likes: 1200,
+      comments: 45,
+      isLiked: false,
+      isBookmarked: false
+    },
+    {
+      id: 2,
+      author: {
+        id: 2,
+        name: 'Siti Rahmawati',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti',
+      },
+      timestamp: '2 jam yang lalu',
+      category: 'Tips & Trik',
+      content: 'Tips untuk pemula yang mau mulai berkebun: Mulai dari tanaman yang mudah seperti kangkung atau bayam. Pastikan media tanam gembur dan kaya nutrisi. Siram secara teratur tapi jangan sampai becek. Letakkan di tempat yang cukup sinar matahari. Selamat mencoba! 🌿',
+      likes: 856,
+      comments: 32,
+      isLiked: true,
+      isBookmarked: false
+    },
+    {
+      id: 3,
+      author: {
+        id: 3,
+        name: 'Budi Santoso',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi',
+      },
+      timestamp: '1 hari yang lalu',
+      category: 'Hama & Penyakit',
+      content: 'Ada yang pernah mengalami daun tomat menguning dan kering? Saya sudah coba berbagai cara tapi belum ada perbaikan. Mohon saran dari para ahli di sini. Terima kasih sebelumnya!',
+      image: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=600&q=80',
+      likes: 432,
+      comments: 28,
+      isLiked: false,
+      isBookmarked: true
+    }
+  ]);
 
-// ==========================================
-// 2. KOMPONEN: POST CARD
-// ==========================================
-const PostCard = ({ post }: { post: typeof POSTS[0] }) => {
+  const topContributors: TopContributor[] = [
+    {
+      id: 1,
+      name: 'Andi Prasetyo',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Andi',
+      posts: 45,
+      likes: 2800,
+      comments: 1200,
+      score: 300
+    },
+    {
+      id: 2,
+      name: 'Siti Rahmawati',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti',
+      posts: 38,
+      likes: 2100,
+      comments: 980,
+      score: 255
+    },
+    {
+      id: 3,
+      name: 'Rizky Fadillah',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rizky',
+      posts: 32,
+      likes: 1800,
+      comments: 756,
+      score: 200
+    },
+    {
+      id: 4,
+      name: 'Lina Marlina',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lina',
+      posts: 28,
+      likes: 1500,
+      comments: 654,
+      score: 150
+    },
+    {
+      id: 5,
+      name: 'Dewi Kartikasari',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dewi',
+      posts: 24,
+      likes: 1200,
+      comments: 543,
+      score: 130
+    }
+  ];
+
+  const handleLike = (postId: number) => {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          isLiked: !post.isLiked,
+          likes: post.isLiked ? post.likes - 1 : post.likes + 1
+        };
+      }
+      return post;
+    }));
+  };
+
+  const handleBookmark = (postId: number) => {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return { ...post, isBookmarked: !post.isBookmarked };
+      }
+      return post;
+    }));
+  };
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'k';
+    }
+    return num.toString();
+  };
+
   return (
-    <Card className="mb-4 border-sidebar-border/60 shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
-        <div className="flex gap-3">
-          <Avatar>
-            <AvatarImage src={post.user.avatar} alt={post.user.name} />
-            <AvatarFallback>{post.user.name[0]}</AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm">{post.user.name}</span>
-              {post.user.verified && (
-                <BadgeCheck className="h-4 w-4 text-blue-500" fill="currentColor" color="white" />
-              )}
-              <span className="text-muted-foreground text-xs">{post.user.username}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-              <span className="flex items-center gap-1">
-                 <MapPin className="h-3 w-3" /> {post.user.location}
-              </span>
-              <span>•</span>
-              <span>{post.time}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-            {post.type === 'share' ? (
-                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200">
-                    <Share2 className="w-3 h-3 mr-1" /> Berbagi
-                 </Badge>
-            ) : (
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-orange-200">
-                    <MessageSquare className="w-3 h-3 mr-1" /> Bertanya
-                 </Badge>
-            )}
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-            </Button>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pb-3 space-y-3">
-        <p className="text-sm leading-relaxed whitespace-pre-line text-foreground/90">
-          {post.content}
-        </p>
-        
-        {post.image && (
-          <div className="rounded-lg overflow-hidden border bg-muted/30">
-             {/* Simulasi Image Error Handling agar tidak pecah */}
-             <img 
-                src={post.image} 
-                alt="Post attachment" 
-                className="w-full object-cover max-h-[400px]"
-                onError={(e) => {
-                    e.currentTarget.src = "https://placehold.co/600x400?text=Gambar+Postingan";
-                }}
-             />
-          </div>
-        )}
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Komunitas" />
 
-        <div className="flex flex-wrap gap-2 pt-1">
-          {post.tags.map((tag) => (
-            <span key={tag} className="text-xs font-medium text-emerald-600 hover:underline cursor-pointer">
-              #{tag}
-            </span>
+      <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 md:px-12">
+        {/* Header Section */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+            Komunitas
+          </h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Berbagi pengalaman, bertanya, dan berdiskusi dengan sesama petani dan pecinta tanaman di seluruh Indonesia.
+          </p>
+        </div>
+
+        {/* Action Bar */}
+        <div className="flex flex-col gap-3 md:flex-row">
+          <Button size="sm" className="md:w-auto w-full">
+            <Plus className="mr-2 h-4 w-4" />
+            Buat Postingan
+          </Button>
+
+          <div className="flex flex-1 gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Cari postingan, pengguna, atau topik..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                <SelectItem value="budidaya">Budidaya Sayuran</SelectItem>
+                <SelectItem value="tips">Tips & Trik</SelectItem>
+                <SelectItem value="hama">Hama & Penyakit</SelectItem>
+                <SelectItem value="pupuk">Pemupukan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Tabs Navigation */}
+        <div className="flex gap-1 border-b border-sidebar-border">
+          {[
+            { key: 'trending', label: 'Trending', icon: TrendingUp },
+            { key: 'terbaru', label: 'Terbaru', icon: Clock },
+            { key: 'mengikuti', label: 'Mengikuti', icon: Award }
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+              {activeTab === tab.key && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+              )}
+            </button>
           ))}
         </div>
-      </CardContent>
 
-      <CardFooter className="pt-2 pb-3 border-t flex justify-between">
-         <div className="flex gap-4">
-            <Button variant="ghost" size="sm" className={`gap-1.5 px-2 ${post.isLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground'}`}>
-                <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                <span className="text-xs">{post.stats.likes}</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-xs">{post.stats.comments}</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
-                <Share2 className="h-4 w-4" />
-                <span className="text-xs">{post.stats.shares}</span>
-            </Button>
-         </div>
-         <Button variant="ghost" size="sm" className="h-8 w-8 px-0 text-muted-foreground">
-             <Bookmark className="h-4 w-4" />
-         </Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
-// ==========================================
-// 3. MAIN PAGE
-// ==========================================
-export default function CommunityPage() {
-  const [activeTab, setActiveTab] = useState("trending");
-
-  return (
-    <AppLayout breadcrumbs={[{ title: "Komunitas Petani", href: "/community" }]}>
-      <Head title="Komunitas Petani Indonesia" />
-
-      <div className="flex flex-col gap-6 p-4 md:px-12 max-w-7xl mx-auto w-full">
-        
-        {/* HEADER SECTION */}
-        <div className="flex flex-col gap-1">
-             <h1 className="text-2xl font-bold tracking-tight text-foreground">Komunitas Petani</h1>
-             <p className="text-muted-foreground text-sm">Berbagi pengalaman, tips, dan solusi bersama sesama petani Indonesia.</p>
-        </div>
-
-        {/* SEARCH & ACTION BAR */}
-        <div className="flex flex-col md:flex-row gap-3 items-center sticky top-0 z-10 bg-background/95 backdrop-blur py-2">
-             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white w-full md:w-auto shadow-md">
-                <Plus className="mr-2 h-4 w-4" /> Buat Postingan
-             </Button>
-             <div className="relative flex-1 w-full">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Cari postingan, pengguna, atau tag..."
-                  className="pl-9 w-full bg-background border-muted-foreground/20 focus:border-emerald-500"
-                />
-             </div>
-             <Select defaultValue="all">
-                <SelectTrigger className="w-full md:w-[180px]">
-                   <div className="flex items-center gap-2">
-                       <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-                       <SelectValue placeholder="Kategori" />
-                   </div>
-                </SelectTrigger>
-                <SelectContent>
-                   <SelectItem value="all">Semua Kategori</SelectItem>
-                   <SelectItem value="share">Tips & Trik</SelectItem>
-                   <SelectItem value="ask">Tanya Jawab</SelectItem>
-                   <SelectItem value="news">Berita Tani</SelectItem>
-                </SelectContent>
-             </Select>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* LEFT CONTENT (FEED) - 8 COLS */}
-            <div className="lg:col-span-8 w-full">
-                 <Tabs defaultValue="trending" className="w-full" onValueChange={setActiveTab}>
-                    <TabsList className="mb-4 bg-muted/50 p-1">
-                        <TabsTrigger value="trending" className="flex-1">Trending</TabsTrigger>
-                        <TabsTrigger value="latest" className="flex-1">Terbaru</TabsTrigger>
-                        <TabsTrigger value="following" className="flex-1">Mengikuti</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="trending" className="space-y-4 min-h-[500px]">
-                        {POSTS.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                    </TabsContent>
-                    <TabsContent value="latest">
-                        <div className="py-8 text-center text-muted-foreground text-sm">Belum ada postingan terbaru.</div>
-                    </TabsContent>
-                    <TabsContent value="following">
-                         <div className="py-8 text-center text-muted-foreground text-sm">Anda belum mengikuti siapapun.</div>
-                    </TabsContent>
-                 </Tabs>
-            </div>
-
-            {/* RIGHT SIDEBAR - 4 COLS */}
-            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-20">
-                
-                {/* 1. STATISTIK KOMUNITAS */}
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Users className="h-4 w-4 text-emerald-600" /> Statistik Komunitas
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                         <div className="flex justify-between items-center text-sm">
-                             <span className="text-muted-foreground">Total Anggota</span>
-                             <span className="font-semibold">12,847</span>
-                         </div>
-                         <Separator />
-                         <div className="flex justify-between items-center text-sm">
-                             <span className="text-muted-foreground">Postingan Hari Ini</span>
-                             <span className="font-semibold">234</span>
-                         </div>
-                         <Separator />
-                         <div className="flex justify-between items-center text-sm">
-                             <span className="text-muted-foreground">Online Sekarang</span>
-                             <span className="font-semibold text-emerald-600">1,892</span>
-                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* 2. TOP CONTRIBUTOR */}
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4 text-emerald-600" /> Kontributor Teratas
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {CONTRIBUTORS.map((user) => (
-                             <div key={user.rank} className="flex items-center gap-3">
-                                 <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${
-                                     user.rank === 1 ? 'bg-emerald-500' : 
-                                     user.rank === 2 ? 'bg-emerald-400' : 
-                                     user.rank === 3 ? 'bg-emerald-300' : 'bg-gray-300'
-                                 }`}>
-                                     {user.rank}
-                                 </div>
-                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={user.avatar} />
-                                    <AvatarFallback>{user.name[0]}</AvatarFallback>
-                                 </Avatar>
-                                 <div className="flex-1 overflow-hidden">
-                                     <p className="text-sm font-medium truncate">{user.name}</p>
-                                     <p className="text-[10px] text-muted-foreground">{user.posts} posts • {user.likes} likes</p>
-                                 </div>
-                             </div>
-                        ))}
-                    </CardContent>
-                </Card>
-
-                {/* 3. TRENDING TAGS */}
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Tag className="h-4 w-4" /> Tag Trending
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                            {TRENDING_TAGS.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-emerald-100 hover:text-emerald-800 transition-colors">
-                                    #{tag}
-                                </Badge>
-                            ))}
+        {/* Main Content Grid */}
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Posts Feed - Left Column (2/3) */}
+          <div className="md:col-span-2 flex flex-col gap-4">
+            {posts.map(post => (
+              <Card key={post.id} className="border-sidebar-border/70 dark:border-sidebar-border overflow-hidden">
+                {/* Post Header */}
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={post.author.avatar} alt={post.author.name} />
+                        <AvatarFallback>{post.author.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold">{post.author.name}</h3>
+                          {post.author.role && (
+                            <Badge variant="secondary" className="text-xs">
+                              {post.author.role}
+                            </Badge>
+                          )}
                         </div>
-                    </CardContent>
-                </Card>
-                
-                {/* 4. RULES */}
-                 <Card className="bg-muted/30 border-dashed">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <BadgeCheck className="h-4 w-4" /> Aturan Komunitas
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-xs text-muted-foreground">
-                        <ul className="list-disc pl-4 space-y-1">
-                            <li>Saling menghormati sesama anggota</li>
-                            <li>Berbagi informasi yang akurat</li>
-                            <li>Tidak spam atau promosi berlebihan</li>
-                            <li>Gunakan bahasa yang sopan</li>
-                        </ul>
-                        <Button variant="link" className="h-auto p-0 text-xs text-emerald-600">
-                            Baca Selengkapnya
-                        </Button>
-                    </CardContent>
-                </Card>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{post.timestamp}</span>
+                          <span>•</span>
+                          <span className="text-primary">{post.category}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button size="icon" variant="ghost" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
 
-            </div>
+                {/* Post Content */}
+                <CardContent className="space-y-3 pb-3">
+                  <p className="text-sm leading-relaxed text-foreground/90">
+                    {post.content}
+                  </p>
+
+                  {/* Post Image */}
+                  {post.image && (
+                    <div className="overflow-hidden rounded-lg">
+                      <img
+                        src={post.image}
+                        alt="Post image"
+                        className="w-full object-cover max-h-80"
+                      />
+                    </div>
+                  )}
+
+                  {/* Post Actions */}
+                  <div className="flex items-center justify-between pt-2 border-t border-sidebar-border/50">
+                    <div className="flex items-center gap-4">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleLike(post.id)}
+                        className={`gap-2 ${
+                          post.isLiked ? 'text-red-500 hover:text-red-600' : ''
+                        }`}
+                      >
+                        <Heart
+                          className="h-4 w-4"
+                          fill={post.isLiked ? 'currentColor' : 'none'}
+                        />
+                        <span className="text-xs font-medium">{formatNumber(post.likes)}</span>
+                      </Button>
+
+                      <Button size="sm" variant="ghost" className="gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="text-xs font-medium">{post.comments}</span>
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleBookmark(post.id)}
+                        className={`h-8 w-8 ${
+                          post.isBookmarked ? 'text-primary' : ''
+                        }`}
+                      >
+                        <Bookmark
+                          className="h-4 w-4"
+                          fill={post.isBookmarked ? 'currentColor' : 'none'}
+                        />
+                      </Button>
+
+                      <Button size="icon" variant="ghost" className="h-8 w-8">
+                        <Flag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Right Sidebar - Top Contributors */}
+          <div className="flex flex-col gap-4">
+            <Card className="border-sidebar-border/70 dark:border-sidebar-border sticky top-4">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Award className="h-5 w-5 text-primary" />
+                  Kontributor Teratas
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Pengguna paling aktif minggu ini
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="pb-4">
+                <ScrollArea className="pr-2">
+                  <div className="space-y-3">
+                    {topContributors.map((contributor, index) => (
+                      <div
+                        key={contributor.id}
+                        className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 cursor-pointer"
+                      >
+                        <div className="relative">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={contributor.avatar} alt={contributor.name} />
+                            <AvatarFallback>{contributor.name[0]}</AvatarFallback>
+                          </Avatar>
+                          {index < 3 && (
+                            <div className={`absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                              index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                              index === 1 ? 'bg-slate-300 text-slate-700' :
+                              'bg-orange-400 text-orange-900'
+                            }`}>
+                              {index + 1}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <h3 className="text-sm font-semibold truncate">{contributor.name}</h3>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span>{contributor.posts} post</span>
+                            <span>•</span>
+                            <span>{formatNumber(contributor.likes)} suka</span>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-primary">{contributor.score}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-3 text-xs"
+                >
+                  Lihat Semua
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </AppLayout>

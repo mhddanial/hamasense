@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
+use App\Models\DetectionHistory; // pastikan ini ada
 
 class DetectController extends Controller
 {
@@ -14,38 +16,136 @@ class DetectController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi Input
         $request->validate([
             'image' => 'required|image|max:10240',
         ]);
 
         try {
-            // 2. Ambil file dari request
             $image = $request->file('image');
-            
-            // 3. Kirim ke FastAPI (Python Service)
+            $hashedName = md5(uniqid() . time()) . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('detections', $hashedName, 'public');
+
+            // Simpan path di session untuk dipakai saat klik "Simpan Riwayat"
+            session(['uploaded_image_path' => $path]);
+
             $response = Http::attach(
-                'file', file_get_contents($image), $image->getClientOriginalName()
+                'file',
+                file_get_contents($image->getRealPath()),
+                $hashedName
             )->post('http://127.0.0.1:8080/predict');
 
-            // Cek jika API Python error
             if ($response->failed()) {
-                return back()->withErrors(['api' => 'Gagal menghubungi layanan AI. Coba lagi nanti.']);
+                \Log::error('AI Service Error: ' . $response->body());
+                return back()->withErrors([
+                    'api' => 'Server AI tidak dapat dihubungi. Coba lagi.'
+                ]);
             }
 
             $result = $response->json();
+            if (!is_array($result) || !array_key_exists('should_abstain', $result)) {
+                return Inertia::render('detect/result', [
+                    'error' => 'Hasil prediksi tidak valid atau rusak.',
+                    'image_url' => null,
+                    'result' => null
+                ]);
+            }
 
-            // 4. (Opsional) Simpan ke Database History di sini
-            // DetectionHistory::create([...]);
+            $shouldAbstain     = $result['should_abstain'] ?? true;
+            $confidence        = $result['confidence'] ?? null;
+            $predictedLabel    = $result['predicted_label'] ?? null;
+            $entropy           = $result['entropy'] ?? null;
+            $abstainReasons    = $result['abstain_reasons'] ?? [];
+            $geminiInfo        = $result['info'] ?? null;
 
-            // 5. Render Halaman Hasil dengan Data
+            if ($shouldAbstain || $predictedLabel === null || $confidence === null) {
+                return Inertia::render('detect/result', [
+                    'error' => 'Gambar tidak dapat dikenali dengan cukup akurat.',
+                    'abstain_reasons' => $abstainReasons,
+                    'entropy' => $entropy,
+                    'confidence' => $confidence,
+                    'result' => null,
+                    'image_url' => $this->encodeImage($image),
+                    'image_path' => $path,
+                ]);
+            }
             return Inertia::render('detect/result', [
-                'result' => $result,
-                'image_url' => null // Nanti kita handle preview di frontend atau upload ke storage jika perlu
+                'result' => [
+                    'label'        => $predictedLabel,
+                    'confidence'   => $confidence,
+                    'entropy'      => $entropy,
+                    'info'         => $geminiInfo,
+                ],
+                'error' => null,
+                'abstain_reasons' => $abstainReasons,
+                'image_url' => $this->encodeImage($image),
+                'image_path' => $path,
             ]);
 
+
         } catch (\Exception $e) {
-            return back()->withErrors(['system' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+            \Log::error('System Error: ' . $e->getMessage());
+            return back()->withErrors([
+                'system' => 'Terjadi kesalahan pada sistem server.'
+            ]);
         }
+    }
+
+    public function saveHistory(Request $request)
+    {
+        $path = session('uploaded_image_path');
+
+        if (!$path) {
+            return back()->withErrors(['system' => 'Gambar tidak ditemukan di sesi.']);
+        }
+
+        $request->validate([
+            'label'           => 'nullable|string',
+            'confidence'      => 'nullable|numeric',
+            'entropy'         => 'nullable|numeric',
+            'info'            => 'nullable',
+            'abstain_reasons' => 'nullable',
+            'should_abstain'  => 'boolean'
+        ]);
+
+        DetectionHistory::create([
+            'user_id'         => auth()->id(),
+            'image_path'      => $path,
+            'label'           => $request->label,
+            'confidence'      => $request->confidence,
+            'entropy'         => $request->entropy,
+            'info'            => $request->info,
+            'abstain_reasons' => $request->abstain_reasons,
+            'should_abstain'  => $request->should_abstain ?? false
+        ]);
+
+        session()->forget('uploaded_image_path');
+
+        return back()->with('success', 'Riwayat deteksi berhasil disimpan!');
+    }
+
+
+    public function listHistory()
+    {
+        $history = DetectionHistory::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        return Inertia::render('detect/history-test', [
+            'history' => $history,
+        ]);
+    }
+
+    public function showHistory($id)
+    {
+        $data = DetectionHistory::where('user_id', auth()->id())->findOrFail($id);
+        return Inertia::render('detect/history-detail', [
+            'item' => $data
+        ]);
+    }
+
+    private function encodeImage($image)
+    {
+        $imageData = base64_encode(file_get_contents($image->getRealPath()));
+        return 'data:' . $image->getMimeType() . ';base64,' . $imageData;
     }
 }

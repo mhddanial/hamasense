@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { Head } from "@inertiajs/react";
+import { useCallback, useState, useEffect } from "react";
+import { Head, useForm } from "@inertiajs/react";
 import Cropper, { type Area } from "react-easy-crop";
 import {
   Camera,
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import AppLayout from "@/layouts/app-layout";
-import { detect } from "@/routes";
+import { route } from "ziggy-js";
 import { type BreadcrumbItem } from "@/types";
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern";
 
@@ -35,12 +35,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-import { useForm } from "@inertiajs/react";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: "Deteksi",
-    href: detect().url,
+    href: route("detect.index"),
   },
 ];
 
@@ -51,16 +50,21 @@ export default function DetectPage() {
   const [file, setFile] = useState<File | null>(null);
 
   // Ganti state manual dengan useForm Inertia
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, processing, errors, progress: uploadProgress } = useForm({
     image: null as File | null,
   });
   
+  // Setiap kali user selesai crop atau upload (state 'file' berubah), update data form
+  useEffect(() => {
+    setData("image", file);
+  }, [file]);
+
   // original file & preview untuk bisa recrop dari gambar awal
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null); // preview yang ditampilkan di UI
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(
     null
-  ); // URL gambar original, dipakai sumber crop
+  );
 
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [progress, setProgress] = useState(0);
@@ -218,74 +222,37 @@ export default function DetectPage() {
       setIsCropping(false);
     }
   };
+  
+  const handleDetectClick = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const simulateUpload = async () => {
-    if (!file) return;
-    setStatus("uploading");
-    setProgress(10);
-
-    const interval = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setStatus("done");
-          return 100;
-        }
-        return p + 10;
-      });
-    }, 200);
-  };
-
-  const handlePredict = async () => {
     if (!file) {
       alert("Silakan unggah atau ambil foto terlebih dahulu.");
       return;
     }
 
-    setIsLoadingDetect(true);
-    setResult(null);
+    // Reset status UI manual jika Anda masih ingin menggunakannya untuk visualisasi
     setStatus("uploading");
-    setProgress(5);
-
-    try {
-      // Menyiapkan form data: backend FastAPI mengharapkan field "File"
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const AI_URL = (window as any).AI_API_URL || "http://127.0.0.1:8000/predict";
-
-      const resp = await fetch(AI_URL, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!resp.ok) {
-        const text = await resp.text().catch(() => null);
-        console.error("FastAPI error response:", text)
-        throw new Error("Gagal memproses gambar (server error)");
-      }
-
-      setProgress(60);
-
-      const data = await resp.json();
-      setResult(data);
-
-      setProgress(100);
-      setStatus("done");
-    } catch (err) {
-      console.error(err);
-      alert("Terjadi kesalahan saat mendeteksi. Cek console untuk detail");
-      setStatus("idle");
-      setProgress(0);
-    } finally {
-      setIsLoadingDetect(false);
-    }
-
-  };
   
-  const handleDetectClick = async () => {
-    await handlePredict();
-  }
+    // Kirim ke controller Laravel menggunakan Inertia
+    post(route("detect.store"), { 
+      forceFormData: true,
+      onProgress: (progressEvent) => {
+        // Sinkronisasi progress bar inertia ke state local Anda (opsional)
+        if (progressEvent?.percentage) {
+          setProgress(progressEvent.percentage);
+        }
+      },
+      onSuccess: () => {
+        setStatus("done");
+      },
+      onError: (errors) => {
+        console.error("Error dari Laravel:", errors);
+        setStatus("idle");
+        alert("Gagal mendeteksi. " + (errors.image || errors.system || errors.api || "Terjadi kesalahan."));
+      },
+    });
+  };
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>

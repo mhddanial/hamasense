@@ -10,6 +10,9 @@ import { register } from '@/routes';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 
 interface LoginProps {
     status?: string;
@@ -17,6 +20,14 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
+    const { props } = usePage();
+
+    useEffect(() => {
+        if (props.flash?.success) {
+            toast.success(props.flash.success);
+        }
+    }, [props.flash]);
+
     return (
         <AuthLayout
             title="Selamat Datang"
@@ -43,7 +54,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="email@example.com"
-                                    className='dark:placeholder:text-muted-foreground dark:text-background'
+                                    className={`dark:placeholder:text-muted-foreground dark:text-background
+                                    ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                                 />
                                 <InputError message={errors.email} />
                             </div>

@@ -1,4 +1,5 @@
 import { NavFooter } from '@/components/nav-footer';
+import { route } from 'ziggy-js';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -10,12 +11,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, detect, infoHama, riwayatDeteksi } from '@/routes';
+import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Home, ScanEye, History, Bug, MessageSquare, Newspaper } from 'lucide-react';
+import { Home, ScanEye, History, Bug, MessageSquare } from 'lucide-react';
 import AppLogo from './app-logo';
-import RiwayatDeteksi from '@/pages/riwayatDeteksi';
 
 const mainNavItems: NavItem[] = [
     {
@@ -25,35 +25,30 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Deteksi',
-        href: detect(),
+        href: route('detect.index'),
         icon: ScanEye,
     },
     {
         title: 'Riwayat',
-        href: riwayatDeteksi(),
+        href: route('detect.history'),
         icon: History,
     },
     {
         title: 'Info Hama',
-        href: infoHama(),
+        href: route('pest.index'),
         icon: Bug,
     },
     {
         title: 'Komunitas',
-        href: "/community",
+        href: route('community.index'),
         icon: MessageSquare,
-    },
-    {
-        title: 'Artikel',
-        href: "/artikel",
-        icon: Newspaper,
     },
 ];
 
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="offcanvas" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
