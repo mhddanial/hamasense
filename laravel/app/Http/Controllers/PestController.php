@@ -23,8 +23,6 @@ class PestController extends Controller
 
     public function show(Request $request, Pest $pest)
     {
-
-
         return Inertia::render('admin/pest/show', [
             'message' => 'testing',
             'pest' => $pest

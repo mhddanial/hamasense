@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,20 +13,22 @@ class ArticleController extends Controller
 {
     public function index()
     {
-        // $user = Auth::user();
-
-        // $articles = Article::where('writer_id', $user->id)->get();
-
         $articles = Article::all();
 
         return Inertia::render('admin/article/index', [
-            'articles' => $articles
+            'articles' => $articles->load(['category', 'writer'])
         ]);
     }
 
-    public function dashboard()
+    public function create()
     {
-        return Inertia::render('admin/article/index');
+        $articles = Article::all();
+        $categories = ArticleCategory::all();
+
+        return Inertia::render('admin/article/create', [
+            // 'articles' => $articles, 
+            'categories' => $categories
+        ]);
     }
 
     public function store(Request $request)
@@ -36,7 +39,7 @@ class ArticleController extends Controller
             $field = $request->validate([
                 'title' => 'required|string',
                 'content' => 'required|string',
-                'category' => 'required|number|min:1'
+                'category_id' => 'required|int|min:1'
             ]);
 
             $user = Auth::user();
@@ -60,6 +63,14 @@ class ArticleController extends Controller
         
     }
 
+    public function show(Request $request, Article $article)
+    {
+        return Inertia::render('admin/article/show', [
+            'article' => $article->load('category'),
+            'categories' => ArticleCategory::all() 
+        ]);
+    }
+
     public function update(Request $request, Article $article)
     {
         DB::beginTransaction();
@@ -69,7 +80,7 @@ class ArticleController extends Controller
             $field = $request->validate([
                 'title' => 'required|string',
                 'content' => 'required|string',
-                'category' => 'required|number|min:1'
+                'category_id' => 'required|int|min:1'
             ]);
 
             $updated_article = $article->update($field);

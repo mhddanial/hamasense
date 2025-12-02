@@ -52,8 +52,6 @@ class PlantTypeController extends Controller
 
     public function show(Request $request, PlantType $plant)
     {
-
-
         return Inertia::render('admin/plant/show', [
             'plant' => $plant
         ]);
@@ -67,7 +65,9 @@ class PlantTypeController extends Controller
 
         try {
             $field = $request->validate([
-                'name' => 'required|string'
+                'name' => 'required|string',
+                'detail' => 'required|string',
+                'scientific_name' => 'required|string'
             ]);
 
             $plant->update($field);
@@ -88,8 +88,10 @@ class PlantTypeController extends Controller
         try{
             $plant->delete();
 
+            DB::commit();
             return redirect('/admin/plant')->with('success', 'Berhasil menghapus data tanaman');
         } catch(\Exception $e) {
+            DB::rollback();
             return redirect('/admin/plant')->with('success', 'Gagal menghapus data tanaman: ' . $e->getMessage());
 
         }
