@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
-import { Link, usePage } from '@inertiajs/react';
-import pest from '@/routes/pest';
+import { Link, router, usePage } from '@inertiajs/react';
+import AdminLayout from '@/components/admin/layout';
+import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 
-export default function KelolaDataHama() {
+import { PageProps } from '@inertiajs/core';
+
+import { Pest } from '@/types/admin';
+
+interface Props extends PageProps {
+  pests: Pest[];
+}
+
+export default function KelolaDataHama({pests} : Props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
   const [selectedLevel, setSelectedLevel] = useState('Semua Tingkat');
 
-  const { props } = usePage();
+  const [selectedItem, setSelectedItem] = useState({
+    'id': 0,
+    'name': ''
+  });
 
-  const { pests } = props;
+  const [ deleteModal, setDeleteModal ] = useState(false);
+
   const hamaData = [
     {
       id: 1,
@@ -59,7 +72,9 @@ export default function KelolaDataHama() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <>
+
+    <div className="min-h-screen bg-gray-50 p-8 text-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -164,7 +179,10 @@ export default function KelolaDataHama() {
                         <Link href={`/admin/pest/${item.id}`} className="text-gray-600 hover:text-green-600 transition-colors">
                           <Edit2 className="w-5 h-5" />
                         </Link>
-                        <button className="text-gray-600 hover:text-red-600 transition-colors">
+                        <button onClick={() => {
+                          setSelectedItem({'id': item.id, 'name': item.name})
+                          setDeleteModal(true)
+                        }} className="text-gray-600 hover:text-red-600 transition-colors">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
@@ -172,40 +190,6 @@ export default function KelolaDataHama() {
                   </tr>
                 ))}
 
-                {/* {filteredData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.namaHama}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 italic">{item.namaIlmiah}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{item.kategori}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${item.tingkatColor}`}>
-                        {item.tingkatBahaya}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        {item.tanaman.map((tanaman, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
-                          >
-                            {tanaman}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-3">
-                        <button className="text-gray-600 hover:text-green-600 transition-colors">
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button className="text-gray-600 hover:text-red-600 transition-colors">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))} */}
               </tbody>
             </table>
           </div>
@@ -219,5 +203,22 @@ export default function KelolaDataHama() {
         </div>
       </div>
     </div>
+
+    <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
+      setDeleteModal(false)
+      setSelectedItem({'id': 0, 'name': ''});
+    }} onConfirm={() => {
+      console.log(`/admin/pest/${selectedItem.id}`)
+      router.delete(`/admin/pest/${selectedItem.id}`);
+      setDeleteModal(false)
+
+    }} itemName={selectedItem.name}/>
+    </>
   );
 }
+
+KelolaDataHama.layout = (page: React.ReactElement) => (
+  <AdminLayout page_title='pest'>
+    {page}
+  </AdminLayout>
+)

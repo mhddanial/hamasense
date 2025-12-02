@@ -1,56 +1,45 @@
 import React, { useState } from "react";
 import {SquarePen, Trash2} from 'lucide-react';
+import { Link, router, usePage } from "@inertiajs/react";
+import AdminLayout from "@/components/admin/layout";
+import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
+import { PageProps } from '@inertiajs/core';
 
-const KelolaArtikel = () => {
+import { Article } from "@/types/admin";
+
+interface Props extends PageProps {
+  articles: Article[]
+}
+
+const KelolaArtikel = ({ articles }: Props) => {
+  // search state
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Semua kategori");
   const [date, setDate] = useState("");
 
-  const articles = [
-    {
-      id: 1,
-      title: "Teknologi baru pengendalian hama cabai",
-      category: "Teknologi",
-      author: "Budi Santoso",
-      source: "pertanian.go.id",
-      date: "2025-10-10",
-      image: "https://upload.wikimedia.org/wikipedia/commons/6/69/Chili_peppers.jpg",
-    },
-    {
-      id: 2,
-      title: "Teknologi baru pengendalian hama cabai",
-      category: "Teknologi",
-      author: "Budi Santoso",
-      source: "pertanian.go.id",
-      date: "2025-10-28",
-      image: "https://upload.wikimedia.org/wikipedia/commons/6/69/Chili_peppers.jpg",
-    },
-    {
-      id: 3,
-      title: "Teknologi baru pengendalian hama cabai",
-      category: "Berita",
-      author: "Budi Santoso",
-      source: "pertanian.go.id",
-      date: "2025-10-28",
-      image: "https://upload.wikimedia.org/wikipedia/commons/6/69/Chili_peppers.jpg",
-    },
-  ];
+  // operation state
+  const [selectedItem, setSelectedItem] = useState({
+    'id': 0,
+    'name': ''
+  });
+  const [ deleteModal, setDeleteModal ] = useState(false);
 
   const filteredArticles = articles.filter((article) => {
     const matchSearch =
       article.title.toLowerCase().includes(search.toLowerCase()) ||
-      article.author.toLowerCase().includes(search.toLowerCase());
+      article.writer.name.toLowerCase().includes(search.toLowerCase());
     const matchCategory =
-      category === "Semua kategori" || article.category === category;
-    const matchDate = date === "" || article.date === date;
+      category === "Semua kategori" || article.category.name === category;
+    const matchDate = date === "" || article.created_at === date;
     return matchSearch && matchCategory && matchDate;
   });
 
   return (
+    <>
     <div className="flex-1 bg-gray-50 min-h-screen p-8">
       <div className="max-w-6xl mx-auto bg-white shadow-md rounded-2xl p-6">
-        <h1 className="text-2xl font-bold mb-2">Kelola Artikel</h1>
-        <p className="text-gray-600 mb-6">
+        <h1 className="text-2xl font-bold mb-2 text-gray-900">Kelola Artikel</h1>
+        <p className="text-gray-700 mb-6">
           Artikel yang dikurasi dari berbagai sumber ahli pertanian.
         </p>
 
@@ -60,14 +49,14 @@ const KelolaArtikel = () => {
             <input
               type="text"
               placeholder="Cari berdasarkan nama, ilmiah, atau tanaman..."
-              className="bg-transparent outline-none w-full"
+              className="bg-transparent outline-none w-full text-gray-900 placeholder:text-gray-500"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -80,14 +69,14 @@ const KelolaArtikel = () => {
 
           <input
             type="date"
-            className="border border-gray-300 rounded-lg px-3 py-2"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
 
-          <button className="bg-green-700 text-white px-5 py-2 rounded-lg hover:bg-green-800 ml-auto">
+          <Link href={'/admin/article/create'} className="bg-green-700 text-white px-5 py-2 rounded-lg hover:bg-green-800 ml-auto">
             + Tambah Artikel
-          </button>
+          </Link>
         </div>
 
         {/* Table */}
@@ -95,12 +84,12 @@ const KelolaArtikel = () => {
           <table className="w-full border-collapse">
             <thead className="bg-gray-100">
               <tr>
-                <th className="text-left px-4 py-3 w-24">Gambar</th>
-                <th className="text-left px-4 py-3">Judul</th>
-                <th className="text-left px-4 py-3">Kategori</th>
-                <th className="text-left px-4 py-3">Sumber</th>
-                <th className="text-left px-4 py-3">Tanggal</th>
-                <th className="text-center px-4 py-3">Aksi</th>
+                <th className="text-left px-4 py-3 w-24 text-gray-900 font-semibold">Gambar</th>
+                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Judul</th>
+                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Kategori</th>
+                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Sumber</th>
+                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Tanggal</th>
+                <th className="text-center px-4 py-3 text-gray-900 font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -116,15 +105,18 @@ const KelolaArtikel = () => {
                       className="w-16 h-12 rounded-md object-cover"
                     />
                   </td>
-                  <td className="px-4 py-3">{article.title}</td>
-                  <td className="px-4 py-3">{article.category}</td>
-                  <td className="px-4 py-3">{article.source}</td>
-                  <td className="px-4 py-3">{article.date}</td>
+                  <td className="px-4 py-3 text-gray-900">{article.title}</td>
+                  <td className="px-4 py-3 text-gray-900">{article.category.name}</td>
+                  <td className="px-4 py-3 text-gray-900">{article.content}</td>
+                  <td className="px-4 py-3 text-gray-900">{article.created_at}</td>
                   <td className="px-4 py-3 flex items-center justify-center gap-3">
-                    <button className="text-blue-600 hover:text-blue-800">
+                    <Link href={`/admin/article/${article.id}`} className="text-blue-600 hover:text-blue-800">
                       <SquarePen size={18} />
-                    </button>
-                    <button className="text-red-600 hover:text-red-800">
+                    </Link>
+                    <button onClick={() => {
+                      setSelectedItem({'id': article.id, 'name': article.title})
+                      setDeleteModal(true);
+                    }} className="text-red-600 hover:text-red-800">
                       <Trash2 size={18} />
                     </button>
                   </td>
@@ -133,7 +125,7 @@ const KelolaArtikel = () => {
 
               {filteredArticles.length === 0 && (
                 <tr>
-                  <td className="text-center text-gray-500 py-4">
+                  <td colSpan={6} className="text-center text-gray-700 py-4">
                     Tidak ada artikel ditemukan.
                   </td>
                 </tr>
@@ -143,7 +135,27 @@ const KelolaArtikel = () => {
         </div>
       </div>
     </div>
+            
+              
+
+    <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
+          setDeleteModal(false)
+          setSelectedItem({'id': 0, 'name': ''});
+        }} onConfirm={() => {
+          // console.log(`/admin/pest/${selectedItem.id}`);
+          router.delete(`/admin/article/${selectedItem.id}`);
+          setDeleteModal(false)
+    
+        }} itemName={selectedItem.name}/>
+    </>
   );
+  
 };
 
 export default KelolaArtikel;
+
+KelolaArtikel.layout = (page: React.ReactElement) => (
+  <AdminLayout page_title="article">
+    {page}
+  </AdminLayout>
+)
