@@ -174,7 +174,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
   router.post(
     route("detect.save"),
     {
-      label: result?.predicted_label || null,
+      label: result?.info?.label || null,
       confidence: result?.confidence || null,
       entropy: result?.entropy || null,
       info: result?.info ? JSON.stringify(result.info) : null,

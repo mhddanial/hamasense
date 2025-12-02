@@ -31,8 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('detect/history');
     })->name('detect.history.test');
 
-
-    Route::get('/detect/history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
+    Route::get('/detect-history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
 
     Route::get('/pest-info', function () {
         return Inertia::render('pest-info/index');

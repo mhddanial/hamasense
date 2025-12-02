@@ -99,7 +99,7 @@ export default function Dashboard({ user, weather }: DashboardProps) {
                 <div className="relative flex-1 overflow-visible rounded-xl">
                     <div className="space-y-8">
                         {/* --- Widget cuaca --- */}
-                        <section className="w-full">
+                        <section>
                             <div className="mb-3 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold tracking-tight">Kondisi Cuaca Saat Ini</h3>
                             </div>
@@ -115,7 +115,7 @@ export default function Dashboard({ user, weather }: DashboardProps) {
                                     key={item.title}
                                     className="group cursor-pointer transition hover:-translate-y-0.5 hover:shadow-md"
                                 >
-                                    <CardContent className="flex items-center gap-3 px-4 py-4">
+                                    <CardContent className="flex items-center gap-3 px-4 py-2">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
                                             {item.icon}
                                         </div>
@@ -149,7 +149,7 @@ export default function Dashboard({ user, weather }: DashboardProps) {
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-3 gap-4 text-center">
                                         <div>
-                                            <p className="text-xs text-muted-foreground">Total Scan</p>
+                                            <p className="text-xs text-muted-foreground">Total Deteksi</p>
                                             <p className="mt-1 text-2xl font-semibold">0</p>
                                         </div>
                                         <div>
@@ -186,7 +186,7 @@ export default function Dashboard({ user, weather }: DashboardProps) {
                                     <CardHeader>
                                         <CardTitle className="text-base font-semibold">Status Perawatan</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="flex h-[200px] flex-col items-center justify-center text-center">
+                                    <CardContent className="flex flex-col items-center justify-center text-center">
                                         <div className="rounded-full bg-muted p-3 mb-3">
                                             <Bug className="h-6 w-6 text-muted-foreground" />
                                         </div>

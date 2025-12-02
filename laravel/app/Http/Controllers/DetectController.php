@@ -137,9 +137,18 @@ class DetectController extends Controller
 
     public function showHistory($id)
     {
-        $data = DetectionHistory::where('user_id', auth()->id())->findOrFail($id);
+        $history = DetectionHistory::where('user_id', auth()->id())
+        ->findOrFail($id);
         return Inertia::render('detect/history-detail', [
-            'item' => $data
+            'item' => [
+                'id'            => $history->id,
+                'image_path'    => $history->image_path,
+                'label'         => $history->label,
+                'confidence'    => $history->confidence,
+                'entropy'       => $history->entropy,
+                'info'          => json_decode($history->info, true),
+                'created_at'    => $history->created_at->toDateTimeString(),
+            ],
         ]);
     }
 
