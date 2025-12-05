@@ -13,7 +13,7 @@ export default function AuthLayout({
 }) {
     return (
         <>
-            <Toaster richColors closeButton position="top-center" />
+            <Toaster closeButton={false} richColors={false} position="top-center" />
             <AuthLayoutTemplate title={title} description={description} {...props}>
                 {children}
             </AuthLayoutTemplate>
