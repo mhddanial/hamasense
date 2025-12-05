@@ -1,5 +1,5 @@
 import {
-  CircleCheckIcon,
+  CircleCheckBig,
   InfoIcon,
   Loader2Icon,
   OctagonXIcon,
@@ -16,11 +16,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-6 mr-4 text-emerald-600" />,
-        info: <InfoIcon className="size-6 mr-4 text-blue-500" />,
-        warning: <TriangleAlertIcon className="size-6 mr-4 text-yellow-500" />,
-        error: <OctagonXIcon className="size-6 mr-4 text-red-500" />,
-        loading: <Loader2Icon className="size-6 mr-4 animate-spin text-primary" />,
+        success: <CircleCheckBig className="size-6 text-primary px-5" />,
+        info: <InfoIcon className="size-6 text-blue-500 mr-2" />,
+        warning: <TriangleAlertIcon className="size-6 text-yellow-500 mr-2" />,
+        error: <OctagonXIcon className="size-6 text-red-500 mr-2" />,
+        loading: <Loader2Icon className="size-6 animate-spin text-primary mr-2" />,
       }}
       style={
         {

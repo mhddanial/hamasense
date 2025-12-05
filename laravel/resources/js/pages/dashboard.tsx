@@ -79,13 +79,13 @@ export default function Dashboard({ user, weather }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-hidden rounded-xl p-4 md:px-12">
+                <div className="flex h-full flex-1 flex-col gap-6 overflow-x-hidden rounded-xl p-4 md:px-12">
                 {/* --- HEADER SECTION --- */}
                 <section className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div className="space-y-1">
                         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
                             Selamat Datang, {user.name} 🙌
-                        </h1>
+                        </h1>   
                         <p className="text-sm text-muted-foreground">
                             Pantau kesehatan tanaman Anda dengan teknologi AI terdepan.
                         </p>

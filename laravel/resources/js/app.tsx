@@ -27,6 +27,8 @@ createInertiaApp<SharedData>({
     },
     progress: {
         color: '#4B5563',
+        delay: 250,
+        showSpinner: true,
     },
 });
 
