@@ -21,7 +21,7 @@ export default function HamaSenseEdit() {
   const { props } = usePage<{message: String, pest: Pest}>();
   const { message, pest } = props;
   
-  const {data, setData, submit} = useForm<Pest>({
+  const {data, setData, submit} = useForm({
     'id': pest.id,
     'name': pest.name,
     'scientific_name': pest.scientific_name, 
@@ -125,8 +125,6 @@ export default function HamaSenseEdit() {
           </div>
         </div>
       </div>
-
-      
 
       <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
         setDeleteModal(false)

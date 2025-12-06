@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
+import { AdminNotificationToast } from '@/components/admin/InformationToast';
 
 import { PageProps } from '@inertiajs/core';
 
 import { Pest } from '@/types/admin';
+import { error } from 'console';
 
 interface Props extends PageProps {
   pests: Pest[];
@@ -17,6 +19,24 @@ export default function KelolaDataHama({pests} : Props) {
   const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
   const [selectedLevel, setSelectedLevel] = useState('Semua Tingkat');
 
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  const { flash } = usePage().props;
+
+  const success = flash?.success;
+  const error = flash?.error;
+  useEffect(() => {
+
+
+    if(success){
+      setNotifications((prev) => [...prev, success])}
+    if(error){
+      setNotifications((prev) => [...prev, error])}
+    console.log(success)
+    console.log(error)
+    }
+  , [success, error]);
+  
   const [selectedItem, setSelectedItem] = useState({
     'id': 0,
     'name': ''
@@ -62,6 +82,10 @@ export default function KelolaDataHama({pests} : Props) {
       tanaman: ['Tomat', 'Kacang', 'Jagung']
     }
   ];
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  };
 
   const filteredData = hamaData.filter(item => {
     const matchesSearch = item.namaHama.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -213,6 +237,8 @@ export default function KelolaDataHama({pests} : Props) {
       setDeleteModal(false)
 
     }} itemName={selectedItem.name}/>
+
+    <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
     </>
   );
 }

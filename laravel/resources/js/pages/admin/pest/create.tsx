@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Upload, Paperclip } from 'lucide-react';
+import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Upload, Paperclip, X } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
@@ -8,10 +8,10 @@ export default function TambahHama() {
   const {data, setData, post} = useForm({
     name: '',
     scientific_name: '',
-    // kategori: '',
-    description: ''
+    description: '',
+    images: []
   });
-  const [uploadedImage, setUploadedImage] = useState(null);
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -19,37 +19,53 @@ export default function TambahHama() {
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    setData('images', files);
+    
+    // Create preview URLs for all selected files
+    const newImagePreviews = [];
+    files.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUploadedImage(reader.result);
+        newImagePreviews.push(reader.result);
+        if (newImagePreviews.length === files.length) {
+          setUploadedImages(newImagePreviews);
+        }
       };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  const removeImage = (indexToRemove) => {
+    const newImages = uploadedImages.filter((_, index) => index !== indexToRemove);
+    setUploadedImages(newImages);
+    
+    // Update form data
+    const currentFiles = Array.from(data.images);
+    const newFiles = currentFiles.filter((_, index) => index !== indexToRemove);
+    setData('images', newFiles);
   };
 
   const handleCancel = () => {
     setData({
       name: '',
       scientific_name: '',
-      // kategori: '',
-      description: ''
+      description: '',
+      images: []
     });
-    setUploadedImage(null);
+    setUploadedImages([]);
   };
 
   const create = async () => {
-    post('/admin/pest/');
+    post('/admin/pest/', {
+      forceFormData: true
+    });
   }
-
 
   return (
     <>
-
       {/* Main Content */}
       <div className="flex-1 overflow-auto text-gray-900">
-
         {/* Content */}
         <div className="p-8">
           <div className="bg-white rounded-lg shadow-sm p-8 max-w-5xl">
@@ -61,19 +77,28 @@ export default function TambahHama() {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                   <h3 className="text-lg font-semibold mb-4 text-gray-900">Upload Foto</h3>
                   
-                  {uploadedImage ? (
+                  {uploadedImages.length > 0 ? (
                     <div className="mb-4">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Preview" 
-                        className="w-full h-64 object-cover rounded-lg mb-4"
-                      />
-                      <button
-                        onClick={() => setUploadedImage(null)}
-                        className="text-sm text-red-500 hover:text-red-700"
-                      >
-                        Hapus gambar
-                      </button>
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        {uploadedImages.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={image} 
+                              alt={`Preview ${index + 1}`} 
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <button
+                              onClick={() => removeImage(index)}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {uploadedImages.length} gambar dipilih
+                      </p>
                     </div>
                   ) : (
                     <div className="mb-6">
@@ -89,12 +114,14 @@ export default function TambahHama() {
                   
                   <label className="inline-flex items-center gap-2 px-6 py-2 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors text-gray-900">
                     <Paperclip className="w-4 h-4" />
-                    <span>Pilih File</span>
+                    <span>{uploadedImages.length > 0 ? 'Tambah Gambar' : 'Pilih File'}</span>
                     <input
+                      multiple
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
+                      name="images[]"
                     />
                   </label>
                 </div>
@@ -131,20 +158,6 @@ export default function TambahHama() {
                       />
                     </div>
                   </div>
-{/* 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kategori
-                    </label>
-                    <input
-                      type="text"
-                      name="kategori"
-                      value={data.kategori}
-                      onChange={handleInputChange}
-                      placeholder="Serangga"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div> */}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -155,7 +168,7 @@ export default function TambahHama() {
                       value={data.description}
                       onChange={handleInputChange}
                       placeholder="Tubuh kecil (1-3 mm), hijau muda atau hitam, biasanya berkumpul di bawah daun atau pucuk muda."
-                      rows="5"
+                      rows={5}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                     ></textarea>
                   </div>
@@ -185,9 +198,8 @@ export default function TambahHama() {
   );
 };
 
-TambahHama.layout = (page) => (
+TambahHama.layout = (page: React.ReactElement) => (
   <AdminLayout page_title='pest'>
     {page}
   </AdminLayout>
 )
-
