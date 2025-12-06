@@ -190,4 +190,3 @@ TambahHama.layout = (page) => (
     {page}
   </AdminLayout>
 )
-

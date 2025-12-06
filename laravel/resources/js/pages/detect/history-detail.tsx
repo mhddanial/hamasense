@@ -121,9 +121,14 @@ export default function HistoryDetail({ item }: Props) {
                   Dapatkan pendampingan AI untuk memantau perkembangan tanaman Anda secara real-time.
                 </p>
 
-                <Button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold mt-2">
+                <Link
+                  href={route('cases.createFormDetection', item.id)}
+                  method="post"
+                  as="button" 
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold mt-2 inline-flex items-center justify-center rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full py-2"
+                >
                   Mulai Monitoring →
-                </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

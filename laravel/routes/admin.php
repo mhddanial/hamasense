@@ -15,13 +15,6 @@ Route::prefix('admin')->group(function () {
     Route::resource('/plant', PlantTypeController::class);
     Route::resource('/article', ArticleController::class);
     Route::resource('/article-category', ArticleCategoryController::class);
-    // Route::prefix('article')->group(function () {
-    //     Route::get('/', [ArticleController::class, 'dashboard']);
-
-    //     Route::get('/edit/{id}', [PestController::class, 'edit']);
-
-    //     Route::get('/new', [PestController::class, 'create']);
-    // });
 });
 
 Route::get('/user', [AdminController::class, 'user']);
@@ -33,4 +26,3 @@ Route::prefix('/api')->group(function () {
     Route::apiResource('/pest', PestController::class);
 
 });
-

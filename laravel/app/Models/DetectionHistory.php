@@ -6,11 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetectionHistory extends Model
 {
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
     protected $fillable = [
         'user_id',
         'image_path',
@@ -27,6 +22,11 @@ class DetectionHistory extends Model
         'info' => 'array',
         'should_abstain' => 'boolean'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function plant()
     {
