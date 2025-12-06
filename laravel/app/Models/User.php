@@ -49,4 +49,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function getPasswordSetAttribute()
+    {
+        // OAuth users (with google_id) might have a random password hash they don't know
+        // So we consider them as not having a password set
+        if (!empty($this->google_id)) {
+            return false;
+        }
+        
+        return !empty($this->password);
+    }
 }
