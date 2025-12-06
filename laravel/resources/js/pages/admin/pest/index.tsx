@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Search, Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
-import { Link, router, usePage } from '@inertiajs/react';
+import React, { useState } from 'react';
+import SearchBar from '@/components/SearchBar';
+import FilterDropdown from '@/components/filterDropdown';
+import { Plus, Edit2, Trash2, ChevronDown, Filter } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
-import { AdminNotificationToast } from '@/components/admin/InformationToast';
-
 import { PageProps } from '@inertiajs/core';
-
 import { Pest } from '@/types/admin';
 import { error } from 'console';
 
@@ -115,48 +114,17 @@ export default function KelolaDataHama({pests} : Props) {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Cari hama..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            {/* Category Filter */}
-            <div className="relative">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none bg-white"
-              >
-                <option>Semua Kategori</option>
-                <option>Serangga</option>
-                <option>Jamur</option>
-                <option>Bakteri</option>
-                <option>Virus</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            </div>
-
-            {/* Level Filter */}
-            <div className="relative">
-              <select
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none bg-white"
-              >
-                <option>Semua Tingkat</option>
-                <option>Ringan</option>
-                <option>Sedang</option>
-                <option>Berat</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            </div>
+            <SearchBar value={searchTerm} onChange={setSearchTerm}/>
+            <FilterDropdown
+              options={["Semua Kategori", "Serangga", "Jamur", "Bakteri", "Virus"]}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+            />
+            <FilterDropdown
+              options={["Semua Risiko", "Rendah", "Sedang", "Berat"]}
+              value={selectedLevel}
+              onChange={setSelectedLevel}
+            />
           </div>
         </div>
 
@@ -166,6 +134,7 @@ export default function KelolaDataHama({pests} : Props) {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Gambar Hama</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Nama Hama</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Nama Ilmiah</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Kategori</th>

@@ -125,5 +125,4 @@ class PestController extends Controller
             return redirect('admin/pest')->with('error', 'Error when deleting pest: ' . $e->getMessage());
         }
     }
-
 }

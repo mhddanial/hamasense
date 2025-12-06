@@ -71,7 +71,7 @@ const PestCard: React.FC<{pest:Pest}> = ({pest}) => {
                 </div>
             </CardContent>
             <CardFooter className="px-4 pb-4 pt-3 mt-auto">
-                <Button className="mt-3 w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white rounded-lg py-2 text-sm">
+                <Button className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/80 text-white rounded-lg py-2 text-sm">
                     <Eye />
                     Lihat Detail
                 </Button>
