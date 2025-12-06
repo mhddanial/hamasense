@@ -29,16 +29,35 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $data = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($request->remove_avatar == "1") {
+            if ($user->avatar && \Storage::disk('public')->exists($user->avatar)) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+            $user->avatar = null;
         }
 
-        $request->user()->save();
+        if ($request->hasFile('avatar')) {
+            $request->validate([
+                'avatar' => ['image', 'max:2048'],
+            ]);
 
-        return to_route('profile.edit');
+            if ($user->avatar && \Storage::disk('public')->exists($user->avatar)) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+        $user->name = $data['name'];
+        $user->save();
+
+        return back()->with('success', 'Profil berhasil diperbarui.');
     }
+
+
 
     /**
      * Delete the user's account.
