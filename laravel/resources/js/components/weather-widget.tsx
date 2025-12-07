@@ -1,7 +1,7 @@
 import { router } from "@inertiajs/react";
 import { 
     CloudRain, Droplets, Wind, MapPin, 
-    AlertTriangle, RefreshCw, Bug, Navigation 
+    AlertTriangle, RefreshCw, HandHeart, Navigation 
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -129,23 +129,18 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
 
     return (
         <div className="grid gap-4 md:grid-cols-12">
-            
             {/* KIRI: Widget Utama Cuaca (4 Kolom) */}
             <Card className="md:col-span-4 bg-gradient-to-br from-white to-emerald-50 border border-emerald-100 shadow-sm relative overflow-hidden group">
-                {/* Efek Glow Background */}
+
                 <div className="absolute top-0 right-0 -mr-6 -mt-6 h-32 w-32 rounded-full bg-emerald-100/40 blur-3xl transition-all group-hover:bg-emerald-200/40" />
-                
+
                 <CardContent className="flex flex-col justify-between relative z-10">
-                    
-                    {/* Header: Lokasi & Tombol GPS */}
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-1.5 text-emerald-800 text-sm font-bold">
                                 <MapPin className="h-4 w-4 text-emerald-600" />
                                 {weather.city}
                             </div>
-                            
-                            {/* Tombol Gunakan GPS (Ditambahkan Disini) */}
                             <button 
                                 onClick={getPreciseLocation}
                                 disabled={gettingLocation}
@@ -172,7 +167,6 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                     {/* Tampilan Suhu Besar */}
                     <div className="flex items-center gap-4 mt-6">
                         <div className="relative">
-                            {/* Glow di belakang icon */}
                             <div className="absolute inset-0 bg-yellow-200/20 blur-xl rounded-full scale-150"></div>
                             <img 
                                 src={weather.icon_url} 
@@ -193,61 +187,90 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                         </div>
                     </div>
                     
-                    {/* Detail Grid (Kelembaban & Angin) */}
-                    <div className="mt-6 grid grid-cols-2 gap-3">
+                    {/* Grid Detail (desktop only label) */}
+                    <div className="mt-2 grid grid-cols-2 gap-3">
                         <div className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">
                             <div className="p-1.5 bg-blue-50 text-blue-500 rounded-lg">
                                 <Droplets className="h-4 w-4" />
                             </div>
+
+                            {/* LABEL + VALUE */}
                             <div>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Kelembaban</p>
+                                <p className="hidden md:block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                    KELEMBABAN
+                                </p>
                                 <p className="text-sm font-bold text-slate-700">{weather.humidity}%</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">
+                        <div className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">                            
                             <div className="p-1.5 bg-slate-100 text-slate-500 rounded-lg">
                                 <Wind className="h-4 w-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Angin</p>
-                                <p className="text-sm font-bold text-slate-700">{weather.wind_speed} <span className="text-[10px] font-normal">km/j</span></p>
+                                <p className="hidden md:block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                    ANGIN
+                                </p>
+                                <p className="text-sm font-bold text-slate-700">
+                                    {weather.wind_speed} <span className="text-[10px] font-normal">km/j</span>
+                                </p>
                             </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* KANAN: Analisa Risiko & Rekomendasi (8 Kolom) */}
-            <div className="md:col-span-8 gap-4 space-y-3">
-                
+            {/* KANAN: Analisa Risiko & Rekomendasi */}
+            <div className="md:col-span-8 space-y-4">
                 {/* Alert Status Risiko */}
-                <Alert className={cn("flex-1 flex flex-col justify-center border shadow-sm", riskStyles[weather.risk_level])}>
-                    <div className="flex gap-5 items-start px-2">
-                        <div className={cn("p-3 rounded-full border shadow-sm", riskIconColors[weather.risk_level])}>
-                            <AlertTriangle className="h-6 w-6" />
-                        </div>
-                        <div className="space-y-1 pt-1">
-                            <AlertTitle className="font-bold flex items-center gap-2 text-lg">
-                                Kemungkinan Hama: {weather.risk_level === 'high' ? 'RISIKO TINGGI' : weather.risk_level === 'medium' ? 'WASPADA' : 'AMAN'}
-                            </AlertTitle>
-                            <AlertDescription className="text-sm leading-relaxed font-medium opacity-90 max-w-2xl">
-                                {weather.risk_message}
-                            </AlertDescription>
-                        </div>
+                <Alert
+                    className={cn(
+                        "flex items-start md:flex-row gap-3 rounded-xl border shadow-sm transition-all",
+                        riskStyles[weather.risk_level]
+                    )}
+                >
+                    <div
+                        className={cn(
+                            "flex p-2 items-center justify-center rounded-full shrink-0",
+                            riskIconColors[weather.risk_level]
+                        )}
+                    >
+                        <AlertTriangle className="h-5 w-5 md:h-6 md:w-6" />
+                    </div>
+
+                    <div className="space-y-1">
+                        <AlertTitle className="font-bold text-base md:text-lg">
+                            Tingkat Risiko:
+                            <span className="ml-1">
+                                {weather.risk_level === "high"
+                                    ? "RISIKO TINGGI"
+                                    : weather.risk_level === "medium"
+                                    ? "WASPADA"
+                                    : "AMAN"}
+                            </span>
+                        </AlertTitle>
+
+                        <AlertDescription className="text-xs text-slate-700 leading-relaxed">
+                            {weather.risk_message}
+                        </AlertDescription>
                     </div>
                 </Alert>
 
-                {/* Card Rekomendasi AI */}
-                <Card className="bg-white border border-slate-200 shadow-sm">
-                    <CardContent className="flex gap-4 items-start">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 shrink-0">
-                            <Bug className="h-6 w-6" />
+                {/* Card Rekomendasi */}
+                <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
+                    <CardContent className="flex gap-3 items-start p-4">
+
+                        {/* Icon */}
+                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 shrink-0">
+                            <HandHeart className="h-5 w-5 md:h-6 md:w-6" />
                         </div>
-                        <div className="flex-1 space-y-2 p-3">
-                            <h4 className="text-sm font-bold text-slate-800">
+
+                        {/* Content */}
+                        <div className="flex-1">
+                            <h4 className="font-bold text-slate-800 text-base md:text-lg">
                                 Rekomendasi Tindakan
                             </h4>
-                            <p className="text-sm text-slate-600 leading-relaxed">
+
+                            <p className="text-xs text-slate-600 leading-relaxed">
                                 {weather.recommendation}
                             </p>
                         </div>

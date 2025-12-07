@@ -109,6 +109,9 @@ export default function Dashboard({ user, weather }: DashboardProps) {
                         <Separator />
 
                         {/* --- SHORTCUTS MENU --- */}
+                        <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold tracking-tight">Pintasan Menu</h3>
+                        </div>
                         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {shortcuts.map((item) => (
                                 <Card
