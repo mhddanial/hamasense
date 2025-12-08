@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
-use App\Models\DetectionHistory; // pastikan ini ada
+use App\Models\DetectionHistory;
 
 class DetectController extends Controller
 {
@@ -28,7 +28,7 @@ class DetectController extends Controller
             // Simpan path di session untuk dipakai saat klik "Simpan Riwayat"
             session(['uploaded_image_path' => $path]);
 
-            $response = Http::attach(
+            $response = Http::timeout(120)->attach(
                 'file',
                 file_get_contents($image->getRealPath()),
                 $hashedName
@@ -37,7 +37,7 @@ class DetectController extends Controller
             if ($response->failed()) {
                 \Log::error('AI Service Error: ' . $response->body());
                 return back()->withErrors([
-                    'api' => 'Server AI tidak dapat dihubungi. Coba lagi.'
+                    'api' => 'Server AI error: ' . $response->status() . ' - ' . $response->body()
                 ]);
             }
 
@@ -85,7 +85,7 @@ class DetectController extends Controller
         } catch (\Exception $e) {
             \Log::error('System Error: ' . $e->getMessage());
             return back()->withErrors([
-                'system' => 'Terjadi kesalahan pada sistem server.'
+                'system' => 'Error: ' . $e->getMessage()
             ]);
         }
     }

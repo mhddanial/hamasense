@@ -4,11 +4,15 @@ import FilterDropdown from '@/components/filterDropdown';
 import PestList from '@/components/pestList'
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import { Pest } from '@/types/admin';
 
+interface Props {
+  pests: Pest[];
+}
 
-export default function PestInfo() {
+export default function PestInfo({ pests }: Props) {
     const breadcrumbs : BreadcrumbItem[] = [
         {
             title: 'Info Hama',
@@ -20,62 +24,30 @@ export default function PestInfo() {
     const [kategori, setKategori] = useState("Semua Kategori");
     const [risiko, setRisiko] = useState("Semua Risiko");
 
-    const pests = [
-        { 
-            id: 1,
-            nama: "Tungau Laba-laba",
-            namaIlmiah: "Tetranychidae",
-            kategori: "Tungau",
-            risiko: "Sedang",
-            gambar: "https://images.unsplash.com/photo-1611095965920-6cd727c3c1a5?q=80&w=800&auto=format&fit=crop",
-            tanaman: ["Tomat", "Paprika", "Cabai"],
-        },
-        {
-            id: 2,
-            nama: "Ulat Grayak",
-            namaIlmiah: "Spodoptera litura",
-            kategori: "Ulat",
-            risiko: "Berat",
-            gambar: "https://images.unsplash.com/photo-1615800096573-099035c157d8?q=80&w=800&auto=format&fit=crop",
-            tanaman: ["Padi", "Jagung", "Kedelai"],
-        },
-        {
-            id: 3,
-            nama: "Ulat Hijau",
-            namaIlmiah: "Plutella xylostella",
-            kategori: "Ulat",
-            risiko: "Berat",
-            gambar: "https://images.unsplash.com/photo-1524593119770-7fed202b6581?q=80&w=800&auto=format&fit=crop",
-            tanaman: ["Padi", "Jagung", "Kedelai"],
-        },
-        {
-            id: 4,
-            nama: "Belalang Hijau",
-            namaIlmiah: "Caelifera",
-            kategori: "Belalang",
-            risiko: "Berat",
-            gambar: "https://images.unsplash.com/photo-1561461195-4bcf66c7f6ed?q=80&w=800&auto=format&fit=crop",
-            tanaman: ["Padi", "Jagung", "Kedelai"],
-        },
-];
-
-
     const filteredPests = pests.filter((p) => {
         const matchSearch =
-            p.nama.toLowerCase().includes(search.toLowerCase()) ||
-            p.namaIlmiah.toLowerCase().includes(search.toLowerCase()) ||
-            p.tanaman.some((t) =>
-                t.toLowerCase().includes(search.toLowerCase())
-            );
+            p.name.toLowerCase().includes(search.toLowerCase()) ||
+            p.scientific_name.toLowerCase().includes(search.toLowerCase()) ||
+            (p.plant_types && p.plant_types.some(pt => pt.name.toLowerCase().includes(search.toLowerCase())));
 
         const matchKategori =
-            kategori === "Semua Kategori" || p.kategori === kategori;
+            kategori === "Semua Kategori" || p.category === kategori;
 
         const matchRisiko =
-            risiko === "Semua Risiko" || p.risiko === risiko;
+            risiko === "Semua Risiko" || p.risk_level === risiko;
 
         return matchSearch && matchKategori && matchRisiko;
     });
+
+    const mappedPests = filteredPests.map(p => ({
+        id: p.id,
+        nama: p.name,
+        namaIlmiah: p.scientific_name,
+        kategori: p.category,
+        risiko: p.risk_level,
+        gambar: p.image_path ? `/storage/${p.image_path}` : "https://placehold.co/800x600?text=No+Image",
+        tanaman: p.plant_types ? p.plant_types.map(pt => pt.name) : [] 
+    }));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -95,7 +67,7 @@ export default function PestInfo() {
                             <div className="flex flex-col md:flex-row gap-4 mb-6">
                                 <SearchBar value={search} onChange={setSearch} />
                                 <FilterDropdown
-                                    options={["Semua Kategori", "Serangga", "Ulat", "Tungau", "Cencorang"]}
+                                    options={["Semua Kategori", "Serangga", "Jamur", "Bakteri", "Virus"]}
                                     value={kategori}
                                     onChange={setKategori}
                                 />
@@ -106,7 +78,7 @@ export default function PestInfo() {
                                 />
                             </div>
                             {/* Pest List */}
-                            <PestList pests={filteredPests} />
+                            <PestList pests={mappedPests} />
                         </div>
 
                     </div>

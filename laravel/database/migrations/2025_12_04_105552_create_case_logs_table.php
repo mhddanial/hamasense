@@ -15,11 +15,15 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('case_id');
 
-            // Catatan kondisi tanaman hari itu
-            $table->text('condition_note')->nullable();
+            // Catatan kondisi tanaman
+            $table->text('message')->nullable();
 
             // Optional: Foto perkembangan harian
             $table->string('image_path')->nullable();
+
+            // Tambahan dari update migration
+            $table->text('ai_response')->nullable();
+            $table->string('type')->default('follow_up');
 
             $table->timestamps();
 

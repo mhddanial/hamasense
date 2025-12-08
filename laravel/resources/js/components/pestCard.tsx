@@ -29,8 +29,8 @@ const PestCard: React.FC<{pest:Pest}> = ({pest}) => {
     return (
         <Card className="border rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden p-0 gap-0">
             <img
-                src="{pest.gambar}"
-                alt="{pest.nama}"
+                src={pest.gambar}
+                alt={pest.nama}
                 className="w-full h-48 object-cover"
                 onError={(e: any) => {
                     e.target.onError = null;

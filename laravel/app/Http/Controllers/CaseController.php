@@ -56,28 +56,98 @@ class CaseController extends Controller
     public function show($id)
     {
         $case = Cases::where('user_id', auth()->id())
-            ->with(['logs', 'actions', 'ScheduledCheck'])
+            ->with(['logs' => function ($query) {
+                $query->orderBy('created_at', 'asc');
+            }, 'actions', 'ScheduledCheck'])
             ->findOrFail($id);
 
+        $now = \Carbon\Carbon::now();
+        $caseCreatedAt = \Carbon\Carbon::parse($case->created_at);
+        $daysSinceCreation = $caseCreatedAt->diffInDays($now);
+        
+        // KONSTAN BATAS
+        $TRIAL_DAYS = 3;
+        $MAX_DAILY_PROMPTS = 10;
+        $MAX_DAILY_PHOTOS = 10;
+
+        $isTrialExpired = $daysSinceCreation >= $TRIAL_DAYS;
+
+        // Menghitung penggunaan harian
+        $todayLogs = $case->logs()
+            ->whereDate('created_at', \Carbon\Carbon::today())
+            ->where('type', 'follow_up') // Hanya menghitung interaksi pengguna
+            ->get();
+
+        $dailyPromptsUsed = $todayLogs->count();
+        $dailyPhotosUsed = $todayLogs->whereNotNull('image_path')->count();
+
+        $remainingPrompts = max(0, $MAX_DAILY_PROMPTS - $dailyPromptsUsed);
+        // Pengguna hanya bisa mengunggah jika mereka memiliki kuota foto DAN kuota prompt (karena unggahan mengonsumsi 1 prompt)
+        $canUploadPhoto = ($dailyPhotosUsed < $MAX_DAILY_PHOTOS) && ($remainingPrompts > 0);
+
         return Inertia::render('continuous_care/index', [
-            'case' => $case
+            'case' => $case,
+            'quota' => [
+                'is_trial_expired' => $isTrialExpired,
+                'days_left' => max(0, $TRIAL_DAYS - $daysSinceCreation),
+                'daily_prompts_used' => $dailyPromptsUsed,
+                'daily_prompts_max' => $MAX_DAILY_PROMPTS,
+                'remaining_prompts' => $remainingPrompts,
+                'daily_photos_used' => $dailyPhotosUsed,
+                'daily_photos_max' => $MAX_DAILY_PHOTOS,
+                'can_upload_photo' => $canUploadPhoto,
+            ]
         ]);
     }
 
     public function uploadFollowUp(Request $request, $caseId)
     {
+        $case = Cases::where('user_id', auth()->id())->findOrFail($caseId);
+
+        // === QUOTA ===
+        $now = \Carbon\Carbon::now();
+        $caseCreatedAt = \Carbon\Carbon::parse($case->created_at);
+        if ($caseCreatedAt->diffInDays($now) >= 3) {
+            return back()->withErrors(['quota' => 'Masa percobaan gratis 3 hari telah habis. Silakan berlangganan.']);
+        }
+
+        $todayLogs = $case->logs()
+            ->whereDate('created_at', \Carbon\Carbon::today())
+            ->where('type', 'follow_up')
+            ->get();
+
+        $dailyPromptsUsed = $todayLogs->count();
+        $MAX_DAILY_PROMPTS = 10;
+
+        // Periksa kuota prompt (unggahan juga dihitung sebagai penggunaan prompt)
+        if ($dailyPromptsUsed >= $MAX_DAILY_PROMPTS) {
+            return back()->withErrors(['quota' => 'Kuota chat harian Anda (10x) telah habis.']);
+        }
+
+        // Jika mencoba mengunggah gambar, periksa kuota foto
+        if ($request->hasFile('image')) {
+            $dailyPhotosUsed = $todayLogs->whereNotNull('image_path')->count();
+            if ($dailyPhotosUsed >= 10) {
+                return back()->withErrors(['quota' => 'Kuota upload foto harian Anda (10x) telah habis.']);
+            }
+        }
+
         $request->validate([
-            'image' => 'required|image|max:10240',
-            'user_prompt' => 'required|string|max:1000',
+            'image' => 'nullable|image|max:10240',
+            'user_prompt' => 'nullable|string|max:1000',
         ]);
 
-        $case = Cases::where('user_id', auth()->id())
-            ->findOrFail($caseId);
+        if (!$request->hasFile('image') && !$request->input('user_prompt')) {
+             return back()->withErrors(['user_prompt' => 'Mohon sertakan foto atau pesan.']);
+        }
 
         // Simpan Foto Baru
-        $image = $request->file('image');
-        $hashed = md5(uniqid(). time()). "." . $image->getClientOriginalExtension();
-        $path = $image->storeAs('case_followups', $hashed, 'public');
+        $path = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $hashed = md5(uniqid(). time()). "." . $image->getClientOriginalExtension();
+            $path = $image->storeAs('case_followups', $hashed, 'public');
+        }
 
         // Ambil Path Foto Lama (Original)
         // Asumsi image_path di tabel cases adalah path relatif dari storage/app/public
@@ -87,19 +157,25 @@ class CaseController extends Controller
 
         // Kirim ke FastAPI (Multimodal Request)
         try {
-            // Kita kirim 2 file: file_old dan file_new
-            $response = Http::attach(
+            // kirim 2 file: file_old dan file_new (jika ada)
+            $http = Http::attach(
                 'file_old',
                 file_get_contents($oldImagePath),
                 basename($case->image_path)
-            )->attach(
-                'file_new',
-                file_get_contents($image->getRealPath()),
-                $image->getClientOriginalName()
-            )->post('http://127.0.0.1:8080/analyze-followup', [
+            );
+
+            if ($request->hasFile('image')) {
+                 $http->attach(
+                    'file_new',
+                    file_get_contents($request->file('image')->getRealPath()),
+                    $request->file('image')->getClientOriginalName()
+                );
+            }
+
+            $response = $http->post('http://127.0.0.1:8080/analyze-followup', [
                 'predicted_label' => $case->label,
                 'confidence'      => $case->confidence,
-                'user_prompt'     => $request->input('user_prompt'),
+                'user_prompt'     => $request->input('user_prompt') ?? 'Mohon analisa kondisi terkini.',
             ]);
 
             if ($response->failed()) {
@@ -115,8 +191,8 @@ class CaseController extends Controller
         // Simpan Log & Follow Up Record
         CaseLog::create([
             'case_id'     => $case->id,
-            'image_path'  => $path,
-            'message'     => 'Follow-up Analysis: ' . $request->input('user_prompt'),
+            'image_path'  => $path, // bisa null
+            'message'     => $request->input('user_prompt') ?? 'Update Foto',
             'ai_response' => json_encode($analysis),
             'type'        => 'follow_up'
         ]);

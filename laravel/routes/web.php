@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CaseController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DetectController;
+use App\Http\Controllers\PestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CommunityPostController;
 use App\Http\Controllers\Auth\GoogleAuthController;
@@ -34,9 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/detect-history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
 
-    Route::get('/pest-info', function () {
-        return Inertia::render('pest-info/index');
-    })->name('pest.index');
+    Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.userIndex');
 
     Route::get('/pest-detail', function () {
         return Inertia::render('pest-info/pestDetails');
@@ -51,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
     Route::post('/cases/create-from-detection/{historyId}', [CaseController::class, 'createFormDetection'])->name('cases.createFormDetection');
     Route::get('/cases/{id}', [CaseController::class, 'show'])->name('cases.show');
-    Route::post('/cases/{caseId}/follow-up', [CaseController::class, 'uploadFollow'])->name('cases.followUp');
+    Route::post('/cases/{caseId}/follow-up', [CaseController::class, 'uploadFollowUp'])->name('cases.followUp');
     Route::post('/cases/{caseId}/close', [CaseController::class, 'close'])->name('cases.close');
 });
 

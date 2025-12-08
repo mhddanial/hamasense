@@ -22,11 +22,12 @@ return new class extends Migration
             $table->string('pest_name')->nullable();
             $table->string('image_path')->nullable();
 
+            
             // Rekomendasi utama dari sistem
             $table->text('recommended_treatment')->nullable();
 
             // Status case
-            $table->enum('status', ['active', 'in_progress', 'resolved', 'cancelled'])->default('active');
+            $table->string('status', 50);
 
             $table->timestamps();
 

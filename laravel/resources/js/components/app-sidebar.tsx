@@ -35,7 +35,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Info Hama',
-        href: route('pest.index'),
+        href: route('pest.userIndex'),
         icon: Bug,
     },
     {

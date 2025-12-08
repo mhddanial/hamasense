@@ -48,8 +48,25 @@ export interface Article extends ArticleInput, Id, Timestamps {
 
 }
 
-export interface Pest extends PestInput, Id, Timestamps {
+export interface Pest {
+    id: number;
+    name: string;
+    scientific_name: string;
+    description: string;
+    category: string;
+    risk_level: string;
+    image_path?: string;
+    plant_types?: PlantType[];
+    pics: string[];
+    created_at?: string;
+    updated_at?: string;
+}
 
+export interface PlantType {
+    id: number;
+    name: string;
+    scientific_name: string;
+    detail: string;
 }
 
 export interface Plant extends PlantInput, Id, Timestamps {

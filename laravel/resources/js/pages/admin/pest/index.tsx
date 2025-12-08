@@ -43,54 +43,25 @@ export default function KelolaDataHama({pests} : Props) {
 
   const [ deleteModal, setDeleteModal ] = useState(false);
 
-  const hamaData = [
-    {
-      id: 1,
-      namaHama: 'Kutu Daun',
-      namaIlmiah: 'Aphidoidea',
-      kategori: 'Serangga',
-      tingkatBahaya: 'Sedang',
-      tingkatColor: 'bg-orange-100 text-orange-600',
-      tanaman: ['Tomat', 'Cabai', 'Terong']
-    },
-    {
-      id: 2,
-      namaHama: 'Thrips',
-      namaIlmiah: 'Thysanoptera',
-      kategori: 'Serangga',
-      tingkatBahaya: 'Ringan',
-      tingkatColor: 'bg-green-100 text-green-600',
-      tanaman: ['Paprika', 'Tomat', 'Mentimun']
-    },
-    {
-      id: 3,
-      namaHama: 'Ulat Grayak',
-      namaIlmiah: 'Spodoptera litura',
-      kategori: 'Serangga',
-      tingkatBahaya: 'Berat',
-      tingkatColor: 'bg-red-100 text-red-600',
-      tanaman: ['Kol', 'Sawi', 'Tomat', '+1']
-    },
-    {
-      id: 4,
-      namaHama: 'Jamur Karat',
-      namaIlmiah: 'Puccinia spp.',
-      kategori: 'Jamur',
-      tingkatBahaya: 'Sedang',
-      tingkatColor: 'bg-orange-100 text-orange-600',
-      tanaman: ['Tomat', 'Kacang', 'Jagung']
+  // Determine risk level color
+  const getRiskColor = (level: string) => {
+    switch (level) {
+      case 'Rendah': return 'bg-green-100 text-green-600';
+      case 'Sedang': return 'bg-orange-100 text-orange-600';
+      case 'Berat': return 'bg-red-100 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
     }
-  ];
+  };
 
   const removeNotification = (id) => {
     setNotifications(prev => prev.filter(notif => notif.id !== id));
   };
 
-  const filteredData = hamaData.filter(item => {
-    const matchesSearch = item.namaHama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.namaIlmiah.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'Semua Kategori' || item.kategori === selectedCategory;
-    const matchesLevel = selectedLevel === 'Semua Tingkat' || item.tingkatBahaya === selectedLevel;
+  const filteredData = pests.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.scientific_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'Semua Kategori' || item.category === selectedCategory;
+    const matchesLevel = selectedLevel === 'Semua Tingkat' || item.risk_level === selectedLevel;
     return matchesSearch && matchesCategory && matchesLevel;
   });
 
@@ -121,7 +92,7 @@ export default function KelolaDataHama({pests} : Props) {
               onChange={setSelectedCategory}
             />
             <FilterDropdown
-              options={["Semua Risiko", "Rendah", "Sedang", "Berat"]}
+              options={["Semua Tingkat", "Rendah", "Sedang", "Berat"]}
               value={selectedLevel}
               onChange={setSelectedLevel}
             />
@@ -144,29 +115,43 @@ export default function KelolaDataHama({pests} : Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {pests?.map((item) => (
+                {filteredData?.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      {item.image_path ? (
+                        <img 
+                          src={`/storage/${item.image_path}`} 
+                          alt={item.name} 
+                          className="w-16 h-16 object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
+                          <span className="text-xs">No Img</span>
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 italic">{item.scientific_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">item.kategori</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{item.category}</td>
                     <td className="px-6 py-4">
-                      
-                      sadasd`{/* <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${item.tingkatColor}`}>
-                        {item.tingkatBahaya}
-                      </span> */}
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getRiskColor(item.risk_level)}`}>
+                        {item.risk_level}
+                      </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        {/* {item.tanaman.map((tanaman, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
-                          >
-                            {tanaman}
-                          </span>
-                        ))} */}
-                      </div>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {item.plant_types && item.plant_types.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {item.plant_types.map((pt) => (
+                              <span key={pt.id} className="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs border border-blue-100">
+                                {pt.name}
+                              </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">None</span>
+                      )}
                     </td>
+                    {/* <td className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Tanaman Terserang</td> */}
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-3">
                         <Link href={`/admin/pest/${item.id}`} className="text-gray-600 hover:text-green-600 transition-colors">

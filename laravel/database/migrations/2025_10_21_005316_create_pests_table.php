@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('scientific_name');
             $table->text('description');
+            $table->string('image_path')->nullable();
+            $table->string('category')->default('Serangga');
+            $table->string('risk_level')->default('Sedang');
             $table->timestamps();
         });
     }

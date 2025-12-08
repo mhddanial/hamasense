@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Pest extends Model
 {
     protected $fillable = [
-        'name', 'description', 'scientific_name'
+        'name',
+        'description',
+        'scientific_name',
+        'image_path',
+        'category',
+        'risk_level'
     ];
 
     // hubungan ini antara pest menyebabkan
@@ -17,8 +22,13 @@ class Pest extends Model
         return $this->hasMany(PestCauseDisease::class, 'pest_id', 'id');
     }
 
-    public function plant_like()
+    public function plantTypes()
     {
-        return $this->hasMany(PlantTypePest::class, 'pest_id' , 'id');
+        return $this->belongsToMany(PlantType::class, 'plant_type_pests', 'pest_id', 'plant_type_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(PestImg::class, 'pest_id', 'id');
     }
 }
