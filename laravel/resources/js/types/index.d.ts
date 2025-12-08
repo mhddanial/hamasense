@@ -1,6 +1,8 @@
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 import { Config } from 'ziggy-js';
+import { PageProps as InertiaPageProps } from '@inertiajs/core';
+import '@inertiajs/core';
 export interface Auth {
     user: User;
 }
@@ -50,4 +52,13 @@ declare global {
         absolute?: boolean,
         config?: Config,
     ): string;
+}
+
+declare module '@inertiajs/core' {
+    interface PageProps {
+        flash?: {
+            success?: string;
+            error?: string;
+        };
+    }
 }

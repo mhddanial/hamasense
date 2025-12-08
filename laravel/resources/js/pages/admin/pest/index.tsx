@@ -1,16 +1,48 @@
 import React, { useState } from 'react';
-import { Search, Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
-import { Link, usePage } from '@inertiajs/react';
-import pest from '@/routes/pest';
+import SearchBar from '@/components/SearchBar';
+import FilterDropdown from '@/components/filterDropdown';
+import { Plus, Edit2, Trash2, ChevronDown, Filter } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import AdminLayout from '@/components/admin/layout';
+import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
+import { PageProps } from '@inertiajs/core';
+import { Pest } from '@/types/admin';
+import { error } from 'console';
 
-export default function KelolaDataHama() {
+interface Props extends PageProps {
+  pests: Pest[];
+}
+
+export default function KelolaDataHama({pests} : Props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
   const [selectedLevel, setSelectedLevel] = useState('Semua Tingkat');
 
-  const { props } = usePage();
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  const { pests } = props;
+  const { flash } = usePage().props;
+
+  const success = flash?.success;
+  const error = flash?.error;
+  useEffect(() => {
+
+
+    if(success){
+      setNotifications((prev) => [...prev, success])}
+    if(error){
+      setNotifications((prev) => [...prev, error])}
+    console.log(success)
+    console.log(error)
+    }
+  , [success, error]);
+  
+  const [selectedItem, setSelectedItem] = useState({
+    'id': 0,
+    'name': ''
+  });
+
+  const [ deleteModal, setDeleteModal ] = useState(false);
+
   const hamaData = [
     {
       id: 1,
@@ -50,6 +82,10 @@ export default function KelolaDataHama() {
     }
   ];
 
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  };
+
   const filteredData = hamaData.filter(item => {
     const matchesSearch = item.namaHama.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.namaIlmiah.toLowerCase().includes(searchTerm.toLowerCase());
@@ -59,7 +95,9 @@ export default function KelolaDataHama() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <>
+
+    <div className="min-h-screen bg-gray-50 p-8 text-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -76,48 +114,17 @@ export default function KelolaDataHama() {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Cari hama..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            {/* Category Filter */}
-            <div className="relative">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none bg-white"
-              >
-                <option>Semua Kategori</option>
-                <option>Serangga</option>
-                <option>Jamur</option>
-                <option>Bakteri</option>
-                <option>Virus</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            </div>
-
-            {/* Level Filter */}
-            <div className="relative">
-              <select
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none bg-white"
-              >
-                <option>Semua Tingkat</option>
-                <option>Ringan</option>
-                <option>Sedang</option>
-                <option>Berat</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            </div>
+            <SearchBar value={searchTerm} onChange={setSearchTerm}/>
+            <FilterDropdown
+              options={["Semua Kategori", "Serangga", "Jamur", "Bakteri", "Virus"]}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+            />
+            <FilterDropdown
+              options={["Semua Risiko", "Rendah", "Sedang", "Berat"]}
+              value={selectedLevel}
+              onChange={setSelectedLevel}
+            />
           </div>
         </div>
 
@@ -127,6 +134,7 @@ export default function KelolaDataHama() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Gambar Hama</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Nama Hama</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Nama Ilmiah</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Kategori</th>
@@ -164,7 +172,10 @@ export default function KelolaDataHama() {
                         <Link href={`/admin/pest/${item.id}`} className="text-gray-600 hover:text-green-600 transition-colors">
                           <Edit2 className="w-5 h-5" />
                         </Link>
-                        <button className="text-gray-600 hover:text-red-600 transition-colors">
+                        <button onClick={() => {
+                          setSelectedItem({'id': item.id, 'name': item.name})
+                          setDeleteModal(true)
+                        }} className="text-gray-600 hover:text-red-600 transition-colors">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
@@ -172,40 +183,6 @@ export default function KelolaDataHama() {
                   </tr>
                 ))}
 
-                {/* {filteredData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.namaHama}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 italic">{item.namaIlmiah}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{item.kategori}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${item.tingkatColor}`}>
-                        {item.tingkatBahaya}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        {item.tanaman.map((tanaman, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
-                          >
-                            {tanaman}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-3">
-                        <button className="text-gray-600 hover:text-green-600 transition-colors">
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button className="text-gray-600 hover:text-red-600 transition-colors">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))} */}
               </tbody>
             </table>
           </div>
@@ -219,5 +196,24 @@ export default function KelolaDataHama() {
         </div>
       </div>
     </div>
+
+    <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
+      setDeleteModal(false)
+      setSelectedItem({'id': 0, 'name': ''});
+    }} onConfirm={() => {
+      console.log(`/admin/pest/${selectedItem.id}`)
+      router.delete(`/admin/pest/${selectedItem.id}`);
+      setDeleteModal(false)
+
+    }} itemName={selectedItem.name}/>
+
+    <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
+    </>
   );
 }
+
+KelolaDataHama.layout = (page: React.ReactElement) => (
+  <AdminLayout page_title='pest'>
+    {page}
+  </AdminLayout>
+)

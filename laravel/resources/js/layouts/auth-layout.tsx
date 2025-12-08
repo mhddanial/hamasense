@@ -1,4 +1,6 @@
+import { Toaster } from '@/components/ui/sonner';
 import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
+
 
 export default function AuthLayout({
     children,
@@ -11,8 +13,11 @@ export default function AuthLayout({
     description: string;
 }) {
     return (
-        <AuthLayoutTemplate title={title} description={description} {...props}>
-            {children}
-        </AuthLayoutTemplate>
+        <>
+            <Toaster closeButton={true} richColors={false} position="top-center" />
+            <AuthLayoutTemplate title={title} description={description} {...props}>
+                {children}
+            </AuthLayoutTemplate>
+        </>
     );
 }

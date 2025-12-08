@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { community, dashboard, detect } from '@/routes';
+import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Home, ScanEye, History, Bug, MessageSquare } from 'lucide-react';
@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Komunitas',
-        href: community(),
+        href: route('community.index'),
         icon: MessageSquare,
     },
 ];

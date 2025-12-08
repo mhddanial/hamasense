@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pest;
+use App\Models\PestImg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -23,8 +24,6 @@ class PestController extends Controller
 
     public function show(Request $request, Pest $pest)
     {
-
-
         return Inertia::render('admin/pest/show', [
             'message' => 'testing',
             'pest' => $pest
@@ -46,19 +45,45 @@ class PestController extends Controller
             $field = $request->validate([
                 'name' => 'required|string',
                 'scientific_name' => 'required|string',
-                'description' => 'required|string'
+                'description' => 'required|string',
+                'images' => 'required|array',
+                'images.*' => 'image'
             ]);
 
             $new_pest = Pest::create($field);
 
+            $files = $request->file('images');
+
+            $images = [];
+
+            foreach ($files as $file) {
+                $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+                $images[] = [
+                    'pest_id' => $new_pest->id,
+                    'filename' => $filename 
+                ];
+                
+                $file->storeAs('images', $filename, 'public');
+            }
+            $img = PestImg::insert($images);
+
             DB::commit();
+
+            // return response()->json([
+            //     'img' => $img,
+            //     'new_pest' => $new_pest
+            // ]);
 
             return redirect('admin/pest')->with('success', 'New Pest Added Successfully!');
 
         } catch(\Exception $e) {
             DB::rollBack();
 
-            return redirect('admin/pest')->with('error', 'Error when adding new Pest data: ', $e->getMessage());
+            // return response()->json([
+            //     'e'=> $e->getMessage()
+            // ]);
+
+            return redirect('admin/pest')->with('error', 'Error when adding new Pest data: '. $e->getMessage());
 
         }
     }
@@ -100,5 +125,4 @@ class PestController extends Controller
             return redirect('admin/pest')->with('error', 'Error when deleting pest: ' . $e->getMessage());
         }
     }
-
 }

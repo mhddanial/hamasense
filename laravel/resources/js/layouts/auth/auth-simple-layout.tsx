@@ -1,6 +1,7 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import { Link } from '@inertiajs/react';
+import { Separator } from '@radix-ui/react-separator';
 import { type PropsWithChildren, useEffect, useState } from 'react';
 
 
@@ -87,6 +88,7 @@ export default function AuthSimpleLayout({
                                     {description}
                                 </p>
                             </div>
+                            
                         </div>
                         {children}
                     </div>

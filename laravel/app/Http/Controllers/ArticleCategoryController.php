@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\ArticleCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class ArticleCategoryController extends Controller
 {
     public function index()
     {
-        return response()->json([
-            'result' => ArticleCategory::all()
+        $categories = ArticleCategory::all();
+
+        return Inertia::render('admin/article_category/index', [
+            'categories' => $categories
         ]);
     }
 
@@ -27,6 +30,7 @@ class ArticleCategoryController extends Controller
             $article_cat = ArticleCategory::create($field);
 
             DB::commit();
+            return redirect('admin/article-category')->with('success', 'Article category created successfully');
             return response()->json([
                 'status' => true,
                 'message' => 'Article category created successfully',
@@ -34,6 +38,8 @@ class ArticleCategoryController extends Controller
             ]);
         } catch(\Exception $e) {
             DB::rollBack();
+            return redirect('admin/article-category')->with('error', 'Error when creating category: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
@@ -53,6 +59,8 @@ class ArticleCategoryController extends Controller
             $article_cat = $article_category->update($field);
 
             DB::commit();
+            return redirect('admin/article-category')->with('success', 'Article category updated successfully');
+
             return response()->json([
                 'status' => true,
                 'message' => 'Article created successfully',
@@ -60,6 +68,9 @@ class ArticleCategoryController extends Controller
             ]);
         } catch(\Exception $e) {
             DB::rollBack();
+
+            return redirect('admin/article-category')->with('error', 'Error when updating category: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
@@ -74,6 +85,9 @@ class ArticleCategoryController extends Controller
         try {
             $article_category->delete();
             DB::commit();
+
+            return redirect('admin/article-category')->with('success', 'Article category deleted successfully');
+
             return response()->json([
                 'status' => true,
                 'message' => 'Article created successfully',
@@ -81,6 +95,9 @@ class ArticleCategoryController extends Controller
             ]);
         } catch(\Exception $e) {
             DB::rollBack();
+
+            return redirect('admin/article-category')->with('error', 'Error when deleting category: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()

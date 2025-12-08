@@ -7,8 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class DetectionHistory extends Model
 {
     protected $fillable = [
-        'plant_id', 'confindence', 'image_path', 'disease_id'
+        'user_id',
+        'image_path',
+        'label',
+        'confidence',
+        'entropy',
+        'should_abstain',
+        'abstain_reasons',
+        'info',
     ];
+
+    protected $casts = [
+        'abstain_reasons' => 'array',
+        'info' => 'array',
+        'should_abstain' => 'boolean'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function plant()
     {

@@ -7,7 +7,7 @@ import { initializeTheme } from './hooks/use-appearance';
 import { SharedData } from './types';
 import { route as ziggyRoute } from 'ziggy-js';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Hamasense';
+const appName = import.meta.env.VITE_APP_NAME;
 
 createInertiaApp<SharedData>({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -27,6 +27,8 @@ createInertiaApp<SharedData>({
     },
     progress: {
         color: '#4B5563',
+        delay: 250,
+        showSpinner: true,
     },
 });
 

@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
-export default function Register() {
+export default function Register() {   
+    
     return (
         <AuthLayout
             title="Selamat Datang"
@@ -37,7 +38,8 @@ export default function Register() {
                                     autoComplete="name"
                                     name="name"
                                     placeholder="John Doe"
-                                    className='dark:placeholder:text-muted-foreground dark:text-background'
+                                    className={`dark:placeholder:text-muted-foreground dark:text-background
+                                    ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                                 />
                                 <InputError
                                     message={errors.name}
@@ -55,7 +57,8 @@ export default function Register() {
                                     autoComplete="email"
                                     name="email"
                                     placeholder="email@example.com"
-                                    className='dark:placeholder:text-muted-foreground dark:text-background'
+                                    className={`dark:placeholder:text-muted-foreground dark:text-background 
+                                        ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -69,8 +72,9 @@ export default function Register() {
                                     tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
-                                    placeholder="Buat katasandi"
-                                    className='dark:placeholder:text-muted-foreground dark:text-background'
+                                    placeholder="buat katasandi"
+                                    className={`dark:placeholder:text-muted-foreground dark:text-background
+                                    ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -86,10 +90,11 @@ export default function Register() {
                                     tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
-                                    placeholder="Konfirmasi katasandi"
-                                    className='dark:placeholder:text-muted-foreground dark:text-background'
+                                    placeholder="konfirmasi katasandi"
+                                    className={`dark:placeholder:text-muted-foreground dark:text-background
+                                        ${errors.password_confirmation ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                                 />
-                                <InputError
+                                <InputError 
                                     message={errors.password_confirmation}
                                 />
                             </div>
@@ -105,7 +110,7 @@ export default function Register() {
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
+                                className="w-full dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >
