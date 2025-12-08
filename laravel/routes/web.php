@@ -53,8 +53,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('pest-info/index');
     })->name('pest.index');
 
-    Route::get('/pest-detail', function () {
-        return Inertia::render('pest-info/pestDetails');
+    Route::get('/pest-info/detail', function () {
+        return Inertia::render('pest-info/detail');
     })->name('pest.detail');
 
     Route::get('/continuous-care', function() {

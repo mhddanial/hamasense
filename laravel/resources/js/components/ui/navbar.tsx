@@ -66,7 +66,9 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   });
 
   return (
-    <motion.div ref={ref} className={cn("fixed inset-x-0 top-10 z-[1000] isolate w-full", className)}>
+    <motion.div
+      className={cn("fixed inset-x-0 top-5 z-[1000] w-full", className)}
+    >
       {injectVisible(children, visible)}
     </motion.div>
   );
@@ -134,29 +136,19 @@ export const NavItems = ({ items, className, onItemClick, visible }: NavItemsPro
 
 export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
-    <motion.div
-      animate={{
-        backdropFilter: visible ? "blur(10px)" : "none",
-        boxShadow: visible
-          ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
-          : "none",
-        width: visible ? "90%" : "100%",
-        paddingRight: visible ? "12px" : "0px",
-        paddingLeft: visible ? "12px" : "0px",
-        borderRadius: visible ? "4px" : "2rem",
-        y: visible ? 20 : 0,
-      }}
-      transition={{ type: "spring", stiffness: 200, damping: 50 }}
+    <div
       className={cn(
-        "relative z-[1000] mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between px-0 py-2 lg:hidden",
+        "fixed top-0 left-0 z-[1000] w-full flex flex-col items-center justify-between px-4 py-3 lg:hidden",
         visible ? "bg-white/80 text-black" : "bg-transparent text-white",
-        className,
+        className
       )}
     >
       {injectVisible(children, !!visible)}
-    </motion.div>
+    </div>
   );
 };
+
+
 
 export const MobileNavHeader = ({ children, className, visible }: MobileNavHeaderProps) => {
   return (
@@ -166,38 +158,55 @@ export const MobileNavHeader = ({ children, className, visible }: MobileNavHeade
   );
 };
 
-export const MobileNavMenu = ({ children, className, isOpen }: MobileNavMenuProps) => {
+export const MobileNavMenu = ({ children, className, isOpen, onClose }: MobileNavMenuProps) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className={cn(
-            "absolute inset-x-0 top-16 z-[1000] flex w-full flex-col items-start justify-start gap-4 rounded-lg bg-white px-4 py-8 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]",
-            className,
-          )}
-        >
-          {children}
-        </motion.div>
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[900] bg-black/50 lg:hidden"
+          />
+
+          {/* Drawer */}
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 260, damping: 30 }}
+            className={cn(
+              "fixed top-0 right-0 h-full w-[80%] max-w-sm z-[1000] bg-white shadow-xl flex flex-col px-6 py-6 lg:hidden",
+              className
+            )}
+          >
+            {children}
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
 };
 
+
+
+
 export const MobileNavToggle = ({
-  isOpen,
-  onClick,
-  visible,
-}: {
-  isOpen: boolean;
-  onClick: () => void;
-  visible?: boolean;
-}) => {
-  const iconClass = visible ? "text-black" : "text-white";
-  return isOpen ? <IconX className={iconClass} onClick={onClick} /> : <IconMenu2 className={iconClass} onClick={onClick} />;
+    isOpen,
+    onClick,
+    visible,
+  }: {
+    isOpen: boolean;
+    onClick: () => void;
+    visible?: boolean;
+  }) => {
+    const iconClass = visible ? "text-black" : "text-white";
+    return isOpen ? <IconX className={iconClass} onClick={onClick} /> : <IconMenu2 className={iconClass} onClick={onClick} />;
 };
+
 
 export const NavbarLogo = ({ visible }: { visible?: boolean }) => {
   return (

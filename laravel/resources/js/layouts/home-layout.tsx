@@ -13,15 +13,17 @@ import { useInitials } from '@/hooks/use-initials';
 import { UserMenuContent } from '@/components/user-menu-content';
 import Footer from '@/components/ui/footer';
 import clsx from 'clsx';
+import { type User } from '@/types';
+import { IconX } from '@tabler/icons-react';
 
 type NavItem = { name: string; link: string };
 
 type HeroBg = { imageUrl?: string; overlay?: string };
 type HeroSlot = {
-  content: ReactNode;              // komponen teks/CTA hero kamu
-  size?: 'full' | 'half';          // full = 100vh, half = 50vh (default: half)
-  bg?: HeroBg;                     // background untuk hero saja
-  className?: string;              // opsional: extra class
+  content: ReactNode;              
+  size?: 'full' | 'half';          
+  bg?: HeroBg;                     
+  className?: string;              
 };
 
 type Props = {
@@ -29,12 +31,25 @@ type Props = {
     navItems: NavItem[];
     children: ReactNode;
     hero?: HeroSlot;
+    user?: User;
 };
 
-export default function HomeLayout({ title, navItems, children, hero }: Props) {
+export default function HomeLayout({ title, navItems, children, hero, user }: Props) {
     const { auth } = usePage<SharedData>().props;
-    const getInitials = useInitials();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
+    const getInitials = useInitials();
+    const getAvatarUrl = () => {
+        if (!auth.user.avatar) return null;
+
+        if (auth.user.avatar.startsWith('http://') || auth.user.avatar.startsWith('https://')) {
+            return auth.user.avatar;
+        }
+
+        return `/storage/${auth.user.avatar}`;
+    };
+
+    const avatarUrl = getAvatarUrl();
 
     return (
         <>
@@ -46,80 +61,115 @@ export default function HomeLayout({ title, navItems, children, hero }: Props) {
             <div className="relative min-h-screen bg-[#FDFDFC]">
                 {/* Navbar */}
                 <div className="w-full">
-                <Navbar>
-                    <NavBody>
-                        <NavbarLogo />
-                        <NavItems items={navItems} />
-                        <div className="flex items-center gap-4">
-                            {auth.user ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="size-10 rounded-full p-1 hover:bg-white/10">
-                                        <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage src={auth.user.avatar ?? undefined} alt={auth.user.name} />
-                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black">
-                                            {getInitials(auth.user.name)}
-                                        </AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56" align="end">
-                                    <DropdownMenuSeparator />
-                                    <UserMenuContent user={auth.user as any} variant='minimal' />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            ) : (
-                            <NavbarButton
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                href="/login"
-                            >
-                                Login / Registrasi
-                            </NavbarButton>
-                            )}
-                        </div>
-                    </NavBody>
-
-                    {/* Mobile */}
-                    <MobileNav>
-                        <MobileNavHeader>
+                    <Navbar>
+                        <NavBody>
                             <NavbarLogo />
-                            <MobileNavToggle
-                            isOpen={isMobileMenuOpen}
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            />
-                        </MobileNavHeader>
+                            <NavItems items={navItems} />
+                            <div className="flex items-center gap-4">
+                                {auth.user ? (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="rounded-full p-1 hover:bg-white/10">
+                                            <Avatar className="h-8 w-8 overflow-hidden rounded-full">
+                                                <AvatarImage src={avatarUrl ?? undefined} alt={auth.user.name} />
+                                                <AvatarFallback className="rounded-full bg-neutral-200 text-black">
+                                                    {getInitials(auth.user.name)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-56 z-[1000]" align="end">
+                                        <DropdownMenuSeparator />
+                                        <UserMenuContent user={auth.user as any} variant='minimal' />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                ) : (
+                                <NavbarButton
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    href="/login"
+                                >
+                                    Login / Registrasi
+                                </NavbarButton>
+                                )}
+                            </div>
+                        </NavBody>
 
-                        <MobileNavMenu
-                            isOpen={isMobileMenuOpen}
-                            onClose={() => setIsMobileMenuOpen(false)}
-                        >
-                            {navItems.map((item, idx) => (
-                            <a key={`mobile-link-${idx}`} href={item.link}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-black/100">
-                                <span className="block">{item.name}</span>
-                            </a>
-                            ))}
+                        {/* Mobile */}
+                        <MobileNav>
+                            <MobileNavHeader>
+                                <NavbarLogo />
+                                <MobileNavToggle
+                                isOpen={isMobileMenuOpen}
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                />
+                            </MobileNavHeader>
 
-                            {auth.user ? (
-                            <NavbarButton
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="justify-start gap-3 rounded-lg border border-white/20 px-4 py-2 text-left text-black/100"
-                                href="/dashboard"
-                            >
-                                Dashboard
-                            </NavbarButton>
-                            ) : (
-                            <NavbarButton
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                href="/login"
-                            >
-                                Masuk / Registrasi
-                            </NavbarButton>
-                            )}
-                        </MobileNavMenu>
-                    </MobileNav>
-                </Navbar>
+                            <MobileNavMenu
+                                isOpen={isMobileMenuOpen}
+                                onClose={() => setIsMobileMenuOpen(false)}
+                                >
+                                {/* Header Drawer */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <NavbarLogo visible />
+                                    <IconX className="text-black h-6 w-6" onClick={() => setIsMobileMenuOpen(false)} />
+                                </div>
+
+                                {/* User info (jika login) */}
+                                {auth.user && (
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <Avatar className="h-12 w-12 rounded-full overflow-hidden">
+                                            <AvatarImage src={avatarUrl ?? undefined} />
+                                            <AvatarFallback className="rounded-full bg-neutral-200 text-black">
+                                            {getInitials(auth.user.name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-semibold text-black">{auth.user.name}</p>
+                                            <p className="text-sm text-gray-600">{auth.user.email}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Add separator */}
+                                <hr className="border-t border-gray-300 mb-6" />
+                                {/* Nav Items */}
+                                <nav className="flex flex-col gap-4 mb-6">
+                                    {navItems.map((item, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={item.link}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-black text-lg"
+                                    >
+                                        {item.name}
+                                    </a>
+                                    ))}
+                                </nav>
+
+                                {/* CTA Section */}
+                                <div className="mt-auto border-t pt-6">
+                                    {auth.user ? (
+                                    <NavbarButton
+                                        href="/dashboard"
+                                        className="w-full justify-center bg-primary text-white"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Dashboard
+                                    </NavbarButton>
+                                    ) : (
+                                    <NavbarButton
+                                        href="/login"
+                                        className="w-full justify-center"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Masuk / Registrasi
+                                    </NavbarButton>
+                                    )}
+                                </div>
+                                </MobileNavMenu>
+
+                        </MobileNav>
+                    </Navbar>
                 </div>
 
                 {/* HERO (opsional) */}

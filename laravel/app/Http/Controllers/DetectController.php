@@ -120,7 +120,7 @@ class DetectController extends Controller
 
         session()->forget('uploaded_image_path');
 
-        return back()->with('success', 'Riwayat deteksi berhasil disimpan!');
+        return redirect()->route('detect.history')->with('success', 'Riwayat deteksi berhasil disimpan!');
     }
 
 

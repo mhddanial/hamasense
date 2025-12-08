@@ -21,8 +21,9 @@ import {
   Camera,
   AlertTriangle,
 } from "lucide-react";
-import { router } from "@inertiajs/react";
-import { useState } from "react";
+import { router, usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface APIAdvice {
   label: string;
@@ -55,6 +56,12 @@ interface Props {
 }
 
 export default function ResultPage({ result, error, abstain_reasons, image_url, image_path  }: Props) {
+  const { flash } = usePage().props as any;
+  useEffect(() => {
+    if (flash?.success) toast.success(flash.success);
+    if (flash?.error) toast.error(flash.error);
+  }, [flash]);
+
   const isAbstain =
     error ||
     !result ||
@@ -156,7 +163,6 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
     );
   }
 
-
   const { label, data: advice } = result.info!;
   const confidencePercent = Math.round((result.confidence || 0) * 100);
 
@@ -167,26 +173,25 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
   };
 
   const [isSaving, setIsSaving] = useState(false);
-
   const handleSave = () => {
-  setIsSaving(true);
+    setIsSaving(true);
 
-  router.post(
-    route("detect.save"),
-    {
-      label: result?.info?.label || null,
-      confidence: result?.confidence || null,
-      entropy: result?.entropy || null,
-      info: result?.info ? JSON.stringify(result.info) : null,
-      should_abstain: result?.should_abstain || false,
-      abstain_reasons: result?.abstain_reasons || abstain_reasons || [],
-      image_path: image_path,
-    },
-    {
-      onFinish: () => setIsSaving(false),
-    }
-  );
-};
+    router.post(
+      route("detect.save"),
+      {
+        label: result?.info?.label || null,
+        confidence: result?.confidence || null,
+        entropy: result?.entropy || null,
+        info: result?.info ? JSON.stringify(result.info) : null,
+        should_abstain: result?.should_abstain || false,
+        abstain_reasons: result?.abstain_reasons || abstain_reasons || [],
+        image_path: image_path,
+      },
+      {
+        onFinish: () => setIsSaving(false),
+      }
+    );
+  };
 
 
 

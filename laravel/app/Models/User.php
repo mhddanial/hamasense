@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -37,6 +38,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = ['avatar_url'];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -59,5 +62,20 @@ class User extends Authenticatable
         }
         
         return !empty($this->password);
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        if (!$this->avatar) {
+            return asset('default-avatar.png');
+        }
+
+        // Jika avatar sudah berupa URL (misal dari Google)
+        if (Str::startsWith($this->avatar, ['http://', 'https://'])) {
+            return $this->avatar;
+        }
+
+        // Jika avatar berasal dari storage
+        return asset('storage/' . $this->avatar);
     }
 }
