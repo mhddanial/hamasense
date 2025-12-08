@@ -13,6 +13,9 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/articles', [HomeController::class, 'articles'])->name('articles.index');
 Route::get('/articles/{slug}', [HomeController::class, 'articleShow'])->name('articles.show');
 
+// Community Routes (Public dapat melihat, tapi harus login untuk create/update/delete)
+Route::get('/community', [CommunityPostController::class, 'index'])->name('community');
+
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -25,9 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/detect', [DetectController::class, 'store'])->name('detect.store');
     Route::get('/detect-history', [DetectController::class, 'listHistory'])->name('detect.history');
 
-    Route::get('community', function () {
-        return Inertia::render('community/index');
-    })->name('community');
+    // Community CRUD (hanya untuk user yang login)
+    Route::post('/community', [CommunityPostController::class, 'store'])->name('community.store');
+    Route::put('/community/{id}', [CommunityPostController::class, 'update'])->name('community.update');
+    Route::delete('/community/{id}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
 
     Route::get('info-hama', function () {
         return Inertia::render('infoHama');
