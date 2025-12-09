@@ -3,10 +3,10 @@ import SearchBar from "@/components/SearchBar";
 import FilterDropdown from "@/components/filterDropdown";
 import PestList from "@/components/pestList";
 import AppLayout from "@/layouts/app-layout";
-import { Head, usePage } from "@inertiajs/react"; // Combined
+import { Head } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { type BreadcrumbItem } from "@/types";
-import { Pest } from "@/types/admin"; // From HEAD
+import { Pest } from "@/types/admin";
 
 interface Props {
   pests: Pest[];
