@@ -371,7 +371,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
                         className="flex items-start gap-3 p-3 bg-background rounded-lg border shadow-sm"
                       >
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="text-sm text-foregroun leading-relaxed">
                           {item}
                         </span>
                       </div>
