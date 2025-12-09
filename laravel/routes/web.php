@@ -16,6 +16,21 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/articles', [HomeController::class, 'articles'])->name('articles.index');
 Route::get('/articles/{slug}', [HomeController::class, 'articleShow'])->name('articles.show');
 
+// Community Routes - Public bisa lihat, login untuk aksi
+Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
+
+// Community Actions - Harus login
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/community', [CommunityPostController::class, 'store'])->name('community.store');
+    Route::put('/community/{post}', [CommunityPostController::class, 'update'])->name('community.update');
+    Route::delete('/community/{post}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
+
+    // Like, bookmark, comment
+    Route::post('/community/{post}/like', [CommunityPostController::class, 'toggleLike'])->name('community.like');
+    Route::post('/community/{post}/bookmark', [CommunityPostController::class, 'toggleBookmark'])->name('community.bookmark');
+    Route::post('/community/{post}/comment', [CommunityPostController::class, 'addComment'])->name('community.comment');
+});
+
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -37,15 +52,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.userIndex');
 
-    Route::get('/pest-detail', function () {
-        return Inertia::render('pest-info/pestDetails');
+    Route::get('/pest-info/detail', function () {
+        return Inertia::render('pest-info/detail');
     })->name('pest.detail');
 
     Route::get('/continuous-care', function() {
         return Inertia::render('continuous_care/index');
     })->name('continuous_care.index');
 
-    Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
+    // HAPUS BARIS INI (duplikasi)
+    // Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
 
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
     Route::post('/cases/create-from-detection/{historyId}', [CaseController::class, 'createFormDetection'])->name('cases.createFormDetection');

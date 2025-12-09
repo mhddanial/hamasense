@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Crop as CropIcon,
   ImageIcon,
+  LoaderCircle,
   Upload,
 } from "lucide-react";
 
@@ -46,22 +47,26 @@ const breadcrumbs: BreadcrumbItem[] = [
 type UploadStatus = "idle" | "uploading" | "done";
 
 export default function DetectPage() {
-  // file aktif (dipakai untuk kirim ke backend)
   const [file, setFile] = useState<File | null>(null);
 
-  // Ganti state manual dengan useForm Inertia
-  const { data, setData, post, processing, errors, progress: uploadProgress } = useForm({
+  const {
+    data,
+    setData,
+    post,
+    processing,
+    errors,
+    progress: uploadProgress,
+  } = useForm({
     image: null as File | null,
   });
-  
-  // Setiap kali user selesai crop atau upload (state 'file' berubah), update data form
+
   useEffect(() => {
     setData("image", file);
-  }, [file]);
+  }, [file, setData]);
 
   // original file & preview untuk bisa recrop dari gambar awal
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null); // preview yang ditampilkan di UI
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(
     null
   );
@@ -69,14 +74,14 @@ export default function DetectPage() {
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [progress, setProgress] = useState(0);
 
+  // state tambahan untuk UX
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   // state cropper
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-
-  const [result, setResult] = useState<any | null>(null);
-  const [isLoadingDetect, setIsLoadingDetect] = useState(false);
 
   const onCropComplete = useCallback((_: Area, croppedArea: Area) => {
     setCroppedAreaPixels(croppedArea);
@@ -87,6 +92,7 @@ export default function DetectPage() {
     setOriginalFile(null);
     setStatus("idle");
     setProgress(0);
+    setIsAnalyzing(false);
     setIsCropping(false);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
@@ -101,7 +107,6 @@ export default function DetectPage() {
 
     setPreviewUrl(null);
     setOriginalPreviewUrl(null);
-    setResult(null);
   };
 
   const handleFileSelected = (selectedFile: File | null) => {
@@ -128,6 +133,7 @@ export default function DetectPage() {
 
     setStatus("idle");
     setProgress(0);
+    setIsAnalyzing(false);
 
     // reset posisi crop
     setCrop({ x: 0, y: 0 });
@@ -222,7 +228,24 @@ export default function DetectPage() {
       setIsCropping(false);
     }
   };
-  
+
+  const MIN_ANALYZE_TIME = 1200;
+  const finishAnalyze = (startTime: number) => {
+    const elapsed = performance.now() - startTime;
+    const remaining = MIN_ANALYZE_TIME - elapsed;
+
+    const stop = () => {
+      setIsAnalyzing(false);
+    };
+
+    if (remaining > 0) {
+      setTimeout(stop, remaining);
+    } else {
+      stop();
+    }
+  };
+
+
   const handleDetectClick = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -231,32 +254,66 @@ export default function DetectPage() {
       return;
     }
 
-    // Reset status UI manual jika Anda masih ingin menggunakannya untuk visualisasi
     setStatus("uploading");
-  
-    // Kirim ke controller Laravel menggunakan Inertia
-    post(route("detect.store"), { 
+    setProgress(0);
+    setIsAnalyzing(false);
+
+    const startTime = performance.now();
+
+    post(route("detect.store"), {
       forceFormData: true,
-      onProgress: (progressEvent) => {
-        // Sinkronisasi progress bar inertia ke state local Anda (opsional)
-        if (progressEvent?.percentage) {
-          setProgress(progressEvent.percentage);
-        }
+      onStart: () => {
+        setStatus("uploading");
+        setProgress(0);
+        setIsAnalyzing(false);
       },
+      onProgress: (progressEvent) => {
+      if (typeof progressEvent?.percentage === "number") {
+        setProgress(progressEvent.percentage);
+
+        if (progressEvent.percentage >= 100) {
+          setIsAnalyzing(true);
+        }
+      }
+    },
       onSuccess: () => {
-        setStatus("done");
+        finishAnalyze(startTime);
       },
       onError: (errors) => {
         console.error("Error dari Laravel:", errors);
-        setStatus("idle");
-        alert("Gagal mendeteksi. " + (errors.image || errors.system || errors.api || "Terjadi kesalahan."));
+        finishAnalyze(startTime);
+        alert(
+          "Gagal mendeteksi. " +
+            (errors.image || errors.system || errors.api || "Terjadi kesalahan.")
+        );
+      },
+      onFinish: () => {
+        setIsAnalyzing(false);
       },
     });
   };
 
+  const showAnalyzeSkeleton = isAnalyzing;
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Deteksi Hama Tanaman" />
+
+      {/* Overlay global saat sedang menganalisis */}
+      {showAnalyzeSkeleton && (
+        <div className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300">
+          <div className="bg-background/95 border rounded-xl px-6 py-5 shadow-lg flex flex-col items-center gap-3 animate-in fade-in-0 zoom-in-95">
+            <LoaderCircle className="h-7 w-7 animate-spin text-primary" />
+            <p className="text-sm font-medium">
+              Sistem sedang menganalisis gambar Anda...
+            </p>
+            <p className="text-xs text-muted-foreground text-center max-w-xs">
+              Proses ini mungkin memakan beberapa detik tergantung ukuran gambar
+              dan kompleksitas deteksi.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 md:px-12">
         <div className="flex flex-col gap-2">
@@ -272,7 +329,7 @@ export default function DetectPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {/* Kiri: Upload & status */}
           <div className="md:col-span-2 flex flex-col gap-4">
-            <Card className="border-sidebar-border/70 dark:border-sidebar-border">
+            <Card className="border-sidebar-border/70 dark:border-sidebar-border transition-all duration-300">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base md:text-lg">
                   Upload Foto
@@ -290,7 +347,7 @@ export default function DetectPage() {
                   onDragOver={preventDefaults}
                   onDragEnter={preventDefaults}
                   onDragLeave={preventDefaults}
-                  className="relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-muted-foreground/40 bg-muted/40 text-center transition hover:border-primary/60 hover:bg-muted/70"
+                  className="relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-muted-foreground/40 bg-muted/40 text-center transition-all duration-300 hover:border-primary/60 hover:bg-muted/70"
                 >
                   <PlaceholderPattern className="pointer-events-none absolute inset-0 size-full stroke-neutral-900/5 dark:stroke-neutral-100/10" />
 
@@ -298,7 +355,7 @@ export default function DetectPage() {
                   {!file && (
                     <button
                       type="button"
-                      className="relative z-10 flex w-full flex-col items-center gap-2 px-4 py-10 outline-none"
+                      className="relative z-10 flex w-full flex-col items-center gap-2 px-4 py-10 outline-none transition-all duration-300 hover:scale-[1.01]"
                       onClick={() =>
                         document.getElementById("file-input")?.click()
                       }
@@ -311,7 +368,8 @@ export default function DetectPage() {
                           Seret atau unggah gambar
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          atau klik area ini untuk memilih file dari perangkat Anda
+                          atau klik area ini untuk memilih file dari perangkat
+                          Anda
                         </p>
                       </div>
                     </button>
@@ -319,12 +377,12 @@ export default function DetectPage() {
 
                   {/* Jika sudah ada gambar → tampilkan preview di area yang sama */}
                   {file && previewUrl && (
-                    <div className="relative z-10 w-full">
+                    <div className="relative z-10 w-full animate-in fade-in-0 duration-300">
                       <div className="relative aspect-video w-full overflow-hidden">
                         <img
                           src={previewUrl}
                           alt="Preview daun"
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover transition-transform duration-500"
                         />
                         {/* Overlay tombol di pojok kanan atas */}
                         <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
@@ -344,7 +402,7 @@ export default function DetectPage() {
                                 setIsCropping(true);
                               }}
                             >
-                              <CropIcon className="h-4 w-4" />
+                              <CropIcon className="h-4 w-4 text-white" />
                             </Button>
                           </div>
                         </div>
@@ -376,6 +434,7 @@ export default function DetectPage() {
                     type="button"
                     size="sm"
                     variant="outline"
+                    className="transition-all duration-200"
                     onClick={() =>
                       document.getElementById("file-input")?.click()
                     }
@@ -387,6 +446,7 @@ export default function DetectPage() {
                     type="button"
                     size="sm"
                     variant="outline"
+                    className="transition-all duration-200"
                     onClick={() =>
                       document.getElementById("camera-input")?.click()
                     }
@@ -399,7 +459,9 @@ export default function DetectPage() {
                       type="button"
                       size="sm"
                       variant="ghost"
+                      className="transition-all duration-200"
                       onClick={resetState}
+                      disabled={processing}
                     >
                       Reset
                     </Button>
@@ -407,11 +469,15 @@ export default function DetectPage() {
                 </div>
 
                 {/* Info file + progress */}
-                {file && (
-                  <div className="mt-1 space-y-3 rounded-lg border bg-background/60 p-3">
+                {file && previewUrl && (
+                  <div className="mt-1 space-y-3 rounded-lg border bg-background/60 p-3 transition-all duration-300">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-muted">
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-muted overflow-hidden">
+                        <img
+                          src={previewUrl}
+                          alt="Preview daun"
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
                       </div>
                       <div className="flex-1 space-y-1">
                         <p className="truncate text-xs font-medium md:text-sm">
@@ -421,26 +487,34 @@ export default function DetectPage() {
                           {(file.size / 1024).toFixed(1)} KB
                         </p>
                         <div className="flex flex-wrap items-center gap-2">
-                          {status === "done" ? (
+                          {status === "done" && !processing ? (
                             <>
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                               <span className="text-[11px] text-emerald-700">
                                 Berhasil diunggah, siap dideteksi.
                               </span>
                             </>
-                          ) : status === "uploading" ? (
-                            <span className="text-[11px] text-muted-foreground">
-                              Mengunggah...
-                            </span>
+                          ) : processing ? (
+                            <>
+                              <LoaderCircle className="h-3.5 w-3.5 animate-spin text-primary" />
+                              <span className="text-[11px] text-muted-foreground">
+                                {progress < 100
+                                  ? "Mengunggah gambar..."
+                                  : "Menganalisis gambar di server..."}
+                              </span>
+                            </>
                           ) : (
                             <span className="text-[11px] text-muted-foreground">
-                              Siap untuk dikirim ke model AI (hasil crop).
+                              Siap untuk dideteksi.
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <Progress value={status === "idle" ? 0 : progress} />
+                    <Progress
+                      value={status === "idle" ? 0 : progress}
+                      className="transition-all duration-300"
+                    />
                   </div>
                 )}
 
@@ -448,17 +522,20 @@ export default function DetectPage() {
 
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <p className="text-xs text-muted-foreground">
-                    Pastikan gambar sudah ter-crop fokus pada daun yang ingin
+                    Pastikan gambar sudah ter-crop dan fokus pada daun yang ingin
                     dianalisis.
                   </p>
                   <Button
                     type="button"
                     size="sm"
-                    className="md:min-w-[140px]"
+                    className="md:min-w-[140px] transition-all duration-200"
                     onClick={handleDetectClick}
-                    disabled={!file || status === "uploading"}
+                    disabled={!file || processing}
                   >
-                    Deteksi Sekarang
+                    {processing && (
+                      <LoaderCircle className="h-4 w-4 animate-spin mr-1" />
+                    )}
+                    {processing ? "Sedang memproses..." : "Deteksi Sekarang"}
                   </Button>
                 </div>
               </CardContent>
@@ -488,7 +565,9 @@ export default function DetectPage() {
                     </li>
                     <li className="flex gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      <span>Fokus pada daun yang dicurigai terserang hama.</span>
+                      <span>
+                        Fokus pada daun yang dicurigai terserang hama.
+                      </span>
                     </li>
                     <li className="flex gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -497,7 +576,8 @@ export default function DetectPage() {
                     <li className="flex gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                       <span>
-                        Hindari bayangan tangan atau objek lain yang menutupi daun.
+                        Hindari bayangan tangan atau objek lain yang menutupi
+                        daun.
                       </span>
                     </li>
                     <li className="flex gap-2">
@@ -521,7 +601,7 @@ export default function DetectPage() {
               <CardHeader className="pb-1">
                 <CardTitle className="flex items-center gap-2 text-sm md:text-base">
                   <ImageIcon className="h-6 w-6 text-primary" />
-                    Format yang Didukung
+                  Format yang Didukung
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-xs text-muted-foreground">
@@ -532,11 +612,10 @@ export default function DetectPage() {
                   <Badge variant="outline">WEBP</Badge>
                 </div>
                 <p>Ukuran maksimal: 10 MB per gambar.</p>
-                <div className="flex items-start gap-2 text-[11px]">
-                  <Info className="mt-0.5 h-3.5 w-3.5 text-primary" />
+                <div className="text-[11px]">
                   <p>
                     Gambar yang terlalu kecil atau pecah dapat menurunkan akurasi
-                    model pendeteksi hama.
+                    model pendeteksi.
                   </p>
                 </div>
               </CardContent>
@@ -596,7 +675,6 @@ export default function DetectPage() {
   );
 }
 
-// kecil icon Info biar cocok dengan ukuran teks
 function Info(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" {...props}>

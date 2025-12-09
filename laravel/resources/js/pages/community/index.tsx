@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
-import { Search, Plus, Heart, MessageSquare, Flag, Bookmark, MoreHorizontal, TrendingUp, Clock, Award } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { Head } from "@inertiajs/react";
+import { usePage } from '@inertiajs/react';
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -21,8 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Import separated components
+import CreatePostModal from "@/components/community/CreatePostModal";
+import EditPostModal from "@/components/community/EditPostModal";
+import DeletePostModal from "@/components/community/DeletePostModal";
+import PostCard from "@/components/community/PostCard";
+
+// Import custom hook
+import { useCommunityPosts } from "@/hooks/useCommunityPosts";
 
 interface User {
   id: number;
@@ -57,66 +57,28 @@ interface TopContributor {
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: "Komunitas",
-    href: "/komunitas",
+    href: "/community",
   },
 ];
 
-export default function KomunitasPage() {
+export default function KomunitasPage({ initialPosts = [] }) {
+  const { props } = usePage<any>();
+  const currentUser = props.auth?.user;
+
   const [activeTab, setActiveTab] = useState<'trending' | 'terbaru' | 'mengikuti'>('trending');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: 1,
-      author: {
-        id: 1,
-        name: 'Andi Prasetyo',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Andi',
-        role: 'Ahli'
-      },
-      timestamp: '5 jam yang lalu',
-      category: 'Budidaya Sayuran',
-      content: 'Selamat pagi, teman-teman! Beberapa hari lalu tanaman cabai saya sempat terserang hama thrips yang menyebabkan daun menggulung dan layu. Saya mencoba metode organik dengan semprotan bawang putih dan daun cair alami setiap pagi selama 4 hari. Hasilnya cukup efektif — daun baru tumbuh sehat kembali dan bunga mulai bermunculan lagi 🌱',
-      image: 'https://images.unsplash.com/photo-1583846112476-f60b035e2a33?w=600&q=80',
-      likes: 1200,
-      comments: 45,
-      isLiked: false,
-      isBookmarked: false
-    },
-    {
-      id: 2,
-      author: {
-        id: 2,
-        name: 'Siti Rahmawati',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti',
-      },
-      timestamp: '2 jam yang lalu',
-      category: 'Tips & Trik',
-      content: 'Tips untuk pemula yang mau mulai berkebun: Mulai dari tanaman yang mudah seperti kangkung atau bayam. Pastikan media tanam gembur dan kaya nutrisi. Siram secara teratur tapi jangan sampai becek. Letakkan di tempat yang cukup sinar matahari. Selamat mencoba! 🌿',
-      likes: 856,
-      comments: 32,
-      isLiked: true,
-      isBookmarked: false
-    },
-    {
-      id: 3,
-      author: {
-        id: 3,
-        name: 'Budi Santoso',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi',
-      },
-      timestamp: '1 hari yang lalu',
-      category: 'Hama & Penyakit',
-      content: 'Ada yang pernah mengalami daun tomat menguning dan kering? Saya sudah coba berbagai cara tapi belum ada perbaikan. Mohon saran dari para ahli di sini. Terima kasih sebelumnya!',
-      image: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=600&q=80',
-      likes: 432,
-      comments: 28,
-      isLiked: false,
-      isBookmarked: true
-    }
-  ]);
+  // Modal states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
+  // Use custom hook for posts logic
+  const { posts, handleLike, handleBookmark, addPost, updatePost, deletePost } = useCommunityPosts(initialPosts);
+
+  // Dummy data for top contributors
   const topContributors: TopContributor[] = [
     {
       id: 1,
@@ -165,33 +127,22 @@ export default function KomunitasPage() {
     }
   ];
 
-  const handleLike = (postId: number) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          isLiked: !post.isLiked,
-          likes: post.isLiked ? post.likes - 1 : post.likes + 1
-        };
-      }
-      return post;
-    }));
-  };
-
-  const handleBookmark = (postId: number) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return { ...post, isBookmarked: !post.isBookmarked };
-      }
-      return post;
-    }));
-  };
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
+  // Handler untuk Edit
+  const handleEditClick = (postId: number) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      setIsEditModalOpen(true);
     }
-    return num.toString();
+  };
+
+  // Handler untuk Delete
+  const handleDeleteClick = (postId: number) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      setIsDeleteModalOpen(true);
+    }
   };
 
   return (
@@ -211,7 +162,11 @@ export default function KomunitasPage() {
 
         {/* Action Bar */}
         <div className="flex flex-col gap-3 md:flex-row">
-          <Button size="sm" className="md:w-auto w-full">
+          <Button
+            size="sm"
+            className="md:w-auto w-full"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Buat Postingan
           </Button>
@@ -244,198 +199,60 @@ export default function KomunitasPage() {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="flex gap-1 border-b border-sidebar-border">
-          {[
-            { key: 'trending', label: 'Trending', icon: TrendingUp },
-            { key: 'terbaru', label: 'Terbaru', icon: Clock },
-            { key: 'mengikuti', label: 'Mengikuti', icon: Award }
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === tab.key
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-              {activeTab === tab.key && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
-              )}
-            </button>
-          ))}
-        </div>
+
 
         {/* Main Content Grid */}
         <div className="grid gap-4 md:grid-cols-3">
           {/* Posts Feed - Left Column (2/3) */}
           <div className="md:col-span-2 flex flex-col gap-4">
             {posts.map(post => (
-              <Card key={post.id} className="border-sidebar-border/70 dark:border-sidebar-border overflow-hidden">
-                {/* Post Header */}
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={post.author.avatar} alt={post.author.name} />
-                        <AvatarFallback>{post.author.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-semibold">{post.author.name}</h3>
-                          {post.author.role && (
-                            <Badge variant="secondary" className="text-xs">
-                              {post.author.role}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{post.timestamp}</span>
-                          <span>•</span>
-                          <span className="text-primary">{post.category}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button size="icon" variant="ghost" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-
-                {/* Post Content */}
-                <CardContent className="space-y-3 pb-3">
-                  <p className="text-sm leading-relaxed text-foreground/90">
-                    {post.content}
-                  </p>
-
-                  {/* Post Image */}
-                  {post.image && (
-                    <div className="overflow-hidden rounded-lg">
-                      <img
-                        src={post.image}
-                        alt="Post image"
-                        className="w-full object-cover max-h-80"
-                      />
-                    </div>
-                  )}
-
-                  {/* Post Actions */}
-                  <div className="flex items-center justify-between pt-2 border-t border-sidebar-border/50">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleLike(post.id)}
-                        className={`gap-2 ${
-                          post.isLiked ? 'text-red-500 hover:text-red-600' : ''
-                        }`}
-                      >
-                        <Heart
-                          className="h-4 w-4"
-                          fill={post.isLiked ? 'currentColor' : 'none'}
-                        />
-                        <span className="text-xs font-medium">{formatNumber(post.likes)}</span>
-                      </Button>
-
-                      <Button size="sm" variant="ghost" className="gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        <span className="text-xs font-medium">{post.comments}</span>
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleBookmark(post.id)}
-                        className={`h-8 w-8 ${
-                          post.isBookmarked ? 'text-primary' : ''
-                        }`}
-                      >
-                        <Bookmark
-                          className="h-4 w-4"
-                          fill={post.isBookmarked ? 'currentColor' : 'none'}
-                        />
-                      </Button>
-
-                      <Button size="icon" variant="ghost" className="h-8 w-8">
-                        <Flag className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <PostCard
+                key={post.id}
+                post={post}
+                currentUserId={currentUser?.id}
+                onLike={handleLike}
+                onBookmark={handleBookmark}
+                onComment={(postId) => console.log('Comment on:', postId)}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+                onReport={(postId) => console.log('Report:', postId)}
+                onShare={(postId) => console.log('Share:', postId)}
+              />
             ))}
           </div>
 
           {/* Right Sidebar - Top Contributors */}
-          <div className="flex flex-col gap-4">
-            <Card className="border-sidebar-border/70 dark:border-sidebar-border sticky top-4">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Award className="h-5 w-5 text-primary" />
-                  Kontributor Teratas
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Pengguna paling aktif minggu ini
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="pb-4">
-                <ScrollArea className="pr-2">
-                  <div className="space-y-3">
-                    {topContributors.map((contributor, index) => (
-                      <div
-                        key={contributor.id}
-                        className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 cursor-pointer"
-                      >
-                        <div className="relative">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={contributor.avatar} alt={contributor.name} />
-                            <AvatarFallback>{contributor.name[0]}</AvatarFallback>
-                          </Avatar>
-                          {index < 3 && (
-                            <div className={`absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
-                              index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                              index === 1 ? 'bg-slate-300 text-slate-700' :
-                              'bg-orange-400 text-orange-900'
-                            }`}>
-                              {index + 1}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0 space-y-0.5">
-                          <h3 className="text-sm font-semibold truncate">{contributor.name}</h3>
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                            <span>{contributor.posts} post</span>
-                            <span>•</span>
-                            <span>{formatNumber(contributor.likes)} suka</span>
-                          </div>
-                        </div>
-
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-primary">{contributor.score}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-3 text-xs"
-                >
-                  Lihat Semua
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
+
+      {/* Create Post Modal */}
+      <CreatePostModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(newPost) => addPost(newPost)}
+      />
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedPost(null);
+        }}
+        post={selectedPost}
+        onSuccess={(updatedPost) => updatePost(updatedPost.id, updatedPost)}
+      />
+
+      {/* Delete Post Modal */}
+      <DeletePostModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedPost(null);
+        }}
+        postId={selectedPost?.id || null}
+        onSuccess={(deletedPostId) => deletePost(deletedPostId)}
+      />
     </AppLayout>
   );
 }

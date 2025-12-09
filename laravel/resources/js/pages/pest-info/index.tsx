@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import SearchBar from '@/components/SearchBar';
-import FilterDropdown from '@/components/filterDropdown';
-import PestList from '@/components/pestList'
+import { useState } from "react";
+import SearchBar from "@/components/SearchBar";
+import FilterDropdown from "@/components/filterDropdown";
+import PestList from "@/components/pestList";
 import AppLayout from "@/layouts/app-layout";
+import { Head, usePage } from "@inertiajs/react"; // Combined
+import { route } from "ziggy-js";
 import { type BreadcrumbItem } from "@/types";
-import { Head, usePage } from '@inertiajs/react';
-import { route } from 'ziggy-js';
-import { Pest } from '@/types/admin';
+import { Pest } from "@/types/admin"; // From HEAD
 
 interface Props {
   pests: Pest[];
@@ -20,6 +20,7 @@ export default function PestInfo({ pests }: Props) {
         },
     ];
 
+    // === FILTER STATE ===
     const [search, setSearch] = useState("");
     const [kategori, setKategori] = useState("Semua Kategori");
     const [risiko, setRisiko] = useState("Semua Risiko");
@@ -51,39 +52,34 @@ export default function PestInfo({ pests }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Informasi Hama"/>
-            <div className="flex min-h-screen w-full bg-[#F4F5F7]">
+            <Head title="Informasi Hama" />
 
-                <main className="flex-1 p-8 overflow-y-auto">
-                    <div className="max-w-6xl mx-auto">
-                        {/* Heading */}
-                        <h1 className="text-2xl font-bold mb-2">Informasi Hama</h1>
-                        <p className="text-gray-600 mb-8 mt-2">
-                            Telusuri berbagai jenis hama tanaman beserta gejala, pengobatan, dan cara pencegahannya
-                        </p>
+            <main className="flex-1 p-8 bg-[#F4F5F7] min-h-screen">
+                <div className="max-w-6xl mx-auto">
+                    <h1 className="text-2xl font-bold mb-2">Informasi Hama</h1>
+                    <p className="text-gray-600 mb-8 mt-2">
+                        Telusuri berbagai jenis hama tanaman beserta gejala, pengobatan, dan cara pencegahannya.
+                    </p>
 
-                        {/* Filter & Search Wrapper */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-                            <div className="flex flex-col md:flex-row gap-4 mb-6">
-                                <SearchBar value={search} onChange={setSearch} />
-                                <FilterDropdown
-                                    options={["Semua Kategori", "Serangga", "Jamur", "Bakteri", "Virus"]}
-                                    value={kategori}
-                                    onChange={setKategori}
-                                />
-                                <FilterDropdown
-                                    options={["Semua Risiko", "Rendah", "Sedang", "Berat"]}
-                                    value={risiko}
-                                    onChange={setRisiko}
-                                />
-                            </div>
-                            {/* Pest List */}
-                            <PestList pests={mappedPests} />
+                    <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+                        <div className="flex flex-col md:flex-row gap-4 mb-6">
+                            <SearchBar value={search} onChange={setSearch} />
+                            <FilterDropdown
+                                options={["Semua Kategori", "Serangga", "Jamur", "Bakteri", "Virus"]}
+                                value={kategori}
+                                onChange={setKategori}
+                            />
+                            <FilterDropdown
+                                options={["Semua Risiko", "Rendah", "Sedang", "Berat"]}
+                                value={risiko}
+                                onChange={setRisiko}
+                            />
                         </div>
 
+                        <PestList pests={mappedPests} />
                     </div>
-                </main>
-            </div>
+                </div>
+            </main>
         </AppLayout>
     );
 }
