@@ -77,12 +77,19 @@ export default function ContinuousCareIndex({ case: caseData, quota }: { case: C
     }, [caseData.logs]);
 
     // Menghitung hari sejak awal
-    const startDate = new Date(caseData.created_at);
+    // Menghitung hari sejak awal (Calendar Day based)
     const getDaysSince = (dateStr: string) => {
-        const d = new Date(dateStr);
-        const diffTime = Math.abs(d.getTime() - startDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        return diffDays === 0 ? 1 : diffDays + 1; // Hari 1 based
+        const start = new Date(caseData.created_at);
+        const current = new Date(dateStr);
+        
+        // Reset waktu ke 00:00:00 untuk membandingkan tanggal kalender saja
+        start.setHours(0,0,0,0);
+        current.setHours(0,0,0,0);
+        
+        const diffTime = current.getTime() - start.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        return diffDays + 1; // Hari 1 based
     };
 
     return (
@@ -105,28 +112,84 @@ export default function ContinuousCareIndex({ case: caseData, quota }: { case: C
                 <div className="hidden md:flex flex-col md:col-span-3 space-y-4 h-[85vh] overflow-y-auto pr-2 custom-scrollbar">
                     <h2 className="font-bold text-lg text-gray-900">Riwayat Konsultasi</h2>
                     <div className="space-y-3">
-                        {/* Initial Detection Card */}
-                         <Card className="border shadow-sm hover:shadow-md transition">
-                            <CardContent className="p-4 space-y-2">
-                                <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">Hari 1</Badge>
-                                <p className="text-sm font-medium text-gray-800">Deteksi pertama. {caseData.label} terdeteksi.</p>
-                                <p className="text-xs text-gray-400">{new Date(caseData.created_at).toLocaleDateString()}</p>
-                            </CardContent>
-                        </Card>
+                        {/* Unified Timeline: Initial + Follow-ups Grouped by Date */}
+                        {(() => {
+                            // 1. Create a unified event list
+                            const events = [];
+                            
+                            // Event 1: Initial Detection
+                            events.push({
+                                type: 'initial',
+                                created_at: caseData.created_at,
+                                message: `Deteksi pertama. ${caseData.label} terdeteksi.`,
+                                id: 'initial-event'
+                            });
 
-                        {/* Update terbaru dari Logs */}
-                        {caseData.logs && caseData.logs
-                            .filter(l => l.type === 'follow_up')
-                            .slice().reverse() // Tampilkan yang terbaru terlebih dahulu di daftar riwayat? Atau yang terlama? Desain menunjukkan daftar yang disarankan secara kronologis tapi mungkin daftar sederhana.
-                            .map((log) => (
-                            <Card key={log.id} className="border shadow-sm hover:shadow-md transition">
-                                <CardContent className="p-4 space-y-2">
-                                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">Hari {getDaysSince(log.created_at)}</Badge>
-                                    <p className="text-sm font-medium text-gray-800 line-clamp-2">{log.message}</p>
-                                    <p className="text-xs text-gray-400">{new Date(log.created_at).toLocaleDateString()}</p>
-                                </CardContent>
-                            </Card>
-                        ))}
+                            // Event 2..N: Follow Up Logs
+                            const followUpLogs = caseData.logs?.filter(l => l.type === 'follow_up') || [];
+                            events.push(...followUpLogs);
+
+                            // 2. Group by Date
+                            const groupedLogs: { [key: string]: any[] } = {};
+                            events.forEach(event => {
+                                const dateKey = new Date(event.created_at).toLocaleDateString();
+                                if (!groupedLogs[dateKey]) {
+                                    groupedLogs[dateKey] = [];
+                                }
+                                groupedLogs[dateKey].push(event);
+                            });
+
+                            // 3. Sort Groups (Newest Top)
+                            const groupedArray = Object.entries(groupedLogs).sort((a, b) => {
+                                const dateA = new Date(a[1][0].created_at).getTime();
+                                const dateB = new Date(b[1][0].created_at).getTime();
+                                return dateB - dateA; 
+                            });
+
+                            // 4. Render
+                            return groupedArray.map(([dateKey, groupEvents]) => {
+                                const firstEvent = groupEvents[0]; // Used for date calc
+                                const lastEvent = groupEvents[groupEvents.length - 1]; // Used for display message
+                                const dayCount = getDaysSince(firstEvent.created_at);
+                                const isInitialDay = groupEvents.some(e => e.type === 'initial');
+                                
+                                const interactionCount = groupEvents.filter(e => e.type === 'follow_up').length;
+                                const totalItems = groupEvents.length;
+
+                                return (
+                                    <Card 
+                                        key={dateKey} 
+                                        className="border shadow-sm hover:shadow-md transition cursor-pointer hover:border-green-400"
+                                        onClick={() => {
+                                            // Scroll to the first relevant item.
+                                            // If it's pure initial day with no follow up, scroll to chat-start.
+                                            // If there are follow ups, scroll to the first follow up of that day.
+                                            const firstFollowUp = groupEvents.find(e => e.type === 'follow_up');
+                                            if (firstFollowUp) {
+                                                document.getElementById(`chat-log-${firstFollowUp.id}`)?.scrollIntoView({ behavior: 'smooth' });
+                                            } else {
+                                                document.getElementById('chat-start')?.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
+                                    >
+                                        <CardContent className="p-4 space-y-2">
+                                            <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+                                                Hari {dayCount}
+                                            </Badge>
+                                            
+                                            <p className="text-sm font-medium text-gray-800 line-clamp-3">
+                                                 {/* Logic: If there are interactions, show interaction count + latest message. If just initial, show initial text. */}
+                                                 {interactionCount > 0 
+                                                    ? `${interactionCount} Interaksi. ${lastEvent.message}`
+                                                    : lastEvent.message
+                                                 }
+                                            </p>
+                                            <p className="text-xs text-gray-400">{dateKey}</p>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
 
@@ -148,7 +211,7 @@ export default function ContinuousCareIndex({ case: caseData, quota }: { case: C
                         )}
 
                         {/* System Greeting */}
-                        <div className="flex flex-col gap-2">
+                        <div id="chat-start" className="flex flex-col gap-2 scroll-mt-24">
                             <div className="flex items-center gap-2">
                                 <span className="font-bold text-sm text-green-800">AI HamaSense</span>
                             </div>
@@ -165,7 +228,7 @@ export default function ContinuousCareIndex({ case: caseData, quota }: { case: C
                         {caseData.logs && caseData.logs.filter(l => l.type === 'follow_up').map(log => (
                             <React.Fragment key={log.id}>
                                 {/* Pesan pengguna */}
-                                <div className="flex flex-col gap-2 items-end">
+                                <div id={`chat-log-${log.id}`} className="flex flex-col gap-2 items-end scroll-mt-24">
                                      {/* Gambar jika ada */}
                                      {log.image_path && (
                                         <div className="bg-white p-2 rounded-2xl rounded-tr-none border shadow-sm max-w-[80%]">

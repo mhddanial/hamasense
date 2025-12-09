@@ -30,6 +30,12 @@ class CaseController extends Controller
         $history = DetectionHistory::where('user_id', auth()->id())
             ->findOrFail($historyId);
 
+        // Check if case already exists for this history
+        $existingCase = Cases::where('detection_history_id', $history->id)->first();
+        if ($existingCase) {
+             return redirect()->route('cases.show', $existingCase->id);
+        }
+
         $case = Cases::create([
             'user_id'              => auth()->id(),
             'detection_history_id' => $history->id,
@@ -67,8 +73,8 @@ class CaseController extends Controller
         
         // KONSTAN BATAS
         $TRIAL_DAYS = 3;
-        $MAX_DAILY_PROMPTS = 10;
-        $MAX_DAILY_PHOTOS = 10;
+        $MAX_DAILY_PROMPTS = 5;
+        $MAX_DAILY_PHOTOS = 2;
 
         $isTrialExpired = $daysSinceCreation >= $TRIAL_DAYS;
 
@@ -117,18 +123,18 @@ class CaseController extends Controller
             ->get();
 
         $dailyPromptsUsed = $todayLogs->count();
-        $MAX_DAILY_PROMPTS = 10;
+        $MAX_DAILY_PROMPTS = 5;
 
         // Periksa kuota prompt (unggahan juga dihitung sebagai penggunaan prompt)
         if ($dailyPromptsUsed >= $MAX_DAILY_PROMPTS) {
-            return back()->withErrors(['quota' => 'Kuota chat harian Anda (10x) telah habis.']);
+            return back()->withErrors(['quota' => 'Kuota chat harian Anda (5x) telah habis.']);
         }
 
         // Jika mencoba mengunggah gambar, periksa kuota foto
         if ($request->hasFile('image')) {
             $dailyPhotosUsed = $todayLogs->whereNotNull('image_path')->count();
-            if ($dailyPhotosUsed >= 10) {
-                return back()->withErrors(['quota' => 'Kuota upload foto harian Anda (10x) telah habis.']);
+            if ($dailyPhotosUsed >= 2) {
+                return back()->withErrors(['quota' => 'Kuota upload foto harian Anda (2x) telah habis.']);
             }
         }
 
