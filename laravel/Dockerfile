@@ -1,28 +1,30 @@
 FROM php:8.3-fpm
 
-# Install dependencies
+# Install PHP dependencies
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql bcmath gd zip
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set workdir
+# Set working directory
 WORKDIR /var/www
 
-# Copy Laravel files
+# Copy source code
 COPY . .
 
-# Install dependencies
+# Install backend dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy env if needed
-# RUN cp .env.example .env && php artisan key:generate
+# Install frontend deps & build Vite assets
+RUN npm install && npm run build
 
-# Set permission
+# Set permissions
 RUN chmod -R 775 storage bootstrap/cache
-
-EXPOSE 9000
 
 CMD ["php-fpm"]
