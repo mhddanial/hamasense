@@ -22,13 +22,12 @@ export default function HomeIndex(props: HomePageProps) {
                 bg: { imageUrl: '/images/bg-hero.png', overlay: 'bg-gradient-to-b from-black/60 via-black/40 to-black/70' },
                 content: (
                 <Hero
-                    title={`Lindungi Tanaman Anda Bersama <span class='font-bold font-logo'>HAMASENSE</span>`}
+                    title={`Lindungi Tanaman Anda Bersama <span class='font-bold font-logo md:text-6xl'>HAMASENSE</span>`}
                     subtitle="Lindungi tanaman Anda dengan teknologi AI terdepan. Deteksi hama dalam sekali klik dan dapatkan solusi perawatan yang tepat."
                 />
                 ),
             }}
             >
-            {/* section setelah hero */}
             <WhyUs features={props.features} />
             <HowItWorks />
             <DetectionExamples examples={props.detectionExamples} />

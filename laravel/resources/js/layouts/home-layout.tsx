@@ -34,20 +34,21 @@ type Props = {
     user?: User;
 };
 
-export default function HomeLayout({ title, navItems, children, hero, user }: Props) {
+export default function HomeLayout({ title, navItems, children, hero }: Props) {
     const { auth } = usePage<SharedData>().props;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const getInitials = useInitials();
     const getAvatarUrl = () => {
-        if (!auth.user.avatar) return null;
+        const avatar = auth.user?.avatar;
 
-        if (auth.user.avatar.startsWith('http://') || auth.user.avatar.startsWith('https://')) {
-            return auth.user.avatar;
-        }
+        if (!avatar) return null;
 
-        return `/storage/${auth.user.avatar}`;
+        return avatar.startsWith("http")
+            ? avatar
+            : `/storage/${avatar}`;
     };
+
 
     const avatarUrl = getAvatarUrl();
 
@@ -129,10 +130,7 @@ export default function HomeLayout({ title, navItems, children, hero, user }: Pr
                                         </div>
                                     </div>
                                 )}
-
-                                {/* Add separator */}
                                 <hr className="border-t border-gray-300 mb-6" />
-                                {/* Nav Items */}
                                 <nav className="flex flex-col gap-4 mb-6">
                                     {navItems.map((item, idx) => (
                                     <a
@@ -146,7 +144,6 @@ export default function HomeLayout({ title, navItems, children, hero, user }: Pr
                                     ))}
                                 </nav>
 
-                                {/* CTA Section */}
                                 <div className="mt-auto border-t pt-6">
                                     {auth.user ? (
                                     <NavbarButton
@@ -172,16 +169,17 @@ export default function HomeLayout({ title, navItems, children, hero, user }: Pr
                     </Navbar>
                 </div>
 
-                {/* HERO (opsional) */}
                 {hero?.content && (
                 <section
                     className={clsx(
-                    'relative flex items-center',
-                    hero.size === 'full' ? 'min-h-screen' : 'min-h-[50vh]',
-                    hero.className
+                        'relative flex items-center',
+                        hero.size === 'full'
+                            ? 'min-h-screen'
+                            : 'min-h-[25vh] md:min-h-[50vh]',
+                        hero.className
                     )}
                 >
-                    {/* BG hero hanya berlaku untuk area hero */}
+
                     {hero.bg?.imageUrl && (
                     <div className="absolute inset-0">
                         <div
@@ -193,14 +191,12 @@ export default function HomeLayout({ title, navItems, children, hero, user }: Pr
                     </div>
                     )}
 
-                    {/* Konten hero */}
                     <div className="relative z-10 w-full">
                     {hero.content}
                     </div>
                 </section>
                 )}
 
-                {/* Page content (di bawah hero) */}
                 <main>{children}</main>
 
                 <Footer />
