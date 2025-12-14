@@ -9,7 +9,7 @@ export default function TambahHama() {
     name: '',
     scientific_name: '',
     description: '',
-    images: []
+    img_path: null
   });
   const [uploadedImages, setUploadedImages] = useState([]);
 
@@ -20,7 +20,7 @@ export default function TambahHama() {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    setData('images', files);
+    setData('img_path', e.target.files[0]);
     
     // Create preview URLs for all selected files
     const newImagePreviews = [];
@@ -51,7 +51,7 @@ export default function TambahHama() {
       name: '',
       scientific_name: '',
       description: '',
-      images: []
+    images: []
     });
     setUploadedImages([]);
   };
@@ -68,7 +68,7 @@ export default function TambahHama() {
       <div className="flex-1 overflow-auto text-gray-900">
         {/* Content */}
         <div className="p-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-5xl">
+          <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl">
             <h1 className="text-2xl font-bold mb-8 text-gray-900">Tambahkan Hama</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -77,7 +77,7 @@ export default function TambahHama() {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                   <h3 className="text-lg font-semibold mb-4 text-gray-900">Upload Foto</h3>
                   
-                  {uploadedImages.length > 0 ? (
+                  {uploadedImages ? (
                     <div className="mb-4">
                       <div className="grid grid-cols-2 gap-2 mb-4">
                         {uploadedImages.map((image, index) => (
@@ -116,12 +116,11 @@ export default function TambahHama() {
                     <Paperclip className="w-4 h-4" />
                     <span>{uploadedImages.length > 0 ? 'Tambah Gambar' : 'Pilih File'}</span>
                     <input
-                      multiple
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
-                      name="images[]"
+                      name="img_path"
                     />
                   </label>
                 </div>

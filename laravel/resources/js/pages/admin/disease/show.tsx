@@ -1,32 +1,39 @@
 import React, { useState } from 'react';
 import { Upload, Paperclip } from 'lucide-react';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
+import { PageProps } from '@inertiajs/core';
+import { Disease, Plant } from '@/types/admin';
 
-export default function TambahkanTanaman() {
+interface Props extends PageProps {
+    plants: Plant[];
+    disease: Disease;
+}
+
+export default function TambahkanTanaman({ plants, disease }: Props) {
   
-  const { data, setData, post } = useForm({
-      name: '',
-      scientific_name: '',
-      detail: '',
-      img_path: null
+    console.log(plants);
+    console.log(disease);
+
+  const { data, setData } = useForm({
+    name: disease.name,
+    description: disease.description,
+    cause: disease.cause,
+    solution: disease.solution,
+    severity_level: disease.severity_level,
+    old_img: disease.img_path,
+    new_img: null,
+    plant_type_id: disease.plant_type_id
   });
   
-  const [uploadedImage, setUploadedImage] = useState('');
-
-  const create = async () => {
-    console.log(data);
-    post('/admin/plant/');
-  }
+  const [uploadedImage, setUploadedImage] = useState(disease.img_path ? `/storage/disease/${disease.img_path}` : '');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files[0];
-    setData('img_path', file);
+    setData('new_img', file);
 
-    if (file) {
-      setUploadedImage(URL.createObjectURL(file));
-    }
+    setUploadedImage(URL.createObjectURL(file));
   };
 
   return (
@@ -38,7 +45,7 @@ export default function TambahkanTanaman() {
         {/* Content */}
         <div className="p-8 text-gray-900 ">
           <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl">
-            <h1 className="text-3xl font-bold mb-8">Tambahkan Tanaman</h1>
+            <h1 className="text-3xl font-bold mb-8">Edit Data Penyakit</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column - Upload */}
@@ -88,10 +95,9 @@ export default function TambahkanTanaman() {
               {/* Right Column - Form */}
               <div>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Tumbuhan
+                        Nama Penyakit
                       </label>
                       <input
                         type="text"
@@ -104,26 +110,69 @@ export default function TambahkanTanaman() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Latin
+                        Penyebab
                       </label>
                       <input
                         type="text"
-                        name="scientific_name"
-                        value={data.scientific_name}
-                        onChange={(e) => setData('scientific_name', e.target.value)}
+                        name="cause"
+                        value={data.cause}
+                        onChange={(e) => setData('cause', e.target.value)}
                         placeholder="Solanum lycopersicum"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
                       />
                     </div>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Solusi
+                      </label>
+                      <input
+                        type="text"
+                        name="solution"
+                        value={data.solution}
+                        onChange={(e) => setData('solution', e.target.value)}
+                        placeholder="Solanum lycopersicum"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
+                      />
+                    </div>                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Severity Level
+                      </label>
+                      <input
+                        type="text"
+                        name="severity_level"
+                        value={data.severity_level}
+                        onChange={(e) => setData('severity_level', e.target.value)}
+                        placeholder="Solanum lycopersicum"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
+                      />
+                    </div>
+                <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Kategori
+                </label>
+                <select
+                  name="category"
+                  value={data.plant_type_id}
+                  onChange={(e) => setData((prev) => ({...prev, 'plant_type_id': (+e.target.value)}))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                >
+                  <option value="">Pilih kategori...</option>
+                  {plants.map((plant, index) => (
+                    <option key={index} value={plant.id}>
+                      {plant.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Detail
+                      Description
                     </label>
                     <textarea
                       name="detail"
-                      value={data.detail}
-                      onChange={(e) => setData('detail', e.target.value)}
+                      value={data.description}
+                      onChange={(e) => setData('description', e.target.value)}
                       placeholder="Tomat (Solanum lycopersicum) adalah buah yang sering digunakan sebagai sayuran dalam masakan. Tanaman ini berasal dari Amerika Selatan dan termasuk keluarga Solanaceae."
                       rows={8}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
@@ -138,8 +187,14 @@ export default function TambahkanTanaman() {
                       Batal
                     </button>
                     <button 
-                      onClick={create}
-                      type='button'
+                      onClick={() => {
+                        router.post( `/admin/disease/${disease.id}`, {
+                          _method: 'patch',
+                          forceFormData: true,
+                          ...data
+                        });
+                      }}
+                      type='button' 
                       className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
                     >
                       Tambahkan
@@ -156,7 +211,7 @@ export default function TambahkanTanaman() {
 }
 
 TambahkanTanaman.layout = (page: React.ReactElement) => (
-  <AdminLayout page_title='plant'>
+  <AdminLayout page_title='disease'>
     {page}
   </AdminLayout>
 )

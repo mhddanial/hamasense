@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare } from 'lucide-react';
-import { useForm, usePage } from '@inertiajs/react';
+import { Upload, Paperclip } from 'lucide-react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
@@ -8,41 +8,52 @@ import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
 
 import { Pest } from '@/types/admin';
 
+
 export default function HamaSenseEdit() {
+
+  const { props } = usePage<{message: String, pest: Pest}>();
+  const { message, pest } = props;
 
   const [ deleteModal, setDeleteModal ] = useState(false);
   const [ updateModal, setUpdateModal ] = useState(false);
+  const [ uploadedImage, setUploadedImage ] = useState(pest.img_path ? '/storage/pest/' + pest.img_path : '');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setData(prev => ({ ...prev, [name]: value }));
   };
-
-  const { props } = usePage<{message: String, pest: Pest}>();
-  const { message, pest } = props;
   
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files[0];
+
+    setData('new_img', file);
+    setUploadedImage(() => URL.createObjectURL(file));
+    console.log(data);
+  };
+
   const {data, setData, submit} = useForm({
     'id': pest.id,
     'name': pest.name,
     'scientific_name': pest.scientific_name, 
     'description': pest.description,
-    'pics': pest.pics
+    'old_img': pest.img_path,
+    'new_img': null
   }); 
 
   return (
     <>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+    <div className="flex-1 min-h-screen p-8 text-gray-900">
 
         {/* Content */}
         <div className="p-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-5xl">
+          <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl">
             <h1 className="text-2xl font-bold mb-8 text-gray-900">Edit Informasi Hama</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column - Images */}
-              <div>
+              {/* <div>
                 <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-lg overflow-hidden mb-4 aspect-video flex items-center justify-center">
                   <img
                     src="https://images.unsplash.com/photo-1563126116-1e160c81e57c?w=500&h=350&fit=crop"
@@ -62,7 +73,56 @@ export default function HamaSenseEdit() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
+                <div className="rounded-lg overflow-hidden">
+
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
+                  <h3 className="text-lg font-semibold mb-6">Upload Foto</h3>
+                  
+                  {uploadedImage ? (
+                    <div className="mb-4">
+                      <img 
+                        src={uploadedImage} 
+                        alt="Preview" 
+                        className="w-full h-80 object-cover rounded-lg mb-4"
+                      />
+                      <button
+                        onClick={(e) => {
+                          setData('new_img', null );
+                          setUploadedImage('');
+                         }
+                        }
+                        className="text-sm text-red-500 hover:text-red-700"
+                      >
+                        Hapus gambar
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mb-6">
+                      <div className="flex justify-center mb-6">
+                        <Upload className="w-16 h-16 text-gray-400" />
+                      </div>
+                      <p className="text-gray-700 font-medium mb-2">Seret atau unggah gambar</p>
+                      <p className="text-sm text-gray-400 mb-6">
+                        atau klik tombol dibawah ini untuk memilih file
+                      </p>
+                    </div>
+                  )}
+                  
+                  <label className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors mx-auto">
+                    <Paperclip className="w-5 h-5" />
+                    <span className="font-medium">Pilih File</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                </div>
+                
+
 
               {/* Right Column - Form */}
               <div>
@@ -139,7 +199,11 @@ export default function HamaSenseEdit() {
         setUpdateModal(false)
       }} onConfirm={() => {
         console.log(`/admin/pest/${pest.id}`);
-        submit('patch', `/admin/pest/${pest.id}`);
+        router.post( `/admin/pest/${pest.id}`, {
+          _method: 'patch',
+          forceFormData: true,
+          ...data
+        });
         setUpdateModal(false)
 
       }} itemName={pest.name}/>

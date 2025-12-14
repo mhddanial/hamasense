@@ -63,7 +63,6 @@ export default function HamaSenseDashboard() {
     <AdminLayout page_title=''>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
 
         {/* Dashboard Content */}
         <div className="p-8">
@@ -131,7 +130,6 @@ export default function HamaSenseDashboard() {
             </div>
           </div>
         </div>
-      </div>
     </AdminLayout>
   );
 }

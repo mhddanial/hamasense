@@ -1,161 +1,142 @@
 import React, { useState } from "react";
-import {SquarePen, Trash2} from 'lucide-react';
-import { Link, router, usePage } from "@inertiajs/react";
+import {Calendar, SquarePen, Trash2, User} from 'lucide-react';
+import { Link, router } from "@inertiajs/react";
 import AdminLayout from "@/components/admin/layout";
 import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
 import { PageProps } from '@inertiajs/core';
 
 import { Article } from "@/types/admin";
+import NavSearch from "@/components/admin/NavSearch";
 
 interface Props extends PageProps {
-  articles: Article[]
+articles: Article[]
 }
 
 const KelolaArtikel = ({ articles }: Props) => {
-  // search state
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("Semua kategori");
-  const [date, setDate] = useState("");
 
-  // operation state
-  const [selectedItem, setSelectedItem] = useState({
-    'id': 0,
-    'name': ''
-  });
-  const [ deleteModal, setDeleteModal ] = useState(false);
+const [ searchTerm, setSearchTerm ] = useState("");
 
-  const filteredArticles = articles.filter((article) => {
-    const matchSearch =
-      article.title.toLowerCase().includes(search.toLowerCase()) ||
-      article.writer.name.toLowerCase().includes(search.toLowerCase());
-    const matchCategory =
-      category === "Semua kategori" || article.category.name === category;
-    const matchDate = date === "" || article.created_at === date;
-    return matchSearch && matchCategory && matchDate;
-  });
+console.log(articles)
+// operation state
+const [selectedItem, setSelectedItem] = useState({
+'id': 0,
+'name': ''
+});
+const [ deleteModal, setDeleteModal ] = useState(false);
 
-  return (
-    <>
-    <div className="flex-1 bg-gray-50 min-h-screen p-8">
-      <div className="max-w-6xl mx-auto bg-white shadow-md rounded-2xl p-6">
-        <h1 className="text-2xl font-bold mb-2 text-gray-900">Kelola Artikel</h1>
-        <p className="text-gray-700 mb-6">
-          Artikel yang dikurasi dari berbagai sumber ahli pertanian.
-        </p>
+return (
+<>
 
-        {/* Search & Filter */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2 w-full md:w-1/2">
-            <input
-              type="text"
-              placeholder="Cari berdasarkan nama, ilmiah, atau tanaman..."
-              className="bg-transparent outline-none w-full text-gray-900 placeholder:text-gray-500"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+    {/* <ItemHeaderDemo></ItemHeaderDemo> */}
+    <div className="flex-1 min-h-screen p-8">
+        <NavSearch href='/admin/article/create' title='Kelola Artikel' onChange={(e)=> {
+            setSearchTerm(e.target.value)
+            }} search_term={searchTerm} button_title="Tambah Artikel" />
 
-          <select
-            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option>Semua kategori</option>
-            <option>Tips</option>
-            <option>Lingkungan & Cuaca</option>
-            <option>Berita</option>
-            <option>Teknologi</option>
-          </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {articles.data.map((article) => (
+                <div key={article.id}
+                    className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1 flex flex-col">
+                    {/* Image */}
+                    <div className="relative h-48 overflow-hidden bg-gradient-to-br from-teal-50 to-green-50">
+                        <img src={`/storage/article/${article.img_path}`} alt={article.title}
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                        {article.category && (
+                        <span
+                            className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+                            {article.category.name}
+                        </span>
+                        )}
+                    </div>
 
-          <input
-            type="date"
-            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+                    {/* Content */}
+                    <div className="p-5 flex-1 flex flex-col">
+                        {/* Title & Author */}
+                        <div className="mb-3">
+                            <h3 className="text-base font-bold text-gray-900 line-clamp-2 mb-2 leading-tight">
+                                {article.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <User className="w-3.5 h-3.5" />
+                                <span>{article.writer.name}</span>
+                            </div>
+                        </div>
 
-          <Link href={'/admin/article/create'} className="bg-green-700 text-white px-5 py-2 rounded-lg hover:bg-green-800 ml-auto">
-            + Tambah Artikel
-          </Link>
-        </div>
+                        {/* Description */}
+                        <p className="text-sm text-gray-700 line-clamp-3 mb-4 flex-1">
+                            {article.content}
+                        </p>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="text-left px-4 py-3 w-24 text-gray-900 font-semibold">Gambar</th>
-                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Judul</th>
-                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Kategori</th>
-                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Sumber</th>
-                <th className="text-left px-4 py-3 text-gray-900 font-semibold">Tanggal</th>
-                <th className="text-center px-4 py-3 text-gray-900 font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredArticles.map((article) => (
-                <tr
-                  key={article.id}
-                  className="border-b hover:bg-gray-50 transition"
-                >
-                  <td className="px-4 py-3">
-                    <img
-                      src={article.image}
-                      alt="thumbnail"
-                      className="w-16 h-12 rounded-md object-cover"
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-gray-900">{article.title}</td>
-                  <td className="px-4 py-3 text-gray-900">{article.category.name}</td>
-                  <td className="px-4 py-3 text-gray-900">{article.content}</td>
-                  <td className="px-4 py-3 text-gray-900">{article.created_at}</td>
-                  <td className="px-4 py-3 flex items-center justify-center gap-3">
-                    <Link href={`/admin/article/${article.id}`} className="text-blue-600 hover:text-blue-800">
-                      <SquarePen size={18} />
-                    </Link>
-                    <button onClick={() => {
-                      setSelectedItem({'id': article.id, 'name': article.title})
-                      setDeleteModal(true);
-                    }} className="text-red-600 hover:text-red-800">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                        {/* Footer - Actions */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Calendar className="w-3.5 h-3.5" />
+                                <span>{new Date(article.created_at).toLocaleDateString('id-ID', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                    })}</span>
+                            </div>
 
-              {filteredArticles.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center text-gray-700 py-4">
-                    Tidak ada artikel ditemukan.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                            <div className="flex items-center gap-2">
+                                <Link href={`/admin/article/${article.id}`}
+                                    className="p-2 text-gray-600 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                    title="Edit artikel">
+                                <SquarePen size={16} />
+                                </Link>
+                                <button onClick={()=> {
+                                    setSelectedItem({'id': article.id, 'name': article.title})
+                                    setDeleteModal(true);
+                                    }}
+                                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg
+                                    transition-colors"
+                                    title="Hapus artikel"
+                                    >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ))}
+            </div>
+            {
+            articles.last_page >= 2 ? ( <div className="py-12 px-4">
+                {articles.links.map(link =>
+                link.url ? (
+                <Link className={`p-1 mx-1 ${link.active ? 'text-blue-500 font-bold' : '' }`} key={link.label}
+                    href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
+                ) : (
+                <span className="p-1 mx-1 text-slate-300" key={link.label}
+                    dangerouslySetInnerHTML={{ __html: link.label }}></span>
+                )
+                ) }
+            </div>
+            ): (<></>)
+            }
     </div>
-            
-              
 
-    <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
-          setDeleteModal(false)
-          setSelectedItem({'id': 0, 'name': ''});
-        }} onConfirm={() => {
-          // console.log(`/admin/pest/${selectedItem.id}`);
-          router.delete(`/admin/article/${selectedItem.id}`);
-          setDeleteModal(false)
-    
+
+
+    <DeleteConfirmationModal isOpen={deleteModal} onClose={()=> {
+        setDeleteModal(false)
+        setSelectedItem({'id': 0, 'name': ''});
+        }} onConfirm={() =>
+        {
+        // console.log(`/admin/pest/${selectedItem.id}`);
+        router.delete(`/admin/article/${selectedItem.id}`);
+        setDeleteModal(false)
+
         }} itemName={selectedItem.name}/>
-    </>
-  );
-  
+</>
+);
+
 };
 
 export default KelolaArtikel;
 
 KelolaArtikel.layout = (page: React.ReactElement) => (
-  <AdminLayout page_title="article">
+<AdminLayout page_title="article">
     {page}
-  </AdminLayout>
+</AdminLayout>
 )

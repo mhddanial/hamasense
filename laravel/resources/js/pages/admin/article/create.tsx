@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Settings, FolderOpen } from 'lucide-react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { FolderOpen, Paperclip, Upload } from 'lucide-react';
+import { Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { Category } from '@/types/admin';
@@ -16,8 +16,12 @@ export default function BuatArtikel({categories}: Props) {
   const { data, setData, post } = useForm({
     title: '',
     category_id: 0,
-    content: ''
+    content: '',
+    img_path: null
   });
+
+  const [uploadedImage, setUploadedImage] = useState('');
+  
 
   const handleSubmit = () => {
     if (!data.title || !data.content || !data.category_id) {
@@ -36,6 +40,15 @@ export default function BuatArtikel({categories}: Props) {
     });
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setData('img_path', file);
+
+    if (file) {
+      setUploadedImage(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <>
 
@@ -44,7 +57,6 @@ export default function BuatArtikel({categories}: Props) {
         
         {/* Content */}
         <div className="p-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-5xl mx-auto">
             {/* Header with Manage Categories Button */}
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-3xl font-bold">Buat Artikel</h1>
@@ -56,6 +68,49 @@ export default function BuatArtikel({categories}: Props) {
                 Kelola Kategori
               </Link>
             </div>
+
+             <div>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
+                  <h3 className="text-lg font-semibold mb-6">Upload Foto</h3>
+                  
+                  {uploadedImage ? (
+                    <div className="mb-4">
+                      <img 
+                        src={uploadedImage} 
+                        alt="Preview" 
+                        className="w-full h-80 object-cover rounded-lg mb-4"
+                      />
+                      <button
+                        onClick={() => setUploadedImage('')}
+                        className="text-sm text-red-500 hover:text-red-700"
+                      >
+                        Hapus gambar
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mb-6">
+                      <div className="flex justify-center mb-6">
+                        <Upload className="w-16 h-16 text-gray-400" />
+                      </div>
+                      <p className="text-gray-700 font-medium mb-2">Seret atau unggah gambar</p>
+                      <p className="text-sm text-gray-400 mb-6">
+                        atau klik tombol dibawah ini untuk memilih file
+                      </p>
+                    </div>
+                  )}
+                  
+                  <label className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors mx-auto">
+                    <Paperclip className="w-5 h-5" />
+                    <span className="font-medium">Pilih File</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
 
             {/* Form */}
             <div className="space-y-6">
@@ -126,7 +181,6 @@ export default function BuatArtikel({categories}: Props) {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </>
   );
