@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pest extends Model
 {
     protected $fillable = [
-        'name', 'description', 'scientific_name'
+        'name', 'description', 'scientific_name', 'img_path'
     ];
 
     // hubungan ini antara pest menyebabkan

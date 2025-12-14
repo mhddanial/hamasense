@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Disease extends Model
 {
     protected $fillable = [
-        'name', 'cause', 'solution', 'severity_level', 'plant_type_id'
+        'name', 'description', 'cause', 'solution', 'severity_level', 'plant_type_id', 'img_path'
     ];
 
     public function caused_by()

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PlantType extends Model
 {
     protected $fillable = [
-        'name', 'scientific_name', 'detail'
+        'name', 'scientific_name', 'detail', 'img_path'
     ];
 
     // lagi dibuat untuk model pic
