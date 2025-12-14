@@ -11,12 +11,18 @@ use Inertia\Inertia;
 
 class ArticleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $articles = Article::all();
+        $keyword = $request->query('keyword');
+        $articles = Article::query()->with(['category', 'writer'])->when($keyword, function ($query, $keyword) {
+            $search_term = "%{$keyword}%";
+            return $query->where(function ($q) use ($search_term) {
+                $q->where('title', 'like', $search_term);
+            });
+        })->latest()->paginate(12);
 
         return Inertia::render('admin/article/index', [
-            'articles' => $articles->load(['category', 'writer'])
+            'articles' => $articles
         ]);
     }
 
@@ -39,8 +45,19 @@ class ArticleController extends Controller
             $field = $request->validate([
                 'title' => 'required|string',
                 'content' => 'required|string',
-                'category_id' => 'required|int|min:1'
+                'category_id' => 'required|int|min:1',
+                'img_path' => 'image'
             ]);
+
+            if($request->hasFile('img_path')) {
+
+                $file = $request->file('img_path');
+                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
+
+                $file->storeAs('article', $file_name, 'public');
+                $field['img_path'] = $file_name;
+            }
+
 
             $user = Auth::user();
             $field['writer_id'] = $user->id;
@@ -48,6 +65,8 @@ class ArticleController extends Controller
             $new_article = Article::create($field);
 
             DB::commit();
+            return redirect('/admin/article')->with('success', 'Article category created successfully');
+            
             return response()->json([
                 'status' => true,
                 'message' => 'Article created successfully',
@@ -80,12 +99,22 @@ class ArticleController extends Controller
             $field = $request->validate([
                 'title' => 'required|string',
                 'content' => 'required|string',
-                'category_id' => 'required|int|min:1'
+                'category_id' => 'required|int|min:1',
+                'old_img' => 'string|nullable',
+                'new_img' => 'image|nullable'
             ]);
+
+            if($request->hasFile('new_img')) {
+                $file = $request->file('new_img');
+                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('article', $file_name, 'public');
+                $field['img_path'] = $file_name;
+            }
 
             $updated_article = $article->update($field);
 
             DB::commit();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Article updated successfully',

@@ -46,23 +46,35 @@ class PlantController extends Controller
             $field = $request->validate([
                 'name' => 'required|string',
                 'scientific_name' => 'required|string',
-                'description' => 'required|string'
+                'description' => 'required|string',
+                'img_path' => 'image|nullable'
             ]);
+
+            if($request->hasFile('img_path')) {
+                $file = $request->file('img_path');
+                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
+
+                $file->storeAs('plant', $file_name, 'public');
+                $field['img_path'] = $file_name;
+
+                // return response()->json([
+                //     'message' => 'foto berhasil'
+                // ]);
+            }
+
+            // return response()->json([
+            //     'message' => 'foto gagal'
+            // ]);
 
             $new_pest = Plant::create($field);
 
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'New Plant Added Successfully',
-                'result' => $new_pest
-            ]);
+
+            // return redirect('admin/plant')->with('success', 'New Pest Added Successfully!');
+
         } catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return redirect('admin/plant')->with('error', 'Failed to Add new Pest data: ' . $e->getMessage());
         }
     }
 
@@ -80,17 +92,11 @@ class PlantController extends Controller
             $pest->update($field);
 
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'Plant\'s data updated successfully',
-                'result' => $pest
-            ]);
+            return redirect('admin/plant')->with('success', 'Pest Updated Successfully!');
+
         }catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return redirect('admin/plant')->with('error', 'Failed to updated new Pest data: ' . $e->getMessage());
         }
     }
 
@@ -100,19 +106,13 @@ class PlantController extends Controller
         
         try{
             $pest->delete();
-            
 
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'Article deleted successfully',
-            ]);
+            return redirect('admin/plant')->with('success', 'Pest Deleted Successfully!');
+
         }catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return redirect('admin/plant')->with('error', 'Failed to Deleted new Pest data: ' . $e->getMessage());
         }
     }
 
