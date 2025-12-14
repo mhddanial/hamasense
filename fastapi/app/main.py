@@ -1,10 +1,18 @@
 import os
+# Limitasi TensorFlow Resource
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
+
 import tempfile
 import asyncio
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
@@ -12,8 +20,14 @@ from urllib.parse import urlparse
 from urllib.request import urlretrieve
 
 import numpy as np
+import tensorflow as tf
+# Optimasi Threading TensorFlow
+tf.config.threading.set_intra_op_parallelism_threads(1)
+tf.config.threading.set_inter_op_parallelism_threads(1)
+
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+
 
 # --- IMPORT GEMINI SERVICE ---
 from .gemini_service import get_gemini_advice, AdviceResponse
@@ -23,8 +37,16 @@ load_dotenv()
 # =====================================================
 # KONFIGURASI DASAR
 # =====================================================
-MODEL_PATH = os.getenv("MODEL_PATH", "best_model_finetuned.keras")
-CLASS_JSON_PATH = os.getenv("CLASS_JSON_PATH", "class_indices.json")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.getenv(
+    "MODEL_PATH",
+    os.path.join(BASE_DIR, "..", "model_artifacts", "best_model_finetuned.keras")
+)
+
+CLASS_JSON_PATH = os.getenv(
+    "CLASS_JSON_PATH",
+    os.path.join(BASE_DIR, "..", "model_artifacts", "class_indices.json")
+)
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
 
 # Threshold Config
@@ -45,6 +67,13 @@ else:
 # =====================================================
 # (Bagian ini sama persis seperti sebelumnya)
 import json
+
+model = None
+def get_model():
+    global model
+    if model is None:
+        model = load_model(MODEL_PATH, compile=False)
+    return model
 
 def is_url(path_or_url: str) -> bool:
     try:
@@ -68,11 +97,9 @@ def normalized_entropy(p: np.ndarray) -> float:
     Hmax = np.log(len(p))
     return float(H / Hmax)
 
-print(f"Memuat model dari: {MODEL_PATH}")
-model = load_model(MODEL_PATH, compile=False)
-
 if IMG_SIZE is None:
-    ishape = model.input_shape
+    m = get_model()
+    ishape = m.input_shape
     if isinstance(ishape, (list, tuple)) and isinstance(ishape[0], (list, tuple)):
         ishape = ishape[0]
     IMG_SIZE = (ishape[1] or 224, ishape[2] or 224)
@@ -122,7 +149,7 @@ def run_cnn_inference(image_path: str) -> InferenceResult:
     img = image.load_img(image_path, target_size=IMG_SIZE)
     img_array = np.expand_dims(image.img_to_array(img), 0) / 255.0
 
-    predictions = model.predict(img_array)
+    predictions = get_model().predict(img_array)
     score = predictions[0]
 
     sorted_idx = np.argsort(score)[::-1]
@@ -177,8 +204,7 @@ async def predict(
                 temp_path = tmp.name
 
         # 3. Jalankan CNN (Visual Detection)
-        # Ini berjalan cepat (< 0.2 detik)
-        cnn_result = run_cnn_inference(temp_path)
+        cnn_result = await run_in_threadpool(run_cnn_inference, temp_path)
         
         gemini_result = None
 
@@ -268,3 +294,7 @@ async def analyze_followup(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
