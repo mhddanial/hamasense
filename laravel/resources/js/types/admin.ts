@@ -9,11 +9,21 @@ type Timestamps = {
     updated_at: string;
 }
 
+export type DiseaseInput = {
+    name:string;
+    description: string;
+    cause: string;
+    solution: string;
+    severity_level: string;
+    plant_type_id: number;
+    img_path: string;
+}
+
 export type PlantInput = {
     name: string;
     scientific_name: string;
     detail: string;
-    images: string[];
+    img_path: string;
 }
 
 export type Category = {
@@ -34,14 +44,14 @@ export type ArticleInput = {
   writer_id: number;
   writer: Writer;
   category: Category;
-  image: string;
+  img_path: string;
 }
 
 export type PestInput = {
     name: string;
     scientific_name: string;
     description: string;
-    pics: string[];
+    img_path: string;
 }
 
 export interface Article extends ArticleInput, Id, Timestamps {
@@ -54,4 +64,8 @@ export interface Pest extends PestInput, Id, Timestamps {
 
 export interface Plant extends PlantInput, Id, Timestamps {
 
+}
+
+export interface Disease extends DiseaseInput, Id, Timestamps {
+    
 }
