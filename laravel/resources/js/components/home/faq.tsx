@@ -9,7 +9,7 @@ export function Faq({ items, title = 'Lihat Apa yang Sering Ditanyakan', eyebrow
     subtitle?: string
 }) {
     return (
-        <section className="relative bg-white md:py-16">
+        <section className="relative bg-white py-8 md:py-16">
             <div className="mx-auto max-w-6xl px-6 lg:px-8">
                 <div className="mb-10 text-center">
                     <p className="mb-3 text-md font-bold uppercase tracking-wider text-[#266055]">{eyebrow}</p>
