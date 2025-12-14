@@ -16,7 +16,6 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Home, ScanEye, History, Bug, MessageSquare } from 'lucide-react';
 import AppLogo from './app-logo';
-
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -35,7 +34,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Info Hama',
-        href: route('pest.index'),
+        href: route('pest.userIndex'),
         icon: Bug,
     },
     {

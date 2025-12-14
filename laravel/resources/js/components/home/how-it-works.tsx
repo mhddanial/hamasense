@@ -1,4 +1,3 @@
-
 'use client'
 
 export function HowItWorks() {
@@ -8,16 +7,15 @@ export function HowItWorks() {
                 {/* Header */}
                 <div className="mb-16 text-center">
                     <p className="mb-3 text-md font-bold uppercase tracking-wider text-[#266055]">CARA KERJA</p>
-                    <h2 className="text-3xl font-bold leading-tight text-[#1b1b18] sm:text-4xl">
+                    <h2 className="mb-4 text-3xl font-bold leading-tight text-[#1b1b18] sm:text-4xl">
                         Proses Cepat Dalam 3 Langkah Mudah
                     </h2>
+                    <p className="mx-auto max-w-2xl text-lg text-gray-600">Identifikasi tanaman anda dengan mudah menggunakan teknologi AI kami.</p>
                 </div>
 
                 {/* Steps container */}
                 <div className="relative text-center sm:text-left">
-                    {/* Line */}
                     <div className="absolute left-1/2 top-0 hidden h-full w-0.5 -translate-x-1/2 bg-gradient-to-b from-[#266055] via-[#266055] to-[#266055]/30 md:block" />
-
                     <div className="space-y-16 md:space-y-24">
                         {/* Step 01 */}
                         <div className="relative grid grid-cols-1 items-center gap-8 md:grid-cols-2">

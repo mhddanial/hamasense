@@ -1,83 +1,62 @@
-import React from 'react';
-import {CoffeeIcon, Eye} from 'lucide-react';
-import { Card, CardTitle, CardHeader, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { Eye } from "lucide-react";
+import { Card, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { pest } from "@/types/pest";
 
-interface Pest {
-    id: number;
-    nama: string;
-    namaIlmiah: string;
-    kategori: string;
-    risiko: string;
-    gambar: string;
-    tanaman: string[];
-}
-
-const PestCard: React.FC<{pest:Pest}> = ({pest}) => {
-    const getRiskColor =  (risk: string) => {
-        switch (risk.toLowerCase()) {
-            case 'berat' :
-                return 'bg-red-100 text-red-700';
-            case 'sedang':
-                return 'bg-orange-100 text-orange-700';
-            case 'ringan':
-                return 'bg-green-100 text-green-700';
+const PestCard: React.FC<{ pest: pest }> = ({ pest }) => {
+    const getRiskColor = (r: string) => {
+        switch (r.toLowerCase()) {
+            case "berat":
+                return "bg-red-100 text-red-700";
+            case "sedang":
+                return "bg-orange-100 text-orange-700";
+            case "ringan":
+                return "bg-green-100 text-green-700";
             default:
-                return 'bg-gray-100 text-gray-700';
+                return "bg-gray-100 text-gray-700";
         }
-    }
+    };
+
     return (
-        <Card className="border rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden p-0 gap-0">
+        <Card className="rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden">
             <img
-                src="{pest.gambar}"
-                alt="{pest.nama}"
+                src={pest.gambar}
+                alt={pest.nama}
                 className="w-full h-48 object-cover"
-                onError={(e: any) => {
-                    e.target.onError = null;
-                    e.target.src="";
-                }}
+                onError={(e) => (e.currentTarget.src = "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM=")}
             />
-            <CardContent className="flex flex-col gap-3 p-4 pt-4 pb-0">
-                <div className="flex justify-between items-center mb-1">
-                    <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
+
+            <CardContent className="p-4">
+                <div className="flex justify-between mb-2">
+                    <span className="bg-green-100 text-green-700 px-2 py-1 text-xs rounded-md">
                         {pest.kategori}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getRiskColor(pest.risiko)}`}>
+                    <span className={`px-2 py-1 text-xs rounded-md ${getRiskColor(pest.risiko)}`}>
                         Risiko: {pest.risiko}
                     </span>
                 </div>
-                <div>
-                    <CardTitle className="text-lg font-semibold mb-0 leading-tight">
-                        {pest.nama}
-                    </CardTitle>
-                    <CardDescription className="italic text-gray-600 text-sm mt-0">
-                        {pest.namaIlmiah}
-                    </CardDescription>
-                </div>
-                <div className="mt-1 text-sm">
-                    <p className="text-gray-600 mb-2">
-                        Tanaman yang diserang:
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                        {pest.tanaman.map((item) => (
-                            <span
-                                key={item}
-                                className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs font-medium"
-                            >
-                                {item}
-                            </span>
-                        ))}
-                    </div>
+
+                <CardTitle className="text-lg font-semibold">{pest.nama}</CardTitle>
+                <CardDescription className="italic text-gray-600 text-sm">{pest.namaIlmiah}</CardDescription>
+
+                <p className="text-sm text-gray-600 mt-3 mb-1">Tanaman yang diserang:</p>
+                <div className="flex flex-wrap gap-1">
+                    {pest.tanaman.map((t) => (
+                        <span key={t} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs">
+                            {t}
+                        </span>
+                    ))}
                 </div>
             </CardContent>
-            <CardFooter className="px-4 pb-4 pt-3 mt-auto">
-                <Button className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/80 text-white rounded-lg py-2 text-sm">
-                    <Eye />
-                    Lihat Detail
+
+            <CardFooter className="p-4 pt-0">
+                <Button className="w-full flex items-center justify-center gap-2">
+                    <Eye size={16} /> Lihat Detail
                 </Button>
             </CardFooter>
         </Card>
-    )
-}
+    );
+};
 
 export default PestCard;

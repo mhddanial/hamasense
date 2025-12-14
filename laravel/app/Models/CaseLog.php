@@ -9,8 +9,10 @@ class CaseLog extends Model
 {
     protected $fillable = [
         'case_id',
-        'conditional_note',
+        'message',
         'image_path',
+        'ai_response',
+        'type',
     ];
 
     public function Case()

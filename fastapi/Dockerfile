@@ -1,26 +1,32 @@
-FROM python:3.11-slim
+# Gunakan Python base image
+FROM python:3.10-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    OMP_NUM_THREADS=1 \
-    TF_NUM_INTRAOP_THREADS=1 \
-    TF_NUM_INTEROP_THREADS=1
+# Set workdir
+WORKDIR /app
 
-WORKDIR /srv
+# Prevent Python from writing pyc files
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# deps python
+# Install dependencies untuk OpenCV, Numpy dll
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
 COPY requirements.txt .
-RUN pip install --upgrade pip setuptools wheel \
- && pip install --only-binary=:all: -r requirements.txt
 
-# copy source (tanpa model_artifacts)
-COPY app ./app
+# Install Python requirements
+RUN pip install --no-cache-dir -r requirements.txt
 
-# default env (bisa di-override oleh .env / compose)
-ENV MODEL_PATH=app/models/best_model_finetuned_6class.h5
-ENV LABEL_MAP_PATH=app/class_indices.json
-ENV THRESHOLD=0.55
+# Copy seluruh kode fastapi
+COPY . .
 
+# Expose port
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", " --port", "8000"]
+
+# Jalankan server
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -5,12 +5,17 @@ import AdminLayout from '@/components/admin/layout';
 
 export default function TambahHama() {
 
-  const {data, setData, post} = useForm({
+  const {data, setData, post, transform} = useForm({
     name: '',
     scientific_name: '',
+    category: 'Serangga',
+    risk_level: 'Sedang',
     description: '',
     img_path: null
+    // images: [],
+    // plant_types: ''
   });
+
   const [uploadedImages, setUploadedImages] = useState([]);
 
   const handleInputChange = (e) => {
@@ -50,13 +55,29 @@ export default function TambahHama() {
     setData({
       name: '',
       scientific_name: '',
+      category: 'Serangga',
+      risk_level: 'Sedang',
       description: '',
+<<<<<<< HEAD
     images: []
+=======
+      images: [],
+      plant_types: ''
+>>>>>>> e9369f0cba236f9bf62bc5f57ceabe4d7e011474
     });
     setUploadedImages([]);
   };
 
-  const create = async () => {
+  const create = async (e) => {
+    e.preventDefault();
+
+    transform((data) => ({
+      ...data,
+      plant_types: data.plant_types 
+        ? data.plant_types.split(/,|\n/).map((item: string) => item.trim()).filter((item: string) => item !== '')
+        : []
+    }));
+
     post('/admin/pest/', {
       forceFormData: true
     });
@@ -156,6 +177,55 @@ export default function TambahHama() {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Kategori
+                      </label>
+                      <select
+                        name="category"
+                        value={data.category}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      >
+                        <option value="Serangga">Serangga</option>
+                        <option value="Jamur">Jamur</option>
+                        <option value="Bakteri">Bakteri</option>
+                        <option value="Virus">Virus</option>
+                        <option value="Lainnya">Lainnya</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tingkat Bahaya
+                      </label>
+                      <select
+                        name="risk_level"
+                        value={data.risk_level}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      >
+                        <option value="Rendah">Rendah</option>
+                        <option value="Sedang">Sedang</option>
+                        <option value="Berat">Berat</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tanaman yang Diserang
+                    </label>
+                    <textarea
+                      name="plant_types"
+                      value={data.plant_types}
+                      onChange={handleInputChange}
+                      placeholder="Ketikkan tanaman yang diserang (pisahkan dengan koma atau baris baru)"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[100px]"
+                    ></textarea>
+                    <p className="text-xs text-gray-500 mt-1">Pisahkan dengan koma atau baris baru.</p>
                   </div>
 
                   <div>

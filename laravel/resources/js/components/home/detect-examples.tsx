@@ -5,24 +5,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertTriangle, Check, CheckCircle2, Info } from 'lucide-react'
 import { Link } from '@inertiajs/react'
 import type { DetectionExample } from '@/types/home'
+import { route } from 'ziggy-js'
 
 function getSeverityColor(severity: DetectionExample['severity']): string {
-  switch (severity) {
-    case 'Tinggi':
-      return 'border-red-300 text-red-700'
-    case 'Sedang':
-      return 'border-yellow-300 text-yellow-700'
-    case 'Rendah':
-    default:
-      return 'border-green-300 text-green-700'
-  }
+    switch (severity) {
+        case 'Tinggi':
+            return 'border-red-300 text-red-700'
+        case 'Sedang':
+            return 'border-yellow-300 text-yellow-700'
+        case 'Rendah':
+        default:
+            return 'border-green-300 text-green-700'
+    }
 }
 
 export function DetectionExamples({
     examples,
     title = 'Lihat Hasil Deteksi AI Kami',
     subtitle = 'Lihat contoh deteksi penyakit tanaman yang berhasil diidentifikasi oleh sistem AI kami dengan akurasi tinggi',
-    ctaHref = '/dashboard',
+    ctaHref = route('detect.index'),
     ctaLabel = 'Mulai deteksi sekarang →',
 }: {
     examples: DetectionExample[]

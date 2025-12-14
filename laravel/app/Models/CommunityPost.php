@@ -7,8 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class CommunityPost extends Model
 {
     protected $fillable = [
-        'title', 'content', 'like_total', 'created_by'
+        'title',
+        'content',
+        'category',
+        'image',
+        'like_total',
+        'created_by'
     ];
+
+    // TAMBAH INI
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return null;
+    }
 
     public function owned_by()
     {

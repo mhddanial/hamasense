@@ -214,3 +214,57 @@ async def predict(
         # Bersihkan file temp
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
+
+# =====================================================
+# ENDPOINT FOLLOW-UP (CONTINUOUS CARE)
+# =====================================================
+@app.post("/analyze-followup")
+async def analyze_followup(
+    file_old: UploadFile = File(...),
+    file_new: UploadFile = File(...),
+    predicted_label: str = Form(...),
+    confidence: float = Form(...),
+    user_prompt: str = Form(...),
+):
+    """
+    Endpoint khusus untuk membandingkan kondisi tanaman (Old vs New).
+    """
+    print(f"Follow-up Analysis for {predicted_label}...")
+    
+    # 1. Read files into memory (bytes)
+    # Gemini (google-generativeai) bisa menerima raw bytes dengan mime_type
+    
+    content_old = await file_old.read()
+    content_new = await file_new.read()
+    
+    # MIME type sniffing (sederhana)
+    mime_old = file_old.content_type or "image/jpeg"
+    mime_new = file_new.content_type or "image/jpeg"
+
+    # 2. Siapkan Image Parts untuk Gemini
+    # Urutan: [Foto Lama, Foto Baru]
+    image_parts = [
+        {"mime_type": mime_old, "data": content_old},
+        {"mime_type": mime_new, "data": content_new},
+    ]
+    
+    # 3. Buat Context khusus Comparison
+    context_instruction = (
+        f"COMPARE TWO IMAGES. Image 1: Original condition. Image 2: Current condition. "
+        f"User Note: {user_prompt}. "
+        f"Analyze if the condition has improved, worsened, or stayed the same based on the treatment."
+    )
+
+    # 4. Call Gemini
+    try:
+        gemini_result = await get_gemini_advice(
+            predicted_label=predicted_label,
+            confidence=confidence,
+            locale="id",
+            context=context_instruction,
+            image_parts=image_parts
+        )
+        return gemini_result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

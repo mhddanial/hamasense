@@ -204,7 +204,7 @@ export default function ArticlesIndex(props: ArticlesPageProps) {
 
   return (
     <HomeLayout
-      title="Artikel"
+      title="Jelajahi Artikel"
       navItems={props.navItems}
       hero={{
         size: 'half',
@@ -212,7 +212,7 @@ export default function ArticlesIndex(props: ArticlesPageProps) {
           imageUrl: '/images/bg-hero.png',
           overlay: 'bg-gradient-to-b from-black/60 via-black/40 to-black/70',
         },
-        content: <Hero className="md:mt-10" title={`Artikel`} showPills={false} />,
+        content: <Hero className="md:mt-10" title={`Jelajahi Artikel`} showPills={false} />,
       }}
     >
       <section className="mx-auto max-w-6xl px-6 py-10 lg:py-16">

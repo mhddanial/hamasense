@@ -99,7 +99,8 @@ def _build_prompt(predicted_label: str, confidence: float, locale: str, context:
     2. STRICTLY follow the JSON structure provided in the example.
     3. SAFETY RULE: Do NOT provide instructions on how to manufacture chemicals. Focus on commercially available solutions and biological control (IPM).
     4. Keep explanation concise and educational.
-
+    5. IF IMAGES ARE PROVIDED: Compare the conditions if requested. If 'context' asks for comparison, the input images are [Old, New].
+    
     Expected JSON Structure:
     {example_json}
 
@@ -115,7 +116,8 @@ async def get_gemini_advice(
     predicted_label: str,
     confidence: float,
     locale: str = "id",
-    context: Optional[str] = None
+    context: Optional[str] = None,
+    image_parts: Optional[List[dict]] = None
 ) -> AdviceResponse:
     
     api_key = os.getenv("GEMINI_API_KEY")
@@ -124,17 +126,8 @@ async def get_gemini_advice(
 
     genai.configure(api_key=api_key)
     
-    # REKOMENDASI: Gunakan gemini-2.0-flash yang ada di daftar Anda.
-    # Model ini cepat dan cukup cerdas. Jika ingin tetap pro, ganti stringnya.
     env_model = os.getenv("GEMINI_MODEL", "models/gemini-2.0-flash")
     
-    # Bersihkan nama model jika user hanya menulis "gemini-2.0-flash" tanpa "models/"
-    if not env_model.startswith("models/") and "gemini" in env_model:
-        # Biarkan library menangani aliasing, atau force prefix jika perlu
-        pass
-
-    # --- SAFETY SETTINGS: FORMAT SDK ENUM (WAJIB UNTUK GEMINI 2.0/2.5) ---
-    # Menggunakan Object Enum memastikan setting ini dipahami oleh server Google
     safety_settings = {
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -147,7 +140,23 @@ async def get_gemini_advice(
         "max_output_tokens": 1000,
     }
 
+    # Construct the Prompt Parts
+    prompt_parts = []
+    
+    # 1. System/Context Prompt
     prompt = _build_prompt(predicted_label, confidence, locale, context)
+    prompt_parts.append(prompt)
+    
+    # 2. Images (if any)
+    if image_parts:
+        for img in image_parts:
+            # img expected format: {"mime_type": "image/jpeg", "data": bytes}
+            prompt_parts.append(img)
+            
+    # 3. User Context / Specific Follow-up Prompt
+    if context:
+        prompt_parts.append(f"\nUser Additional Notes/Context: {context}")
+
     model = genai.GenerativeModel(env_model)
 
     max_retries = 2
@@ -157,23 +166,19 @@ async def get_gemini_advice(
         try:
             print(f"[Gemini] Attempt {attempt+1}/{max_retries} using {env_model} for {predicted_label}...")
             
+            # Generate content with list of parts (Text + Images)
             resp = await model.generate_content_async(
-                prompt, 
+                prompt_parts, 
                 generation_config=generation_config, 
                 safety_settings=safety_settings
             )
 
-            # Cek jika response diblokir
             if not resp.parts:
                 finish_reason = resp.candidates[0].finish_reason if resp.candidates else "Unknown"
                 print(f"[Gemini BLOCKED] Reason Code: {finish_reason}")
-                
-                # Feedback loop: Jika diblokir, coba tambah instruksi "Educational only" (opsional)
                 raise ValueError(f"Blocked by Safety Filter (Reason: {finish_reason})")
 
             raw_text = resp.text
-            # print(f"[DEBUG RAW]: {raw_text[:50]}...") 
-
             parsed_dict = _clean_and_parse_json(raw_text)
             
             data = AdviceJSON(
@@ -193,7 +198,6 @@ async def get_gemini_advice(
         except Exception as e:
             print(f"[Gemini] Error attempt {attempt+1}: {e}")
             last_error = e
-            # Sedikit delay sebelum retry
             await asyncio.sleep(1)
             continue
 
