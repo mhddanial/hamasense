@@ -110,7 +110,7 @@ export default function Register() {
 
                             <Button
                                 type="submit"
-                                className="w-full dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
+                                className="w-full cursor-pointer bg-primary hover:bg-primary/90 dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >

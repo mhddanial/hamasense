@@ -60,7 +60,7 @@ export default function HamaSenseDashboard() {
   ];
 
   return (
-    <AdminLayout page_title=''>
+    <AdminLayout>
 
       {/* Main Content */}
 

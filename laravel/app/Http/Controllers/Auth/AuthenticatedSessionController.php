@@ -42,11 +42,15 @@ class AuthenticatedSessionController extends Controller
         }
 
         Auth::login($user, $request->boolean('remember'));
-
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if ($user->role === 'admin') {
+            return redirect()->intended('/admin/dashboard');
+        } else {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
     }
+
 
     /**
      * Destroy an authenticated session.

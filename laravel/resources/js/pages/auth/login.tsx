@@ -97,7 +97,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                             <Button
                                 type="submit"
-                                className="p-5 w-full dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
+                                className="p-5 w-full cursor-pointer bg-primary hover:bg-primary/90 dark:bg-emerald-800 dark:text-accent-foreground dark:hover:bg-emerald-800/90"
                                 tabIndex={4}
                                 variant={'default'}
                                 disabled={processing}

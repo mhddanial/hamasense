@@ -12,7 +12,7 @@ import { dashboard } from '@/routes';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { Bell, LogOut, Settings, LayoutDashboard } from 'lucide-react';
-
+import { route } from 'ziggy-js';
 interface UserMenuContentProps {
     user: User;
     variant?: 'default' | 'minimal';
@@ -26,6 +26,11 @@ export function UserMenuContent({ user, variant = 'default' }: UserMenuContentPr
         router.flushAll();
     };
 
+    const dashboardHref =
+        user.role === 'admin'
+            ? route('admin.dashboard')
+            : route('dashboard');
+
     return (
         <>
         <DropdownMenuLabel className="p-0 font-normal">
@@ -33,13 +38,13 @@ export function UserMenuContent({ user, variant = 'default' }: UserMenuContentPr
                 <UserInfo user={user} showEmail />
             </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+    <DropdownMenuSeparator />
 
         {variant === 'minimal' ? (
             <>
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                <Link className="block w-full hover:cursor-pointer" href={dashboard()} prefetch onClick={cleanup}>
+                <Link className="block w-full hover:cursor-pointer" href={dashboardHref} prefetch onClick={cleanup}>
                     <LayoutDashboard className="mr-2" />
                     Dashboard
                 </Link>

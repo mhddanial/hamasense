@@ -9,17 +9,15 @@ use App\Http\Controllers\PestController;
 use App\Http\Controllers\PlantTypeController;
 use Inertia\Inertia;
 
-Route::middleware('admin')->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard']);
-
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/user', [AdminController::class, 'user']);
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::resource('/pest', PestController::class);
     Route::resource('/plant', PlantTypeController::class);
     Route::resource('/article', ArticleController::class);
     Route::resource('/article-category', ArticleCategoryController::class);
     Route::resource('/disease', DiseaseController::class);
 });
-
-Route::get('/user', [AdminController::class, 'user']);
 
 // Route::prefix('/api')->group(function () {
 //     Route::apiResource('/article', ArticleController::class);
