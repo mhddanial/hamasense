@@ -2,39 +2,46 @@ version: "3.9"
 
 services:
 
-  # ------------------------------------
-  # FASTAPI SERVICE
-  # ------------------------------------
+  # ==============================
+  # FASTAPI (AI SERVICE)
+  # ==============================
   fastapi:
     build: ./fastapi
     container_name: fastapi_ai_service
     ports:
       - "8000:8000"
+    env_file:
+      - ./fastapi/.env
+    volumes:
+      - ./fastapi/app:/app
+      - ./fastapi/model_artifacts:/app/model_artifacts:ro
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
     restart: always
 
-  # ------------------------------------
-  # LARAVEL APPLICATION (NO FULL MOUNT!)
-  # ------------------------------------
+  # ==============================
+  # LARAVEL (PHP-FPM)
+  # ==============================
   laravel:
     build: ./laravel
     container_name: laravel_web_app
     expose:
       - "9000"
     volumes:
-      - ./laravel/app:/var/www/app
-      - ./laravel/config:/var/www/config
       - ./laravel/storage:/var/www/storage
-      - ./laravel/public:/var/www/public
       - ./laravel/bootstrap/cache:/var/www/bootstrap/cache
+      - ./laravel/public:/var/www/public
       - ./laravel/.env:/var/www/.env
     depends_on:
       - mysql
       - fastapi
     restart: always
 
-  # ------------------------------------
+  # ==============================
   # NGINX
-  # ------------------------------------
+  # ==============================
   nginx:
     image: nginx:latest
     container_name: nginx_proxy
@@ -47,15 +54,13 @@ services:
       - laravel
     restart: always
 
-  # ------------------------------------
-  # MYSQL DATABASE
-  # ------------------------------------
+  # ==============================
+  # MYSQL
+  # ==============================
   mysql:
     image: mysql:8.0
     container_name: mysql_db
     restart: always
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: hamasense
