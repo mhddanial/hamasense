@@ -27,4 +27,8 @@ RUN npm install && npm run build
 # Set permissions
 RUN chmod -R 775 storage bootstrap/cache
 
+RUN php artisan storage:link
+
+RUN php artisan migrate:fresh --seed
+
 CMD ["php-fpm"]

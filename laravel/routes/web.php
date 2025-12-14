@@ -9,7 +9,11 @@ use App\Http\Controllers\PestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CommunityPostController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use Illuminate\Support\Facades\Http;
 
+Route::get('/test-ai', function () {
+    return Http::post(config('services.fastapi.url').'/health')->json();
+});
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');

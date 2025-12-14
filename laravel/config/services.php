@@ -30,6 +30,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'fastapi' => [
+        'url' => env('FASTAPI_BASE_URL'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],
