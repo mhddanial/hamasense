@@ -2,20 +2,29 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
-interface SearchBarButton {
+// Mengganti nama interface agar lebih umum (Props)
+interface SearchBarProps {
     value: string;
-    onChange: (value:string) => void;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    className?: string;
 }
 
-const SearchBar: React.FC<SearchBarButton> = ({value, onChange}) => {
+const SearchBar: React.FC<SearchBarProps> = ({ 
+    value, 
+    onChange, 
+    placeholder = "Cari...",
+    className 
+}) => {
     return (
-        <div className="relative w-full">
-            <Search className="absolute left-3 top-4.5 -translate-y-1/2 text-gray-500" />
+        <div className={`relative w-full ${className || ''}`}>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-                placeholder="Cari hama berdasarkan nama, nama ilmiah, atau tanaman"
+                type="text"
+                placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="pl-12"
+                className="pl-10"
             />
         </div>
     )

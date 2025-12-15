@@ -3,24 +3,27 @@ import React from 'react';
 import AdminSidebar from './Sidebar';
 import { AppShell } from '../app-shell';
 import { AppContent } from '../app-content';
+import { AppSidebarHeader } from '../app-sidebar-header';
+import { Toaster } from 'sonner';
+import { BreadcrumbItem } from '@/types';
+import { AppSidebar } from '../app-sidebar';
 
-export default function AdminLayout({children, page_title}: {children: React.ReactNode, page_title: string}) {
+export default function AdminLayout(
+  {
+        children,
+        breadcrumbs = [],
+    }: React.PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
   return (
         <>
-        <AppShell variant='sidebar'>
-          <AdminSidebar>
-          <AppContent variant='sidebar' className='overflow-x-hidden'>
-          {/* Content */}
-
-            <div className='bg-gray-200 min-h-full'>
-              <div className='m-5 rounded-lg shadow-xl bg-white p-5'>
+        <Toaster richColors={false} position="top-center" />
+          <AppShell variant="sidebar">
+            <AdminSidebar>
+              <AppContent variant="sidebar" className="overflow-x-hidden">
+                  <AppSidebarHeader breadcrumbs={breadcrumbs} />
                   {children}
-              </div>
-            </div>
-
-            </AppContent>
-          </AdminSidebar>
-        </AppShell>
+              </AppContent>              
+            </AdminSidebar>
+          </AppShell>
         </>
         
   );

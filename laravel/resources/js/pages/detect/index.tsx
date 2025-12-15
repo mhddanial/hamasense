@@ -295,6 +295,43 @@ export default function DetectPage() {
 
   const showAnalyzeSkeleton = isAnalyzing;
 
+  // 1. DATA SAMPLE
+  const sampleImages = [
+    {
+      label: "Bercak Daun",
+      url: "/images/tomato_bacterial_spot.jpg",
+      filename: "sample_bercak.jpg",
+    },
+    {
+      label: "Green Mite",
+      url: "/images/cassava_green_mite.jpg",
+      filename: "sample_green_mite.jpg",
+    },
+    {
+      label: "Gambar Ngawur",
+      url: "/images/gambar_ngawur.webp",
+      filename: "sample_ngawur.webp",
+    },
+  ];
+
+  // 2. HANDLER: Mengubah URL Gambar menjadi File Object
+  const handleSampleClick = async (url: string, filename: string) => {
+    try {
+      // Tampilkan loading sebentar jika perlu, atau langsung proses
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      // Buat File object dari Blob (meniru perilaku input type="file")
+      const file = new File([blob], filename, { type: blob.type });
+      
+      // Reuse logic yang sudah ada!
+      handleFileSelected(file);
+    } catch (error) {
+      console.error("Gagal memuat sample:", error);
+      alert("Gagal memuat gambar contoh.");
+    }
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Deteksi Hama Tanaman" />
@@ -537,6 +574,49 @@ export default function DetectPage() {
                     )}
                     {processing ? "Sedang memproses..." : "Deteksi Sekarang"}
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* --- TAMBAHAN: BAGIAN SAMPLE DATA --- */}
+            <Card className="border-sidebar-border/70 dark:border-sidebar-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Gunakan Gambar Contoh</CardTitle>
+                <CardDescription>
+                  Belum punya foto daun? Coba deteksi menggunakan gambar sampel
+                  berikut untuk melihat bagaimana AI bekerja.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {sampleImages.map((sample, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSampleClick(sample.url, sample.filename)}
+                      className="group relative aspect-square w-full overflow-hidden rounded-lg border bg-muted transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2"
+                      disabled={processing || isAnalyzing}
+                    >
+                      <img
+                        src={sample.url}
+                        alt={sample.label}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      {/* Label Overlay */}
+                      <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1.5 backdrop-blur-sm transition-opacity">
+                        <p className="text-[10px] font-medium text-white text-center truncate">
+                          {sample.label}
+                        </p>
+                      </div>
+                      
+                      {/* Loading overlay saat user klik sample ini */}
+                      {processing && (
+                          <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+                            <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
+                          </div>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </CardContent>
             </Card>

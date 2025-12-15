@@ -9,7 +9,11 @@ use App\Http\Controllers\PestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CommunityPostController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use Illuminate\Support\Facades\Http;
 
+Route::get('/test-ai', function () {
+    return Http::post(config('services.fastapi.url').'/health')->json();
+});
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -19,20 +23,8 @@ Route::get('/articles/{slug}', [HomeController::class, 'articleShow'])->name('ar
 // Community Routes - Public bisa lihat, login untuk aksi
 Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
 
-// Community Actions - Harus login
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/community', [CommunityPostController::class, 'store'])->name('community.store');
-    Route::put('/community/{post}', [CommunityPostController::class, 'update'])->name('community.update');
-    Route::delete('/community/{post}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
-
-    // Like, bookmark, comment
-    Route::post('/community/{post}/like', [CommunityPostController::class, 'toggleLike'])->name('community.like');
-    Route::post('/community/{post}/bookmark', [CommunityPostController::class, 'toggleBookmark'])->name('community.bookmark');
-    Route::post('/community/{post}/comment', [CommunityPostController::class, 'addComment'])->name('community.comment');
-});
-
 // User Dashboard
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/weather-location', [DashboardController::class, 'updateWeatherByGPS'])
     ->name('weather.update-location');
@@ -50,7 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/detect-history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
 
-    Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.userIndex');
+    Route::get('/pest-info', function () {
+        return Inertia::render('pest-info/index');
+    })->name('pest.user.index');
+
+    Route::get('/pest-info/{slug}', [PestController::class, 'show'])->name('pest.user.show');
 
     Route::get('/pest-info/detail', function () {
         return Inertia::render('pest-info/detail');
@@ -60,8 +56,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('continuous_care/index');
     })->name('continuous_care.index');
 
-    // HAPUS BARIS INI (duplikasi)
-    // Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
+    Route::post('/community', [CommunityPostController::class, 'store'])->name('community.store');
+    Route::put('/community/{post}', [CommunityPostController::class, 'update'])->name('community.update');
+    Route::delete('/community/{post}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
+
+    // Like, bookmark, comment
+    Route::post('/community/{post}/like', [CommunityPostController::class, 'toggleLike'])->name('community.like');
+    Route::post('/community/{post}/bookmark', [CommunityPostController::class, 'toggleBookmark'])->name('community.bookmark');
+    Route::post('/community/{post}/comment', [CommunityPostController::class, 'addComment'])->name('community.comment');
 
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
     Route::post('/cases/create-from-detection/{historyId}', [CaseController::class, 'createFormDetection'])->name('cases.createFormDetection');
