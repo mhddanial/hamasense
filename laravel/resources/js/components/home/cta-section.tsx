@@ -30,7 +30,7 @@ export function CtaSection() {
                 </p>
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
                     <a
-                        href="/contact"
+                        href="#"
                         className="rounded-full bg-white px-7 py-3 text-sm font-semibold text-primary transition-colors hover:bg-gray-100"
                     >
                         Hubungi Kami

@@ -31,7 +31,7 @@ const DUMMY_ARTICLES: Article[] = [
   {
     id: 1,
     title: 'Mengenal Gejala Awal Serangan Ulat Grayak pada Jagung',
-    slug: 'gejala-awal-ulat-grayak',
+    slug: '#',
     excerpt:
       'Pelajari ciri-ciri serangan ulat grayak sejak dini agar mitigasi bisa dilakukan lebih cepat.',
     category: 'Hama',
@@ -44,7 +44,7 @@ const DUMMY_ARTICLES: Article[] = [
   {
     id: 2,
     title: 'Perbedaan Bercak Bakteri dan Jamur pada Cabai',
-    slug: 'bercak-bakteri-vs-jamur-cabai',
+    slug: '#',
     excerpt:
       'Sering tertukar? Kenali perbedaannya agar tidak salah memilih langkah penanganan.',
     category: 'Penyakit',
@@ -57,7 +57,7 @@ const DUMMY_ARTICLES: Article[] = [
   {
     id: 3,
     title: 'Strategi Ramah Lingkungan: Musuh Alami pada Singkong',
-    slug: 'musuh-alami-di-singkong',
+    slug: '#',
     excerpt:
       'Optimalkan peran predator untuk menekan populasi tungau hijau secara berkelanjutan.',
     category: 'Budidaya',
@@ -70,7 +70,7 @@ const DUMMY_ARTICLES: Article[] = [
   {
     id: 4,
     title: 'Rotasi Tanaman untuk Menekan Penyakit Busuk Daun Tomat',
-    slug: 'rotasi-tanaman-busuk-daun',
+    slug: '#',
     excerpt: 'Mengurangi inokulum patogen di lahan lewat pola rotasi yang tepat.',
     category: 'Budidaya',
     author: 'Rina Putri',
@@ -82,7 +82,7 @@ const DUMMY_ARTICLES: Article[] = [
   {
     id: 5,
     title: 'Checklist Foto Ideal untuk Deteksi AI yang Akurat',
-    slug: 'checklist-foto-deteksi-ai',
+    slug: '#',
     excerpt:
       'Gunakan pencahayaan, fokus, dan framing yang benar agar hasil deteksi maksimal.',
     category: 'Panduan',
@@ -95,7 +95,7 @@ const DUMMY_ARTICLES: Article[] = [
   {
     id: 6,
     title: 'Kapan Sebaiknya Menggunakan BT (Bacillus thuringiensis)?',
-    slug: 'kapan-gunakan-bt',
+    slug: '#',
     excerpt:
       'BT efektif untuk larva tertentu, tetapi perhatikan timing dan cara aplikasi.',
     category: 'Hama',

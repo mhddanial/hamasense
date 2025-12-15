@@ -17,21 +17,21 @@ const data = {
   githubLink: '#',
   dribbbleLink: '#',
   services: {
-    detection: '/fitur/deteksi-hama',
-    aiAnalysis: '/fitur/analisis-ai',
-    weather: '/fitur/prediksi-cuaca',
-    community: '/komunitas',
+    detection: '#',
+    aiAnalysis: '#',
+    weather: '#',
+    community: '#',
   },
   about: {
-    history: '/tentang',
-    team: '/tim',
-    handbook: '/panduan-pengguna',
-    careers: '/karier',
+    history: '#',
+    team: '#',
+    handbook: '#',
+    careers: '#',
   },
   help: {
-    faqs: '/faq',
-    support: '/dukungan',
-    livechat: '/live-chat',
+    faqs: '#',
+    support: '#',
+    livechat: '#',
   },
   contact: {
     email: 'hamasense.app@gmail.com',
@@ -82,7 +82,7 @@ const contactInfo = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#FDFDFC] w-full place-self-end rounded-t-xl">
+    <footer className="bg-[#FDFDFC] w-full place-self-end rounded-t-xl border-t border-gray-200">
       <div className="mx-auto max-w-screen-xl px-4 pt-16 pb-6 sm:px-6 lg:px-8 lg:pt-24">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div>

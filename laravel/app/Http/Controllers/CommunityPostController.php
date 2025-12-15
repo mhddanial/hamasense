@@ -95,6 +95,7 @@ class CommunityPostController extends Controller
             'comments' => 0,
             'isLiked' => false,
             'isBookmarked' => false,
+            'success' => 'Postingan berhasil dibuat.',
         ]);
     }
 
