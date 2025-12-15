@@ -79,17 +79,6 @@ export function UserMenuContent({ user, variant = 'default' }: UserMenuContentPr
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                <Link className="block w-full hover:cursor-pointer" href={edit()} as="button" prefetch onClick={cleanup}>
-                    <Bell className="mr-2" />
-                    Notifikasi
-                </Link>
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
-
-            <DropdownMenuSeparator />
-
             <DropdownMenuItem asChild>
                 <Link
                     className="block w-full hover:cursor-pointer"

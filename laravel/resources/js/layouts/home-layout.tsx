@@ -148,7 +148,7 @@ export default function HomeLayout({ title, navItems, children, hero }: Props) {
                                     {auth.user ? (
                                     <NavbarButton
                                         href="/dashboard"
-                                        className="w-full justify-center bg-primary text-white"
+                                        className="w-full justify-center bg-primary text-white hover:bg-primary/90"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
                                         Dashboard

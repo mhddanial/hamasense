@@ -46,6 +46,8 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
         return Inertia::render('pest-info/index');
     })->name('pest.user.index');
 
+    Route::get('/pest-info/{slug}', [PestController::class, 'show'])->name('pest.user.show');
+
     Route::get('/pest-info/detail', function () {
         return Inertia::render('pest-info/detail');
     })->name('pest.detail');

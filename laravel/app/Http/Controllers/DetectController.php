@@ -130,7 +130,7 @@ class DetectController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
-        return Inertia::render('detect/history-test', [
+        return Inertia::render('detect/history', [
             'history' => $history,
         ]);
     }

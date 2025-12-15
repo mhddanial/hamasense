@@ -33,7 +33,6 @@ export default function Register() {
                                     id="name"
                                     type="text"
                                     required
-                                    autoFocus
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"

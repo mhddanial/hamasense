@@ -148,7 +148,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
                     )}
                   </ul>
 
-                  <Button className="mt-6 w-full bg-primary" asChild>
+                  <Button className="mt-6 w-full bg-primary hover:bg-primary/90" asChild>
                     <Link href={route("detect.index")}>
                       <Camera className="mr-2 h-4 w-4" />
                       Coba Lagi
