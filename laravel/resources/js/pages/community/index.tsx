@@ -140,10 +140,10 @@ export default function KomunitasPage({ initialPosts = [] }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Kategori</SelectItem>
-                <SelectItem value="budidaya">Budidaya Sayuran</SelectItem>
-                <SelectItem value="tips">Tips & Trik</SelectItem>
-                <SelectItem value="hama">Hama & Penyakit</SelectItem>
-                <SelectItem value="pupuk">Pemupukan</SelectItem>
+                <SelectItem value="Budidaya">Budidaya Sayuran</SelectItem>
+                <SelectItem value="Tips & Trik">Tips & Trik</SelectItem>
+                <SelectItem value="Hama & Penyakit">Hama & Penyakit</SelectItem>
+                <SelectItem value="Pemupukan">Pemupukan</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -181,7 +181,7 @@ export default function KomunitasPage({ initialPosts = [] }) {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={(newPost) => addPost(newPost)}
-      />
+    />
 
       {/* Edit Post Modal */}
       <EditPostModal
