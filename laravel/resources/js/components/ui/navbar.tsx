@@ -175,11 +175,11 @@ export const MobileNavMenu = ({ children, className, isOpen, onClose }: MobileNa
           {/* Drawer */}
           <motion.div
             initial={{ x: "100%" }}
-            animate={{ x: 0   }}
+            animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
             className={cn(
-              "fixed top-0 right-0 h-screen w-[80%] max-w-sm z-[1000] bg-white shadow-xl flex flex-col px-6 py-6 lg:hidden",
+              "fixed top-0 right-0 h-full w-[80%] max-w-sm z-[1000] bg-white shadow-xl flex flex-col px-6 py-6 lg:hidden",
               className
             )}
           >
