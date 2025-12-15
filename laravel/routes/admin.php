@@ -1,13 +1,13 @@
 <?php
 
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PestController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ArticleCategoryController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\DiseaseController;
-use App\Http\Controllers\PestController;
 use App\Http\Controllers\PlantTypeController;
-use Inertia\Inertia;
+use App\Http\Controllers\ArticleCategoryController;
 
 Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard']);

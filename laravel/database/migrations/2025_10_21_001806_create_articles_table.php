@@ -14,6 +14,13 @@ return new class extends Migration
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('slug')->unique();
+            $table->string('image')->nullable();
+            $table->json('tags')->nullable();
+            $table->text('summary')->nullable();
+            $table->timestamp('published_at')->nullable();
+            $table->integer('views_count')->default(0);
+            $table->string('estimated_read_time')->nullable();
             $table->text('content');
             $table->foreignId('writer_id')->constrained(
                 table:'users',

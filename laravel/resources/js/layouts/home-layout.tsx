@@ -42,6 +42,8 @@ export default function HomeLayout({ title, navItems, children, hero }: Props) {
     const getAvatarUrl = () => {
         const avatar = auth.user?.avatar;
 
+        if (!auth.user || !auth.user.avatar) return null;
+
         if (!avatar) return null;
 
         return avatar.startsWith("http")

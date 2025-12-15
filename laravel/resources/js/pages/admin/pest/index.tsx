@@ -61,7 +61,7 @@ export default function KelolaDataHama({pests} : Props) {
   //   }
   // };
 
-  const removeNotification = (id) => {
+  const removeNotification = (id: any) => {
     setNotifications(prev => prev.filter(notif => notif.id !== id));
   };
 
