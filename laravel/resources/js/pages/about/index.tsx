@@ -130,12 +130,6 @@ export default function About(props: AboutPageProps) {
 
             {/* About Project Section */}
             <section className="relative overflow-hidden py-16 md:py-24">
-                {/* Animated background blobs */}
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-gradient-to-br from-primary/20 to-emerald-500/20 blur-3xl animate-pulse" />
-                    <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-                </div>
-
                 <div className="relative mx-auto max-w-7xl px-4 md:px-6">
                     <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
                         {/* Left Content */}

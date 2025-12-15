@@ -78,55 +78,6 @@ export default function KomunitasPage({ initialPosts = [] }) {
   // Use custom hook for posts logic
   const { posts, handleLike, handleBookmark, addPost, updatePost, deletePost } = useCommunityPosts(initialPosts);
 
-  // Dummy data for top contributors
-  const topContributors: TopContributor[] = [
-    {
-      id: 1,
-      name: 'Andi Prasetyo',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Andi',
-      posts: 45,
-      likes: 2800,
-      comments: 1200,
-      score: 300
-    },
-    {
-      id: 2,
-      name: 'Siti Rahmawati',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti',
-      posts: 38,
-      likes: 2100,
-      comments: 980,
-      score: 255
-    },
-    {
-      id: 3,
-      name: 'Rizky Fadillah',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rizky',
-      posts: 32,
-      likes: 1800,
-      comments: 756,
-      score: 200
-    },
-    {
-      id: 4,
-      name: 'Lina Marlina',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lina',
-      posts: 28,
-      likes: 1500,
-      comments: 654,
-      score: 150
-    },
-    {
-      id: 5,
-      name: 'Dewi Kartikasari',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dewi',
-      posts: 24,
-      likes: 1200,
-      comments: 543,
-      score: 130
-    }
-  ];
-
   // Handler untuk Edit
   const handleEditClick = (postId: number) => {
     const post = posts.find(p => p.id === postId);
@@ -164,7 +115,7 @@ export default function KomunitasPage({ initialPosts = [] }) {
         <div className="flex flex-col gap-3 md:flex-row">
           <Button
             size="sm"
-            className="md:w-auto w-full"
+            className="md:w-auto w-full cursor-pointer bg-primary hover:bg-primary/90"
             onClick={() => setIsCreateModalOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
