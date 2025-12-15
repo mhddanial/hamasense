@@ -6,7 +6,7 @@ import { Users, Target, BookOpen, Sparkles, Droplets, Leaf, Zap, CheckCircle2, A
 type TeamMember = {
     name: string;
     role: string;
-    nim: string;
+    nim?: any;
     image: string;
 };
 
@@ -15,31 +15,31 @@ export default function About(props: AboutPageProps) {
         {
             name: 'Muchamad Fajri Amirul Nasrullah, S.ST., M.Sc',
             role: 'Project Manager',
-            nim: '201910001',
+            nim: null,
             image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
         },
         {
             name: 'Muhammad Danial',
-            role: 'Frontend Developer',
-            nim: '201910002',
-            image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
+            role: 'AI Engineer',
+            nim: 'NIM: 3312401042',
+            image: '/images/team_danial.jpg',
         },
         {
             name: 'Bastian Henriko Limbong',
             role: 'Backend Developer',
-            nim: '201910003',
+            nim: 'NIM: 3312401092',
             image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
         },
         {
             name: 'Wahyudi',
             role: 'UI/UX Designer',
-            nim: '201910004',
+            nim: 'NIM: 3312401014',
             image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
         },
         {
             name: 'Steven Marcell Samosir',
-            role: 'Data Scientist & Agronomist',
-            nim: '201910005',
+            role: 'Frontend Developer',
+            nim: 'NIM: 3312401003',
             image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
         },
     ];
@@ -505,7 +505,7 @@ function TeamCard({ member, highlight }: TeamCardProps) {
                 {/* Badge untuk project lead */}
                 {highlight && (
                     <div className="self-start">
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary/90 to-emerald-500/90 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-white shadow-lg backdrop-blur">
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary/90 to-emerald-500/90 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/70 shadow-lg backdrop-blur">
                             <Sparkles className="h-3.5 w-3.5" />
                             Project Lead
                         </div>
@@ -514,9 +514,9 @@ function TeamCard({ member, highlight }: TeamCardProps) {
 
                 <div className="mt-auto">
                     <p className="text-xs font-medium text-white/60 tracking-wider">
-                        NIM: {member.nim}
+                        {member.nim}
                     </p>
-                    <h3 className="mt-2 text-lg font-bold text-white leading-tight group-hover:text-primary transition-colors duration-300">
+                    <h3 className="mt-2 text-lg font-bold text-white leading-tight group-hover:text-white transition-colors duration-300">
                         {member.name}
                     </h3>
                     <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-sm text-white/90 backdrop-blur-sm">
