@@ -32,7 +32,7 @@ class DetectController extends Controller
                 'file',
                 file_get_contents($image->getRealPath()),
                 $hashedName
-            )->post('http://127.0.0.1:8080/predict');
+            )->post('http://127.0.0.1:8080/predict'); //)->post('http://fastapi:8080/predict')
 
             if ($response->failed()) {
                 \Log::error('AI Service Error: ' . $response->body());
@@ -130,7 +130,7 @@ class DetectController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
-        return Inertia::render('detect/history-test', [
+        return Inertia::render('detect/history', [
             'history' => $history,
         ]);
     }

@@ -1,10 +1,18 @@
 import os
+
+
+
+
+
+
+
 import tempfile
 import asyncio
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
@@ -12,8 +20,14 @@ from urllib.parse import urlparse
 from urllib.request import urlretrieve
 
 import numpy as np
+
+
+
+
+
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+
 
 # --- IMPORT GEMINI SERVICE ---
 from .gemini_service import get_gemini_advice, AdviceResponse
@@ -25,6 +39,14 @@ load_dotenv()
 # =====================================================
 MODEL_PATH = os.getenv("MODEL_PATH", "best_model_finetuned.keras")
 CLASS_JSON_PATH = os.getenv("CLASS_JSON_PATH", "class_indices.json")
+
+
+
+
+
+
+
+
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
 
 # Threshold Config
@@ -45,6 +67,13 @@ else:
 # =====================================================
 # (Bagian ini sama persis seperti sebelumnya)
 import json
+
+
+
+
+
+
+
 
 def is_url(path_or_url: str) -> bool:
     try:
@@ -73,6 +102,7 @@ model = load_model(MODEL_PATH, compile=False)
 
 if IMG_SIZE is None:
     ishape = model.input_shape
+
     if isinstance(ishape, (list, tuple)) and isinstance(ishape[0], (list, tuple)):
         ishape = ishape[0]
     IMG_SIZE = (ishape[1] or 224, ishape[2] or 224)
@@ -128,18 +158,18 @@ def run_cnn_inference(image_path: str) -> InferenceResult:
     sorted_idx = np.argsort(score)[::-1]
     top1, top2 = sorted_idx[:2]
     p1 = float(score[top1])
-    
+
     # Hitung entropy & abstain logic (disederhanakan untuk brevity)
     Hnorm = normalized_entropy(score)
-    
+
     # Logic Abstain sederhana
     should_abstain = False
     reasons = []
-    
+
     if p1 < PROB_THRESH:
         should_abstain = True
         reasons.append(f"Confidence rendah ({p1:.2f})")
-    
+
     return InferenceResult(
         predicted_label=None if should_abstain else class_names[top1],
         confidence=None if should_abstain else p1,
@@ -179,18 +209,18 @@ async def predict(
         # 3. Jalankan CNN (Visual Detection)
         # Ini berjalan cepat (< 0.2 detik)
         cnn_result = run_cnn_inference(temp_path)
-        
+
         gemini_result = None
 
         # 4. JIKA Prediksi Valid -> TEMBAK GEMINI LANGSUNG
         # (Tanpa Cache, Langsung Request setiap kali)
         if not cnn_result.should_abstain and cnn_result.predicted_label:
-            
+
             print(f"Detect: {cnn_result.predicted_label}. Asking Gemini...")
-            
+
             # Bersihkan nama label agar lebih natural (misal: tomato_healthy -> Tomato Healthy)
             readable_label = cnn_result.predicted_label.replace("_", " ").title()
-            
+
             # --- DIRECT REQUEST KE GEMINI ---
             # Kita gunakan 'await' karena fungsi di gemini_service adalah async
             gemini_result = await get_gemini_advice(
@@ -230,13 +260,13 @@ async def analyze_followup(
     Endpoint khusus untuk membandingkan kondisi tanaman (Old vs New).
     """
     print(f"Follow-up Analysis for {predicted_label}...")
-    
+
     # 1. Read files into memory (bytes)
     # Gemini (google-generativeai) bisa menerima raw bytes dengan mime_type
-    
+
     content_old = await file_old.read()
     content_new = await file_new.read()
-    
+
     # MIME type sniffing (sederhana)
     mime_old = file_old.content_type or "image/jpeg"
     mime_new = file_new.content_type or "image/jpeg"
@@ -247,7 +277,7 @@ async def analyze_followup(
         {"mime_type": mime_old, "data": content_old},
         {"mime_type": mime_new, "data": content_new},
     ]
-    
+
     # 3. Buat Context khusus Comparison
     context_instruction = (
         f"COMPARE TWO IMAGES. Image 1: Original condition. Image 2: Current condition. "
@@ -265,6 +295,10 @@ async def analyze_followup(
             image_parts=image_parts
         )
         return gemini_result
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+        
+@app.get("/health")
+def health():
+    return {"status": "ok"}

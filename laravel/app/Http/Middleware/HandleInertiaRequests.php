@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                     'google_id' => $request->user()->google_id,
                     'avatar' => $request->user()->avatar,
                     'password_set' => !empty($request->user()->password),
+                    'role' => $request->user()->role,
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

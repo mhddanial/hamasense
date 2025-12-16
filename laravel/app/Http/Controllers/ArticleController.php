@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
-use App\Models\ArticleCategory;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Models\Article;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Models\ArticleCategory;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ArticleController extends Controller
 {
@@ -32,7 +33,7 @@ class ArticleController extends Controller
         $categories = ArticleCategory::all();
 
         return Inertia::render('admin/article/create', [
-            // 'articles' => $articles, 
+             'articles' => $articles, 
             'categories' => $categories
         ]);
     }
@@ -42,51 +43,62 @@ class ArticleController extends Controller
         DB::beginTransaction();
 
         try {
-            $field = $request->validate([
+            $validated = $request->validate([
                 'title' => 'required|string',
+                'slug' => 'nullable|string|unique:articles,slug',
                 'content' => 'required|string',
-                'category_id' => 'required|int|min:1',
-                'img_path' => 'image'
+                'category_id' => 'required|int|exists:article_categories,id',
+                'image' => 'nullable|file|image|max:2048',
+                // 'tags' => 'nullable|array',
+                // 'summary' => 'nullable|string',
+                // 'published_at' => 'nullable|date',
+                // 'views_count' => 'nullable|integer',
+                // 'estimated_read_time' => 'nullable|string',
+                // 'related_article_ids' => 'nullable|array',
+                // 'related_article_ids.*' => 'exists:articles,id'
             ]);
 
-            if($request->hasFile('img_path')) {
-
-                $file = $request->file('img_path');
-                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
-
-                $file->storeAs('article', $file_name, 'public');
-                $field['img_path'] = $file_name;
+            if (empty($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid(); 
             }
 
-
             $user = Auth::user();
-            $field['writer_id'] = $user->id;
-            
-            $new_article = Article::create($field);
+            $validated['writer_id'] = $user->id;
+
+            // Handle Image Upload
+            if ($request->hasFile('image')) {
+                // Store in 'public/articles'
+                $path = $request->file('image')->store('articles', 'public');
+                $validated['image'] = '/storage/' . $path;
+            }
+
+            // Create Article
+            $new_article = Article::create($validated);
+
+            // Sync Relationships
+            // if (!empty($validated['related_article_ids'])) {
+            //     $new_article->relatedArticles()->sync($validated['related_article_ids']);
+            // }
 
             DB::commit();
-            return redirect('/admin/article')->with('success', 'Article created successfully');
-            
-            return response()->json([
-                'status' => true,
-                'message' => 'Article created successfully',
-                'result' => $new_article
-            ]);
-        } catch(\Exception $e) {
+
+            return to_route('article.index')->with('success', 'Article created successfully');
+
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return back()->withErrors(['message' => $e->getMessage()]);
         }
-        
     }
 
     public function show(Request $request, Article $article)
     {
+        $article->load(['category', 'relatedArticles']);
+        $articles = Article::where('id', '!=', $article->id)->select('id', 'title')->get();
+
         return Inertia::render('admin/article/show', [
-            'article' => $article->load('category'),
-            'categories' => ArticleCategory::all() 
+            'article' => $article,
+            'categories' => ArticleCategory::all(),
+            'articles' => $articles // For related selection
         ]);
     }
 
@@ -95,37 +107,65 @@ class ArticleController extends Controller
         DB::beginTransaction();
 
         try{
-
-            $field = $request->validate([
+            // Validate similar to store, but minimal required fields from edit form
+            $validated = $request->validate([
                 'title' => 'required|string',
+                'slug' => 'nullable|string|unique:articles,slug,' . $article->id,
                 'content' => 'required|string',
-                'category_id' => 'required|int|min:1',
-                'old_img' => 'string|nullable',
-                'new_img' => 'image|nullable'
+                'category_id' => 'required|int|exists:article_categories,id',
+                'image' => 'nullable', // Can be string (old URL) or File (new upload)
+                'status' => 'required|string|in:published,draft,scheduled',
+                // 'tags' => 'nullable|string', // Frontend sends string "tag1, tag2"
+                // 'summary' => 'nullable|string',
+                // 'published_at' => 'nullable|date',
+                // 'estimated_read_time' => 'nullable|string',
+                // 'related_article_ids' => 'nullable|array',
             ]);
 
-            if($request->hasFile('new_img')) {
-                $file = $request->file('new_img');
-                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('article', $file_name, 'public');
-                $field['img_path'] = $file_name;
+            // Handle Image Upload
+            if ($request->hasFile('image')) {
+                // Delete old image if exists and not default? (Optional, skip for now to be safe)
+                $path = $request->file('image')->store('articles', 'public');
+                $validated['image'] = '/storage/' . $path;
+            } else {
+                // If it's a string (old URL) or null, we don't need to update the 'image' column 
+                // unless we want to allow clearing it?
+                // For now, if no file is uploaded, we exclude 'image' from update to keep existing.
+                // UNLESS the user explicitly wants to delete it? 
+                // show.tsx sends 'image' as null if deleted.
+                if ($request->input('image') === null) {
+                   $validated['image'] = null;
+                } else {
+                   // It's a string (existing URL), so remove it from validated so we don't re-save URL string if logic handles paths differently
+                   unset($validated['image']);
+                }
             }
+            
+            // Handle tags if needed (convert string to array logic? Model casts array)
+            // But user commented out tags logic in store, so keep it simple here too.
 
-            $updated_article = $article->update($field);
+            $article->update($validated);
+            
+            // Sync relationships if needed
+            // if ($request->has('related_article_ids')) {
+            //      $article->relatedArticles()->sync($request->input('related_article_ids'));
+            // }
 
             DB::commit();
 
+            return to_route('article.index')->with('success', 'Article updated successfully'); // Redirect to index as standard
+            
+            // Original return JSON? Admin usually expects redirect. Frontend uses router.post/patch.
+            /*
             return response()->json([
                 'status' => true,
                 'message' => 'Article updated successfully',
                 'result' => $updated_article
             ]);
+            */
         }catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return back()->withErrors(['message' => $e->getMessage()]);
         }
     }
 

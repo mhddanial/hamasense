@@ -42,6 +42,8 @@ export default function HomeLayout({ title, navItems, children, hero }: Props) {
     const getAvatarUrl = () => {
         const avatar = auth.user?.avatar;
 
+        if (!auth.user || !auth.user.avatar) return null;
+
         if (!avatar) return null;
 
         return avatar.startsWith("http")
@@ -104,66 +106,70 @@ export default function HomeLayout({ title, navItems, children, hero }: Props) {
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 />
                             </MobileNavHeader>
+                                <MobileNavMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}>
+                                    <div className="flex h-full flex-col">
+                                        {/* Header */}
+                                        <div className="shrink-0 flex items-center justify-between mb-4">
+                                        <NavbarLogo visible />
+                                        <IconX className="text-black h-6 w-6" onClick={() => setIsMobileMenuOpen(false)} />
+                                        </div>
 
-                            <MobileNavMenu
-                                isOpen={isMobileMenuOpen}
-                                onClose={() => setIsMobileMenuOpen(false)}
-                                >
-                                {/* Header Drawer */}
-                                <div className="flex items-center justify-between mb-6">
-                                    <NavbarLogo visible />
-                                    <IconX className="text-black h-6 w-6" onClick={() => setIsMobileMenuOpen(false)} />
-                                </div>
+                                        {/* ✅ Content yang bisa discroll */}
+                                        <div className="flex-1 overflow-y-auto overscroll-contain pr-1">
+                                        {auth.user && (
+                                            <div className="flex items-center gap-3 mb-6">
+                                            <Avatar className="h-12 w-12 rounded-full overflow-hidden">
+                                                <AvatarImage src={avatarUrl ?? undefined} />
+                                                <AvatarFallback className="rounded-full bg-neutral-200 text-black">
+                                                {getInitials(auth.user.name)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="font-semibold text-black">{auth.user.name}</p>
+                                                <p className="text-sm text-gray-600">{auth.user.email}</p>
+                                            </div>
+                                            </div>
+                                        )}
 
-                                {/* User info (jika login) */}
-                                {auth.user && (
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <Avatar className="h-12 w-12 rounded-full overflow-hidden">
-                                            <AvatarImage src={avatarUrl ?? undefined} />
-                                            <AvatarFallback className="rounded-full bg-neutral-200 text-black">
-                                            {getInitials(auth.user.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-semibold text-black">{auth.user.name}</p>
-                                            <p className="text-sm text-gray-600">{auth.user.email}</p>
+                                        <hr className="border-t border-gray-300 mb-6" />
+
+                                        <nav className="flex flex-col gap-4 mb-6">
+                                            {navItems.map((item, idx) => (
+                                            <a
+                                                key={idx}
+                                                href={item.link}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="text-black text-lg"
+                                            >
+                                                {item.name}
+                                            </a>
+                                            ))}
+                                        </nav>
+                                        </div>
+
+                                        {/* ✅ Footer selalu kelihatan */}
+                                        <div className="shrink-0 border-t pt-6 pb-6">
+                                        {auth.user ? (
+                                            <NavbarButton
+                                            href="/dashboard"
+                                            className="w-full bg-primary text-white hover:bg-primary/90"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                            Dashboard
+                                            </NavbarButton>
+                                        ) : (
+                                            <NavbarButton
+                                            href="/login"
+                                            className="w-full bg-primary text-white hover:bg-primary/90"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                            Masuk / Registrasi
+                                            </NavbarButton>
+                                        )}
                                         </div>
                                     </div>
-                                )}
-                                <hr className="border-t border-gray-300 mb-6" />
-                                <nav className="flex flex-col gap-4 mb-6">
-                                    {navItems.map((item, idx) => (
-                                    <a
-                                        key={idx}
-                                        href={item.link}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="text-black text-lg"
-                                    >
-                                        {item.name}
-                                    </a>
-                                    ))}
-                                </nav>
+                                    </MobileNavMenu>
 
-                                <div className="mt-auto border-t pt-6">
-                                    {auth.user ? (
-                                    <NavbarButton
-                                        href="/dashboard"
-                                        className="w-full justify-center bg-primary text-white"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Dashboard
-                                    </NavbarButton>
-                                    ) : (
-                                    <NavbarButton
-                                        href="/login"
-                                        className="w-full justify-center"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Masuk / Registrasi
-                                    </NavbarButton>
-                                    )}
-                                </div>
-                                </MobileNavMenu>
 
                         </MobileNav>
                     </Navbar>

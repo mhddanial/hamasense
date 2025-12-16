@@ -80,7 +80,7 @@ class CommunityPostController extends Controller
         $post->load('owned_by');
 
         // Return data post baru dalam format yang sama
-        return back()->with('newPost', [
+        return Inertia::render('community/index')->with('newPost', [
             'id' => $post->id,
             'author' => [
                 'id' => $post->owned_by->id,
@@ -95,6 +95,7 @@ class CommunityPostController extends Controller
             'comments' => 0,
             'isLiked' => false,
             'isBookmarked' => false,
+            'success' => 'Postingan berhasil dibuat.',
         ]);
     }
 

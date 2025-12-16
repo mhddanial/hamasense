@@ -2,7 +2,6 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editPassword } from '@/routes/password';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
@@ -24,11 +23,6 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Autentikasi Dua Faktor',
         href: show(),
-        icon: null,
-    },
-    {
-        title: 'Tampilan',
-        href: editAppearance(),
         icon: null,
     },
 ];

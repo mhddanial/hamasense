@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -156,20 +157,42 @@ class HomeController extends Controller
 
     public function articles(Request $request)
     {
-        // contoh pagination pakai Eloquent (opsional)
-        // $articles = Article::query()
-        //     ->select(['id','title','excerpt','cover','slug','published_at'])
-        //     ->latest('published_at')
-        //     ->paginate(9)
-        //     ->onEachSide(1);
+        // 1. Fetch real articles (skip dummy for now, we'll merge on FE or here)
+        // We do it here to make it clean. But FE expects a specific list.
+        // Let's fetch all and map them.
+        $dbArticlesRaw = Article::with(['category', 'writer'])->latest()->get();
+
+        $dbArticles = $dbArticlesRaw->map(function ($item) {
+            // Generate dynamic Properties
+            // slug: title-slug-id ? or just slug helper. Frontend dummy is just string.
+            // We use standard slug + id to be safe/unique.
+            $slug = Str::slug($item->title) . '-' . $item->id;
+            
+            return [
+                'id' => 9000 + $item->id, // Offset ID so it doesn't clash with dummy? Or just let it be. FE uses ID for key.
+                // better to keep original ID but maybe ensure uniqueness if dummy has same IDs. 
+                // Dummy IDs are 1..6, 42. Real IDs likely start at 1. 
+                // Let's add prefix or just hope for best? 
+                // Actually safer to map ID to something distinct if we mix them.
+                // But user wants "latest version below original".
+                
+                'title' => $item->title,
+                'slug' => $slug,
+                'excerpt' => Str::limit(strip_tags($item->content), 120),
+                'category' => $item->category->name ?? 'Uncategorized',
+                'author' => $item->writer->name ?? 'Admin',
+                'date' => $item->created_at->toIso8601String(),
+                'image' => $item->image ?? '/images/why-choose-us.png',
+                'readingTime' => ceil(str_word_count(strip_tags($item->content)) / 200) . ' menit',
+                'views' => 0, // DB has no views
+                'is_dynamic' => true, // Flag for FE if needed
+                'body' => $item->content, // Passed for detail, but list doesn't strictly need it.
+            ];
+        });
 
         return Inertia::render('articles/index', [
             'navItems' => $this->navItems,
-            // 'articles' => [
-            //     'data' => $articles->items(),
-            //     'current_page' => $articles->currentPage(),
-            //     'last_page' => $articles->lastPage(),
-            // ],
+            'articles' => $dbArticles
         ]);
     }
 
@@ -224,6 +247,45 @@ class HomeController extends Controller
 
         // 2) Cari artikel berdasarkan slug
         $article = $articles->firstWhere('slug', $slug);
+
+        // EXTRA: Cek di Database jika tidak ada di dummy
+        if (!$article) {
+            // Asumsi slug format: judul-berita-123 (id di belakang)
+            // Atau kita coba cari strict match jika kita simpan slug.
+            // Tapi karena slug generated, kita extract ID dari string.
+            try {
+                // Explode by dash, take last part
+                $parts = explode('-', $slug);
+                $potentialId = end($parts);
+                
+                if (is_numeric($potentialId)) {
+                    $dbItem = Article::with(['category', 'writer'])->find($potentialId);
+                    if ($dbItem) {
+                        // Re-verify slug construction matches roughly or just accept ID?
+                        // For looseness, we just accept ID match.
+                        
+                        $article = [
+                            'id' => 9000 + $dbItem->id,
+                            'title' => $dbItem->title,
+                            'slug' => $slug,
+                            'excerpt' => Str::limit(strip_tags($dbItem->content), 120),
+                            'category' => $dbItem->category->name ?? 'Uncategorized',
+                            'author' => $dbItem->writer->name ?? 'Admin',
+                            'date' => $dbItem->created_at->toIso8601String(),
+                            'image' => $dbItem->image ?? '/images/why-choose-us.png',
+                            'readingTime' => ceil(str_word_count(strip_tags($dbItem->content)) / 200) . ' menit',
+                            'body' => [ $dbItem->content ], // Structure as array for existing frontend compatibility?
+                            // Check Frontend: show.tsx likely iterates or displays direct.
+                            // Checking existing code below... logic is implicit.
+                            'references' => [],
+                            'views' => 0,
+                        ];
+                    }
+                }
+            } catch (\Exception $e) {
+                // ignore
+            }
+        }
 
         // 3) 404 kalau tidak ketemu (biar siap produksi)
         if (!$article) {

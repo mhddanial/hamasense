@@ -59,7 +59,7 @@ return (
                     className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1 flex flex-col">
                     {/* Image */}
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-teal-50 to-green-50">
-                        <img src={`/storage/article/${article.img_path}`} alt={article.title}
+                        <img src={article.image} alt={article.title}
                             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
                         {article.category && (
                         <span

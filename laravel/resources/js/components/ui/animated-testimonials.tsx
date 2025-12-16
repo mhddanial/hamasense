@@ -48,8 +48,8 @@ export const AnimatedTestimonials = ({
   };
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-20 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
-      <div className="relative z-0 grid grid-cols-1 gap-20 md:grid-cols-2">
+    <div className="mx-auto max-w-sm p-14 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
+      <div className="relative z-0 grid grid-cols-1 gap-15 md:grid-cols-2">
         {/* Left: Image stack */}
         <div>
           <div className="relative h-80 w-full">
@@ -103,7 +103,7 @@ export const AnimatedTestimonials = ({
             {/* quote */}
             <div className="relative mt-8">
               <IconQuote className="absolute -left-3 -top-3 h-6 w-6 text-[#266055]/50" />
-              <motion.p className="pl-6 text-lg text-gray-600">
+              <motion.p className="pl-6 text-md text-gray-600">
                 {testimonials[active].quote.split(" ").map((word, i) => (
                   <motion.span
                     key={i}

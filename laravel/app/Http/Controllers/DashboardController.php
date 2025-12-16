@@ -17,8 +17,10 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        if (Auth::user()?->role === 'admin') {
+            return redirect('/admin/dashboard');
+        }
         // 1. Cek apakah data cuaca sudah ada di session user?
-        // Ini mencegah request API berulang-ulang setiap kali user refresh halaman (F5)
         if ($request->session()->has('weather_data')) {
             $weatherData = $request->session()->get('weather_data');
         } else {
@@ -26,7 +28,6 @@ class DashboardController extends Controller
             $weatherData = $this->fetchWeatherByUserIP($request);
             
             // Simpan ke session (berlaku selama user login/browsing)
-            // Jika $weatherData null (gagal), jangan simpan ke session agar dicoba lagi nanti
             if ($weatherData) {
                 $request->session()->put('weather_data', $weatherData);
             }

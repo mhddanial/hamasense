@@ -1,111 +1,46 @@
-// resources/js/Pages/Articles/Index.tsx
 'use client';
+import { cn } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
+import { TrendingUp } from 'lucide-react';
+import { Hero } from '@/components/home/hero';
 import HomeLayout from '@/layouts/home-layout';
 import type { ArticlesPageProps } from '@/types/home';
-import { Link } from '@inertiajs/react';
-import { Hero } from '@/components/home/hero';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { TrendingUp } from 'lucide-react';
+import { Article } from '@/types/article';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
 
 // ---------------------
 // Types
 // ---------------------
-type Article = {
-    id: number;
-    title: string;
-    slug: string;
-    excerpt: string;
-    category: string;
-    author: string;
-    date: string;
-    image: string;
-    readingTime: string;
-    views: number; // kept internally for sorting only (popular)
-};
+interface ArticlesPagePropsExtended extends Omit<ArticlesPageProps, 'articles'> {
+    articles?: Article[];
+}
+
 
 // ---------------------
 // DUMMY DATA (contoh)
 // ---------------------
 const DUMMY_ARTICLES: Article[] = [
-  {
-    id: 1,
-    title: 'Mengenal Gejala Awal Serangan Ulat Grayak pada Jagung',
-    slug: 'gejala-awal-ulat-grayak',
-    excerpt:
-      'Pelajari ciri-ciri serangan ulat grayak sejak dini agar mitigasi bisa dilakukan lebih cepat.',
-    category: 'Hama',
-    author: 'Tim HAMASENSE',
-    date: '2025-10-15',
-    image: '/images/maize_armyworm.jpg',
-    readingTime: '5 menit',
-    views: 1540,
-  },
-  {
-    id: 2,
-    title: 'Perbedaan Bercak Bakteri dan Jamur pada Cabai',
-    slug: 'bercak-bakteri-vs-jamur-cabai',
-    excerpt:
-      'Sering tertukar? Kenali perbedaannya agar tidak salah memilih langkah penanganan.',
-    category: 'Penyakit',
-    author: 'Sari W.',
-    date: '2025-09-20',
-    image: '/images/pepper_bell_bacterial_spot.jpg',
-    readingTime: '6 menit',
-    views: 980,
-  },
-  {
-    id: 3,
-    title: 'Strategi Ramah Lingkungan: Musuh Alami pada Singkong',
-    slug: 'musuh-alami-di-singkong',
-    excerpt:
-      'Optimalkan peran predator untuk menekan populasi tungau hijau secara berkelanjutan.',
-    category: 'Budidaya',
-    author: 'Andi Pratama',
-    date: '2025-08-02',
-    image: '/images/cassava_green_mite.jpg',
-    readingTime: '7 menit',
-    views: 610,
-  },
-  {
-    id: 4,
-    title: 'Rotasi Tanaman untuk Menekan Penyakit Busuk Daun Tomat',
-    slug: 'rotasi-tanaman-busuk-daun',
-    excerpt: 'Mengurangi inokulum patogen di lahan lewat pola rotasi yang tepat.',
-    category: 'Budidaya',
-    author: 'Rina Putri',
-    date: '2025-07-12',
-    image: '/images/tomato_late_blight.jpg',
-    readingTime: '4 menit',
-    views: 1780,
-  },
-  {
-    id: 5,
-    title: 'Checklist Foto Ideal untuk Deteksi AI yang Akurat',
-    slug: 'checklist-foto-deteksi-ai',
-    excerpt:
-      'Gunakan pencahayaan, fokus, dan framing yang benar agar hasil deteksi maksimal.',
-    category: 'Panduan',
-    author: 'Tim HAMASENSE',
-    date: '2025-09-01',
-    image: '/images/why-choose-us.png',
-    readingTime: '3 menit',
-    views: 2010,
-  },
-  {
-    id: 6,
-    title: 'Kapan Sebaiknya Menggunakan BT (Bacillus thuringiensis)?',
-    slug: 'kapan-gunakan-bt',
-    excerpt:
-      'BT efektif untuk larva tertentu, tetapi perhatikan timing dan cara aplikasi.',
-    category: 'Hama',
-    author: 'Dewi L.',
-    date: '2025-10-01',
-    image: '/images/maize_armyworm.jpg',
-    readingTime: '5 menit',
-    views: 760,
-  },
+  // {
+  //   id: 1,
+  //   title: 'Mengenal Gejala Awal Serangan Ulat Grayak pada Jagung',
+  //   slug: 'gejala-awal-ulat-grayak',
+  //   excerpt:
+  //     'Pelajari ciri-ciri serangan ulat grayak sejak dini agar mitigasi bisa dilakukan lebih cepat.',
+  //   category: 'Hama',
+  //   author: 'Tim HAMASENSE',
+  //   date: '2025-10-15',
+  //   image: '/images/maize_armyworm.jpg',
+  //   readingTime: '5 menit',
+  //   views: 1540,
+  // },
 ];
+
 
 function formatDate(iso: string) {
   try {
@@ -157,21 +92,28 @@ const LazyImage: React.FC<{
   );
 };
 
-export default function ArticlesIndex(props: ArticlesPageProps) {
+export default function ArticlesIndex(props: ArticlesPagePropsExtended) {
   // State search & filter
   const [q, setQ] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
 
   // derive categories dari data
+  const allArticles = useMemo(() => {
+    const dynamicArticles = props.articles || [];
+    // Merge dummy + dynamic
+    // "add the latest version below the original code" -> merge them.
+    return [...DUMMY_ARTICLES, ...dynamicArticles];
+  }, [props.articles]);
+
   const categories = useMemo(
-    () => ['all', ...Array.from(new Set(DUMMY_ARTICLES.map((a) => a.category)))],
-    []
+    () => ['all', ...Array.from(new Set(allArticles.map((a) => a.category)))],
+    [allArticles]
   );
 
   // filter & sort
   const filteredArticles = useMemo(() => {
-    let list = [...DUMMY_ARTICLES];
+    let list = [...allArticles];
 
     if (q.trim()) {
       const qq = q.trim().toLowerCase();
@@ -198,8 +140,8 @@ export default function ArticlesIndex(props: ArticlesPageProps) {
 
   // top 5 berdasarkan views (display tanpa angka views)
   const topFive = useMemo(
-    () => [...DUMMY_ARTICLES].sort((a, b) => b.views - a.views).slice(0, 5),
-    []
+    () => [...allArticles].sort((a, b) => b.views - a.views).slice(0, 5),
+    [allArticles]
   );
 
   return (
