@@ -69,6 +69,10 @@ const Notification = ({ type = 'success', message, onClose, duration = 5000 }: {
 
 // Notification Container
 export const AdminNotificationToast = ({ notifications, removeNotification }) => {
+  
+  console.log('a');
+  console.log(notifications);
+  console.log('b');
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col items-end">
       {notifications.map((notif) => (

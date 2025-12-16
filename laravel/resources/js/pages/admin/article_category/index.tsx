@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Settings, Plus, Edit2, Trash2, X } from 'lucide-react';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
-
-import { PageProps } from '@inertiajs/core';
+import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 
 type Category = {
   id: number;
@@ -16,12 +15,15 @@ interface Props {
 
 export default function KelolaKategoriArtikel({ categories }: Props) {
   
+    const [ deleteModal, setDeleteModal ] = useState(false);
+    const [ modalData, setModalData ] = useState({
+      item_id: 0, 
+      item_name: ''
+    });
 
-    const [activeMenu, setActiveMenu] = useState('Kelola Artikel');
+
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
-    const [currentCategory, setCurrentCategory] = useState({ id: null, name: '' });
-    const [newCategoryName, setNewCategoryName] = useState('');
 
     const [id, set_id] = useState(0);
     const new_category_form = useForm({
@@ -57,10 +59,8 @@ export default function KelolaKategoriArtikel({ categories }: Props) {
         closeModal();
     };
 
-    const handleDelete = (article_id: number) => {
-        if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
-            router.delete(`/admin/article-category/${article_id}`)
-        }
+    const handleDelete = (article_id: number, article_name: string) => {
+        setDeleteModal(true)
     };
 
     return (
@@ -70,8 +70,7 @@ export default function KelolaKategoriArtikel({ categories }: Props) {
       <div className="flex-1 overflow-auto">
 
         {/* Content */}
-        <div className="p-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl ">
+          <div className="bg-white p-8 max-w-7xl ">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -111,7 +110,7 @@ export default function KelolaKategoriArtikel({ categories }: Props) {
                             <Edit2 className="w-5 h-5" />
                           </button>
                           <button 
-                            onClick={() => handleDelete(category.id)}
+                            onClick={() => handleDelete(category.id, category.name)}
                             className="text-gray-600 hover:text-red-600 transition-colors"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -125,7 +124,6 @@ export default function KelolaKategoriArtikel({ categories }: Props) {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Modal */}
       {showModal && (
@@ -177,6 +175,13 @@ export default function KelolaKategoriArtikel({ categories }: Props) {
           </div>
         </div>
       )}
+
+      <DeleteConfirmationModal isOpen={deleteModal} itemName={modalData.item_name} onClose={() => { 
+        setDeleteModal(false);
+        setModalData(() => ({item_id: 0, item_name:''}))}
+      } onConfirm={() => {
+            router.delete(`/admin/article-category/${modalData.item_id}`)
+      }}/>
     </>
   );
 }

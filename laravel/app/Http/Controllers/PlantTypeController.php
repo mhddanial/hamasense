@@ -64,9 +64,9 @@ class PlantTypeController extends Controller
         }catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'message' => $e->getMessage()
-            ]);
+            // return response()->json([
+            //     'message' => $e->getMessage()
+            // ]);
 
             return redirect('admin/plant')->with('error', 'Error when create new plant: ' . $e->getMessage());
         }
@@ -98,11 +98,6 @@ class PlantTypeController extends Controller
                 'old_img' => 'string|nullable'
             ]);
 
-            // $old_img = $plant->img_path;
-            // // jika kondisi img_path null maka hapus file
-            // if($field['old_img'] === null || $field['old_img'] === '') {
-                // }
-                
                 // jika kondisi ada new_img ada foto maka upload foto baru
             if($request->hasFile('new_img')){
                 Storage::disk('public')->delete('/plant/' . $plant->img_path);

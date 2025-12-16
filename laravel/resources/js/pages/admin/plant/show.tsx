@@ -43,7 +43,7 @@ export default function EditInformasiTanaman({ plant } : Props) {
 
         {/* Content */}
         <div className="p-8 text-gray-900">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl">
+          <div className="bg-white max-w-7xl">
             <h1 className="text-3xl text-gray-900 font-bold mb-8">Edit Informasi tanaman</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -81,20 +81,15 @@ class DiseaseController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'message' => $new_pest
-            ]);
+            // return response()->json([
+            //     'message' => $new_pest
+            // ]);
 
             return redirect('admin/disease')->with('success', 'New Disease Added Successfully!');
 
         } catch(\Exception $e) {
             DB::rollBack();
 
-
-            return response()->json([
-                'a' => 'a',
-                'message' => $e->getMessage()
-            ]);
             // return response()->json([
             //     'e'=> $e->getMessage()
             // ]);

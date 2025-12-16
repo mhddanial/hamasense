@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FolderOpen, Paperclip, Upload } from 'lucide-react';
-import { router, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { PageProps } from '@inertiajs/core';
@@ -59,13 +59,13 @@ export default function EditArtikel({ article, categories }: Props) {
             {/* Header with Manage Categories Button */}
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-3xl text-gray-900 font-bold">Edit Artikel</h1>
-              <button 
-                onClick={goToManageCategories}
+              <Link href={'/admin/article-category'}
+                // onClick={goToManageCategories}
                 className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 <FolderOpen className="w-5 h-5" />
                 Kelola Kategori
-              </button>
+              </Link>
             </div>
 
                           <div>

@@ -31,19 +31,19 @@ class ArticleCategoryController extends Controller
 
             DB::commit();
             return redirect('admin/article-category')->with('success', 'Article category created successfully');
-            return response()->json([
-                'status' => true,
-                'message' => 'Article category created successfully',
-                'result' => $article_cat
-            ]);
+            // return response()->json([
+            //     'status' => true,
+            //     'message' => 'Article category created successfully',
+            //     'result' => $article_cat
+            // ]);
         } catch(\Exception $e) {
             DB::rollBack();
             return redirect('admin/article-category')->with('error', 'Error when creating category: ' . $e->getMessage());
 
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            // return response()->json([
+            //     'status' => false,
+            //     'message' => $e->getMessage()
+            // ]);
         }
     }
 
@@ -61,20 +61,20 @@ class ArticleCategoryController extends Controller
             DB::commit();
             return redirect('admin/article-category')->with('success', 'Article category updated successfully');
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Article created successfully',
-                'result' => $article_cat
-            ]);
+            // return response()->json([
+            //     'status' => true,
+            //     'message' => 'Article created successfully',
+            //     'result' => $article_cat
+            // ]);
         } catch(\Exception $e) {
             DB::rollBack();
 
             return redirect('admin/article-category')->with('error', 'Error when updating category: ' . $e->getMessage());
 
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            // return response()->json([
+            //     'status' => false,
+            //     'message' => $e->getMessage()
+            // ]);
         }
     }
 
@@ -88,20 +88,20 @@ class ArticleCategoryController extends Controller
 
             return redirect('admin/article-category')->with('success', 'Article category deleted successfully');
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Article created successfully',
-                'result' => $article_category
-            ]);
+            // return response()->json([
+            //     'status' => true,
+            //     'message' => 'Article created successfully',
+            //     'result' => $article_category
+            // ]);
         } catch(\Exception $e) {
             DB::rollBack();
 
             return redirect('admin/article-category')->with('error', 'Error when deleting category: ' . $e->getMessage());
 
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            // return response()->json([
+            //     'status' => false,
+            //     'message' => $e->getMessage()
+            // ]);
         }
     }
 }

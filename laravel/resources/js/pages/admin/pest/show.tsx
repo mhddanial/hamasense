@@ -45,10 +45,8 @@ export default function HamaSenseEdit() {
 
       {/* Main Content */}
     <div className="flex-1 min-h-screen p-8 text-gray-900">
-
         {/* Content */}
-        <div className="p-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl">
+        <div className="p-8 bg-white max-w-7xl">
             <h1 className="text-2xl font-bold mb-8 text-gray-900">Edit Informasi Hama</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -184,7 +182,6 @@ export default function HamaSenseEdit() {
             </div>
           </div>
         </div>
-      </div>
 
       <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
         setDeleteModal(false)

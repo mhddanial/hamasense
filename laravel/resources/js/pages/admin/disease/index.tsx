@@ -13,25 +13,21 @@ diseases: Disease[];
 }
 
 export default function KelolaDataPenyakit({diseases} : Props) {
-
-const [notifications, setNotifications] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [notifications, setNotifications] = useState<any[]>([]);
 
     const { flash } = usePage().props;
 
     const success = flash?.success;
     const error = flash?.error;
-
+    
     useEffect(() => {
-    if(success){
-    setNotifications((prev) => [...prev, success])}
-    if(error){
-    setNotifications((prev) => [...prev, error])}
-    }
-
+        if(success){
+        setNotifications((prev) => [...prev, {type: 'success', message: success}])}
+        if(error){
+        setNotifications((prev) => [...prev, {type: 'error', message: error}])}
+        }
     , [success, error]);
-
-    console.log(diseases)
 
     const [selectedItem, setSelectedItem] = useState({
     'id': 0,
@@ -41,7 +37,7 @@ const [notifications, setNotifications] = useState<any[]>([]);
     const [ deleteModal, setDeleteModal ] = useState(false);
 
     const removeNotification = (id: number) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+        setNotifications(prev => prev.filter(notif => notif.id !== id));
     };
 
     return (

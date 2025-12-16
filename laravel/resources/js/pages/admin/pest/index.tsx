@@ -13,23 +13,18 @@ interface Props extends PageProps {
 }
 
 export default function KelolaDataHama({pests} : Props) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
-  const [selectedLevel, setSelectedLevel] = useState('Semua Tingkat');
-
   const [notifications, setNotifications] = useState<any[]>([]);
 
   const { flash } = usePage().props;
 
   const success = flash?.success;
   const error = flash?.error;
+  
   useEffect(() => {
     if(success){
-      setNotifications((prev) => [...prev, success])}
+      setNotifications((prev) => [...prev, {type: 'success', message: success}])}
     if(error){
-      setNotifications((prev) => [...prev, error])}
-    console.log(success)
-    console.log(error)
+      setNotifications((prev) => [...prev, {type: 'error', message: error}])}
     }
   , [success, error]);
   

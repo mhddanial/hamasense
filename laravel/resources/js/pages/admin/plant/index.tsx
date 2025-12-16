@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
@@ -8,6 +8,7 @@ import { PageProps } from '@inertiajs/core';
 import { Plant } from '@/types/admin';
 import { ItemHeaderDemo } from '@/components/admin/card';
 import NavSearch from '@/components/admin/NavSearch';
+import { AdminNotificationToast } from '@/components/admin/InformationToast';
 
 interface Props extends PageProps {
 plants: Plant[];
@@ -16,6 +17,24 @@ plants: Plant[];
 
 export default function KelolaTanaman({ plants } : Props) {
 
+     const [notifications, setNotifications] = useState<any[]>([]);
+    
+      const { flash } = usePage().props;
+    
+      const success = flash?.success;
+      const error = flash?.error;
+      
+      useEffect(() => {
+        if(success){
+          setNotifications((prev) => [...prev, {type: 'success', message: success}])}
+        if(error){
+          setNotifications((prev) => [...prev, {type: 'error', message: error}])}
+        }
+      , [success, error]);
+
+        const removeNotification = (id) => {
+            setNotifications(prev => prev.filter(notif => notif.id !== id));
+        };
 const [ selectedItem, setSelectedItem ] = useState({
 'id': 0,
 'name': ''
@@ -87,6 +106,9 @@ return (
         setDeleteModal(false)
 
         }} itemName={selectedItem.name}/>
+
+    <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
+        
 </>
 );
 }

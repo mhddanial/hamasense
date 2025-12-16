@@ -1,18 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {Calendar, SquarePen, Trash2, User} from 'lucide-react';
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import AdminLayout from "@/components/admin/layout";
 import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
 import { PageProps } from '@inertiajs/core';
 
 import { Article } from "@/types/admin";
 import NavSearch from "@/components/admin/NavSearch";
+import { AdminNotificationToast } from "@/components/admin/InformationToast";
 
 interface Props extends PageProps {
 articles: Article[]
 }
 
 const KelolaArtikel = ({ articles }: Props) => {
+
+      const [notifications, setNotifications] = useState<any[]>([]);
+    
+      const { flash } = usePage().props;
+    
+      const success = flash?.success;
+      const error = flash?.error;
+      
+      useEffect(() => {
+        if(success){
+          setNotifications((prev) => [...prev, {type: 'success', message: success}])}
+        if(error){
+          setNotifications((prev) => [...prev, {type: 'error', message: error}])}
+        }
+      , [success, error]);
+      
+        const removeNotification = (id) => {
+        setNotifications(prev => prev.filter(notif => notif.id !== id));
+      };
 
 const [ searchTerm, setSearchTerm ] = useState("");
 
@@ -117,6 +137,7 @@ return (
     </div>
 
 
+    <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
 
     <DeleteConfirmationModal isOpen={deleteModal} onClose={()=> {
         setDeleteModal(false)

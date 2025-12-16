@@ -141,7 +141,7 @@ export default function TambahkanTanaman({ plants }: Props) {
                         Severity Level
                       </label>
                       <input
-                        type="text"
+                        type="number"
                         name="severity_level"
                         value={data.severity_level}
                         onChange={(e) => setData('severity_level', e.target.value)}

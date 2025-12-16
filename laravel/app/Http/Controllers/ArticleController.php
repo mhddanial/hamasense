@@ -65,7 +65,7 @@ class ArticleController extends Controller
             $new_article = Article::create($field);
 
             DB::commit();
-            return redirect('/admin/article')->with('success', 'Article category created successfully');
+            return redirect('/admin/article')->with('success', 'Article created successfully');
             
             return response()->json([
                 'status' => true,

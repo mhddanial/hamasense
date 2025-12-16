@@ -36,7 +36,7 @@ class PestController extends Controller
 
     public function show(Request $request, Pest $pest)
     {
-        $pest->load(['plantTypes', 'images']);
+        // $pest->load(['plantTypes', 'images']);
         return Inertia::render('admin/pest/show', [
             'pest' => $pest,
         ]);
