@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DetectionHistory extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'user_id',
         'image_path',
@@ -18,7 +20,7 @@ class DetectionHistory extends Model
     ];
 
     protected $casts = [
-        'abstain_reasons' => 'array',
+    'abstain_reasons' => 'array',
         'info' => 'array',
         'should_abstain' => 'boolean'
     ];

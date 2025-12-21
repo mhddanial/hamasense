@@ -30,11 +30,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     const [avatarError, setAvatarError] = useState<string | null>(null);
     const [removeAvatar, setRemoveAvatar] = useState(false);
 
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-    }, [flash]);
-
     const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
