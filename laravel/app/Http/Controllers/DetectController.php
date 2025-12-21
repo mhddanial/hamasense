@@ -138,7 +138,7 @@ class DetectController extends Controller
     public function showHistory($id)
     {
         $history = DetectionHistory::where('user_id', auth()->id())
-        ->findOrFail($id);
+                ->findOrFail($id);
         return Inertia::render('detect/history-detail', [
             'item' => [
                 'id'            => $history->id,
@@ -150,6 +150,14 @@ class DetectController extends Controller
                 'created_at'    => $history->created_at->toDateTimeString(),
             ],
         ]);
+    }
+
+    public function deleteHistory($id)
+    {
+        $history = DetectionHistory::where('user_id', auth()->id())
+                ->findOrFail($id);
+        $history->delete();
+        return redirect()->route('detect.history')->with('success', 'Riwayat deteksi berhasil dihapus!');
     }
 
     private function encodeImage($image)

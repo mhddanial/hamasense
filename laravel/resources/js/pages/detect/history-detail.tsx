@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import {
   Card,
@@ -15,7 +15,19 @@ import {
   Leaf,
   ShieldCheck,
   Bug,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { route } from "ziggy-js";
 
 interface AdviceData {
@@ -124,13 +136,37 @@ export default function HistoryDetail({ item }: Props) {
                 <Link
                   href={route('cases.createFormDetection', item.id)}
                   method="post"
-                  as="button" 
+                  as="button"
                   className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold mt-2 inline-flex items-center justify-center rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full py-2"
                 >
                   Mulai Monitoring →
                 </Link>
               </CardContent>
             </Card>
+
+            {/* DELETE BUTTON */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Hapus Riwayat
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Hapus Riwayat Deteksi?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tindakan ini tidak dapat dibatalkan. Riwayat ini akan dihapus secara permanen dari server kami.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.delete(route('detect.history.delete', item.id))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:cursor-pointer">
+                    <span className="text-white">Hapus</span>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {/* RIGHT — Details */}
@@ -209,7 +245,7 @@ export default function HistoryDetail({ item }: Props) {
             </div>
 
             {/* Treatment */}
-             <Card className="bg-emerald-50/50 border-emerald-100 dark:bg-emerald-950/10 dark:border-emerald-900">
+            <Card className="bg-emerald-50/50 border-emerald-100 dark:bg-emerald-950/10 dark:border-emerald-900">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2 text-emerald-800 dark:text-emerald-400">
                   <Leaf className="w-5 h-5" />
