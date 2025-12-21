@@ -5,7 +5,7 @@ import { X, AlertTriangle, CheckCircle } from 'lucide-react';
 export function DeleteConfirmationModal({ isOpen, onClose, onConfirm, itemName, itemType = "data" }:
   {isOpen: boolean, onClose: any, onConfirm: any, itemName: string, itemType?:string}
 ) {
-  if (!isOpen) return null;
+  if (!isOpen) return null; 
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">

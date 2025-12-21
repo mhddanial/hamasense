@@ -10,6 +10,7 @@ interface Props extends PageProps {
     categories: Category[];
 }
 
+
 export default function BuatArtikel({categories}: Props) {
     const { data, setData, post, processing, errors } = useForm<{
         title: string;
@@ -70,13 +71,6 @@ export default function BuatArtikel({categories}: Props) {
                     {/* Header with Manage Categories Button */}
                     <div className="flex items-center justify-between mb-8">
                         <h1 className="text-3xl font-bold">Buat Artikel</h1>
-                        <Link
-                            href={'/admin/article-category'}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                        >
-                            <FolderOpen className="w-5 h-5" />
-                            Kelola Kategori
-                        </Link>
                     </div>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
                         <h3 className="text-lg font-semibold mb-6">Upload Foto</h3>

@@ -1,8 +1,7 @@
-import { Link, useForm } from "@inertiajs/react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Plus, Search } from "lucide-react";
-import { SidebarTrigger } from "../ui/sidebar";
+import { Link, useForm } from "@inertiajs/react";
+import SearchBar from "@/components/SearchBar"
 
 export default function NavSearch({title, href, button_title, page}: {title: string, href: string, button_title: string, page: string}) {
   const { data, setData, get } = useForm({
@@ -17,7 +16,6 @@ export default function NavSearch({title, href, button_title, page}: {title: str
   <div className="text-gray-900 mb-10">
     <div className="flex items-center justify-between mb-6">
       <div className="flex">
-        <SidebarTrigger className="my-auto"/>
         <h1 className="text-3xl font-bold">{title}</h1>
       </div>
 
@@ -31,7 +29,17 @@ export default function NavSearch({title, href, button_title, page}: {title: str
     </div>
 
     {/* Search Bar */}
-    <div className="relative flex gap-2">
+    <div className="w-full md:w-1/3">
+      <SearchBar 
+        value={data.keyword}
+        onChange={(e) => {
+          setData('keyword', e.target.value);
+        }}
+        placeholder="Cari hama berdasarkan nama, nama ilmiah, atau tanaman ..."
+        className="bg-white"
+      />
+    </div>
+    {/* <div className="relative flex gap-2">
       <div className="relative flex-1">
         <Search className="bg-white absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" />
 
@@ -50,7 +58,7 @@ export default function NavSearch({title, href, button_title, page}: {title: str
 
       </div>
       <Button className="h-full py-3 my-auto" onClick={submit_handler}>Search</Button>
-    </div>
+    </div> */}
 
   </div>
 

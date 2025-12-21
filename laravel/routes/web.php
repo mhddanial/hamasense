@@ -42,9 +42,7 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
 
     Route::get('/detect-history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
 
-    Route::get('/pest-info', function () {
-        return Inertia::render('pest-info/index');
-    })->name('pest.user.index');
+    Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.user.index');
 
     Route::get('/pest-info/{slug}', [PestController::class, 'show'])->name('pest.user.show');
 

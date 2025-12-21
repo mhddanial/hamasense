@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Pest extends Model
 {
     protected $fillable = [
-        // 'name', 'description', 'scientific_name', 'img_path'
         'name',
         'description',
         'scientific_name',
