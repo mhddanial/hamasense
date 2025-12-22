@@ -33,4 +33,28 @@ class CommunityPost extends Model
     {
         return $this->hasMany(PlantPost::class, 'plant_id', 'id');
     }
+        // Relasi ke Likes
+    public function likes()
+    {
+        return $this->hasMany(CommunityLikes::class, 'post_id');
+    }
+
+    // Relasi ke Comments (hanya parent comment, bukan reply)
+    public function comments()
+    {
+        return $this->hasMany(CommunityComments::class, 'post_id')
+                    ->whereNull('parent_id'); // hanya ambil comment utama
+    }
+
+    // Semua comments termasuk replies
+    public function allComments()
+    {
+        return $this->hasMany(CommunityComments::class, 'post_id');
+    }
+
+    // Cek apakah user sudah like post ini
+    public function isLikedBy($userId)
+    {
+        return $this->likes()->where('user_id', $userId)->exists();
+    }
 }

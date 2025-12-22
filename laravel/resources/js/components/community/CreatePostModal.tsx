@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import axios from 'axios';
 import { X, ImageIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -29,7 +30,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
   });
   const [imagePreview, setImagePreview] = useState<string>('');
 
-  // Handle image upload
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -42,47 +42,41 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
     }
   };
 
-  // Remove image preview
   const removeImage = () => {
     setImagePreview('');
     setNewPost({ ...newPost, image: '' });
   };
 
-  // Reset form
   const resetForm = () => {
     setNewPost({ category: '', content: '', image: '' });
     setImagePreview('');
   };
 
-  // Handle Create Post
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newPost.content.trim() || !newPost.category) {
-      alert('Mohon isi kategori dan konten postingan');
+      toast.error('Mohon isi kategori dan konten postingan');
       return;
     }
 
     setIsSubmitting(true);
 
-    router.post('/community', newPost, {
-      preserveScroll: true,
-      onSuccess: (page) => {
-        const createdPost = page.props.newPost;
-        if (createdPost && onSuccess) {
-          onSuccess(createdPost);
-        }
+    try {
+      const response = await axios.post('/community', newPost);
+
+      if (response.data.success && onSuccess) {
+        onSuccess(response.data.post);
+        toast.success('Postingan berhasil dibuat!');
         resetForm();
         onClose();
-      },
-      onError: (errors) => {
-        console.error('Error:', errors);
-        alert('Gagal membuat postingan');
-      },
-      onFinish: () => {
-        setIsSubmitting(false);
       }
-    });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Gagal membuat postingan');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -104,7 +98,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
 
         <form onSubmit={handleCreatePost}>
           <div className="grid gap-4 py-4">
-            {/* Category Selection */}
             <div className="grid gap-2">
               <Label htmlFor="category">
                 Kategori <span className="text-red-500">*</span>
@@ -124,7 +117,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
               </select>
             </div>
 
-            {/* Content */}
             <div className="grid gap-2">
               <Label htmlFor="content">
                 Konten <span className="text-red-500">*</span>
@@ -139,7 +131,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
               />
             </div>
 
-            {/* Image Upload */}
             <div className="grid gap-2">
               <Label htmlFor="image">Gambar (Opsional)</Label>
               <div className="flex items-center gap-2">
@@ -161,7 +152,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
                 </Button>
               </div>
 
-              {/* Image Preview */}
               {imagePreview && (
                 <div className="relative mt-2 rounded-lg overflow-hidden border">
                   <img

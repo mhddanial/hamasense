@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, TrendingUp, Clock, Users, MessageSquare, Heart, Share2, MoreHorizontal, Hash } from 'lucide-react';
+import { Search, Plus, Hash, MessageSquare } from 'lucide-react';
 import { Head, usePage } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
@@ -17,8 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Asumsi ada komponen Avatar
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Menggunakan Card untuk Sidebar
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Import Separated Components
 import CreatePostModal from "@/components/community/CreatePostModal";
@@ -62,7 +61,6 @@ export default function KomunitasPage({ initialPosts = [] }) {
   const flash = props.flash;
   const currentUser = props.auth?.user;
 
-  const [activeTab, setActiveTab] = useState<'trending' | 'terbaru' | 'mengikuti'>('trending');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -75,10 +73,36 @@ export default function KomunitasPage({ initialPosts = [] }) {
   // Hook Logic
   const { posts, handleLike, handleBookmark, addPost, updatePost, deletePost } = useCommunityPosts(initialPosts);
 
+  // FILTERING LOGIC
+  const filteredPosts = posts.filter(post => {
+    // Filter by category
+    const matchCategory = selectedCategory === 'all' ||
+                         post.category.toLowerCase() === selectedCategory.toLowerCase();
+
+    // Filter by search query
+    const matchSearch = searchQuery === '' ||
+                       post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       post.author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       post.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchCategory && matchSearch;
+  });
+
   useEffect(() => {
-    if (flash?.success) toast.success(flash.success);
-    if (flash?.error) toast.error(flash.error);
-  }, [flash]);
+    if (flash?.toast) {
+      const { type, message } = flash.toast;
+
+      if (type === 'success') toast.success(message);
+      if (type === 'error') toast.error(message);
+      if (type === 'info') toast(message);
+    }
+  }, [flash?.toast]);
+
+  useEffect(() => {
+    if (flash?.newPost) {
+      addPost(flash.newPost);
+    }
+  }, [flash?.newPost]);
 
   // Handlers
   const handleEditClick = (postId: number) => {
@@ -97,13 +121,13 @@ export default function KomunitasPage({ initialPosts = [] }) {
     }
   };
 
-  // Dummy Sidebar Data
-  const topContributors = [
-    { name: "Budi Santoso", role: "Expert Petani", score: 1250, avatar: "BS" },
-    { name: "Siti Aminah", role: "Researcher", score: 980, avatar: "SA" },
-    { name: "Rudi Hartono", role: "Pecinta Tanaman", score: 850, avatar: "RH" },
-  ];
+  // Reset filter handler
+  const handleResetFilter = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+  };
 
+  // Dummy Sidebar Data
   const popularTopics = ["#HidroponikPemula", "#CabeRawit", "#PupukOrganik", "#UrbanFarming", "#HamaKutuPutih"];
 
   return (
@@ -112,7 +136,7 @@ export default function KomunitasPage({ initialPosts = [] }) {
 
       {/* MAIN WRAPPER */}
       <div className="flex h-full flex-1 flex-col gap-6 overflow-x-hidden rounded-xl p-4 md:px-12">
-        
+
         {/* --- HEADER SECTION --- */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
@@ -123,7 +147,7 @@ export default function KomunitasPage({ initialPosts = [] }) {
               Ruang diskusi bagi petani dan pecinta tanaman untuk berbagi ilmu.
             </p>
           </div>
-          
+
           <Button
             size="sm"
             className="md:w-auto w-full cursor-pointer bg-primary hover:bg-primary/90 shadow-sm"
@@ -149,29 +173,46 @@ export default function KomunitasPage({ initialPosts = [] }) {
                     className="pl-9 bg-background"
                 />
              </div>
-             
+
              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-full sm:w-[160px] bg-background">
                   <SelectValue placeholder="Kategori" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Kategori</SelectItem>
-                  <SelectItem value="Budidaya">Budidaya</SelectItem>
-                  <SelectItem value="Tips & Trik">Tips & Trik</SelectItem>
-                  <SelectItem value="Hama & Penyakit">Hama & Penyakit</SelectItem>
-                  <SelectItem value="Pemupukan">Pemupukan</SelectItem>
+                  <SelectItem value="budidaya">Budidaya</SelectItem>
+                  <SelectItem value="tips">Tips & Trik</SelectItem>
+                  <SelectItem value="hama">Hama & Penyakit</SelectItem>
+                  <SelectItem value="pupuk">Pemupukan</SelectItem>
                 </SelectContent>
              </Select>
           </div>
+
+          {/* Filter indicator */}
+          {(searchQuery || selectedCategory !== 'all') && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {filteredPosts.length} hasil ditemukan
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilter}
+                className="h-8"
+              >
+                Reset Filter
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* --- MAIN CONTENT GRID --- */}
         <div className="grid gap-6 lg:grid-cols-3 min-h-[50vh]">
-          
+
           {/* LEFT: POSTS FEED (2/3) */}
           <div className="lg:col-span-2 space-y-6">
-            {posts.length > 0 ? (
-                posts.map(post => (
+            {filteredPosts.length > 0 ? (
+                filteredPosts.map(post => (
                     <PostCard
                         key={post.id}
                         post={post}
@@ -191,17 +232,35 @@ export default function KomunitasPage({ initialPosts = [] }) {
                     <div className="bg-muted p-4 rounded-full mb-3">
                         <MessageSquare className="h-8 w-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold">Belum ada postingan</h3>
+                    <h3 className="text-lg font-semibold">
+                      {searchQuery || selectedCategory !== 'all'
+                        ? 'Tidak ada postingan ditemukan'
+                        : 'Belum ada postingan'
+                      }
+                    </h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-                        Jadilah yang pertama memulai diskusi di kategori ini!
+                      {searchQuery || selectedCategory !== 'all'
+                        ? 'Coba ubah filter atau kata kunci pencarian'
+                        : 'Jadilah yang pertama memulai diskusi di kategori ini!'
+                      }
                     </p>
-                    <Button 
-                        variant="link" 
+                    {(searchQuery || selectedCategory !== 'all') ? (
+                      <Button
+                        variant="link"
+                        onClick={handleResetFilter}
+                        className="mt-2 text-primary"
+                      >
+                        Reset Filter
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="link"
                         onClick={() => setIsCreateModalOpen(true)}
                         className="mt-2 text-primary"
-                    >
+                      >
                         Buat Postingan Sekarang
-                    </Button>
+                      </Button>
+                    )}
                 </div>
             )}
           </div>
@@ -212,16 +271,16 @@ export default function KomunitasPage({ initialPosts = [] }) {
             <Card>
                 <CardHeader className="pb-3">
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
-                        <Hash className="h-4 w-4 text-primary" /> 
+                        <Hash className="h-4 w-4 text-primary" />
                         Topik Populer
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-2">
                         {popularTopics.map((topic, i) => (
-                            <Badge 
-                                key={i} 
-                                variant="secondary" 
+                            <Badge
+                                key={i}
+                                variant="secondary"
                                 className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors px-3 py-1"
                                 onClick={() => setSearchQuery(topic)}
                             >
@@ -231,7 +290,7 @@ export default function KomunitasPage({ initialPosts = [] }) {
                     </div>
                 </CardContent>
             </Card>
-            
+
              {/* Rules / Info Widget */}
              <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 text-sm text-yellow-800">
                 <p className="font-semibold mb-1">Etika Komunitas</p>

@@ -55,15 +55,15 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('/continuous-care', function() {
         return Inertia::render('continuous_care/index');
     })->name('continuous_care.index');
-
+    // Community CRUD
     Route::post('/community', [CommunityPostController::class, 'store'])->name('community.store');
     Route::put('/community/{post}', [CommunityPostController::class, 'update'])->name('community.update');
     Route::delete('/community/{post}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
 
-    // Like, bookmark, comment
+    // Community Like & Comment
     Route::post('/community/{post}/like', [CommunityPostController::class, 'toggleLike'])->name('community.like');
-    Route::post('/community/{post}/bookmark', [CommunityPostController::class, 'toggleBookmark'])->name('community.bookmark');
-    Route::post('/community/{post}/comment', [CommunityPostController::class, 'addComment'])->name('community.comment');
+    Route::get('/community/{post}/comments', [CommunityPostController::class, 'getComments'])->name('community.comments');
+    Route::post('/community/{post}/comments', [CommunityPostController::class, 'storeComment'])->name('community.comment.store');
 
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
     Route::post('/cases/create-from-detection/{historyId}', [CaseController::class, 'createFormDetection'])->name('cases.createFormDetection');

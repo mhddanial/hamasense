@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import axios from 'axios';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -26,27 +27,27 @@ export default function DeletePostModal({
 }: DeletePostModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!postId) return;
 
     setIsDeleting(true);
 
-    router.delete(`/community/${postId}`, {
-      preserveScroll: true,
-      onSuccess: () => {
+    try {
+      const response = await axios.delete(`/community/${postId}`);
+
+      if (response.data.success) {
         if (onSuccess) {
           onSuccess(postId);
         }
+        toast.success('Postingan berhasil dihapus!');
         onClose();
-      },
-      onError: (errors) => {
-        console.error('Error:', errors);
-        alert('Gagal menghapus postingan');
-      },
-      onFinish: () => {
-        setIsDeleting(false);
       }
-    });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Gagal menghapus postingan');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
