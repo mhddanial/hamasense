@@ -38,11 +38,9 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
 
     Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.user.index');
 
-    Route::get('/pest-info/{slug}', [PestController::class, 'show'])->name('pest.user.show');
-
-    Route::get('/pest-info/detail', function () {
-        return Inertia::render('pest-info/detail');
-    })->name('pest.detail');
+    Route::get('/pest-info/{id}', function ($id) {
+        return Inertia::render('pest-info/detail', ['id' => $id]);
+    })->name('pest.user.show');
 
     Route::get('/continuous-care', function() {
         return Inertia::render('continuous_care/index');
