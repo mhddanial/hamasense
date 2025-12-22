@@ -1,12 +1,11 @@
 import React from 'react';
 
+import { Toaster } from 'sonner';
 import AdminSidebar from './Sidebar';
 import { AppShell } from '../app-shell';
+import { BreadcrumbItem } from '@/types';
 import { AppContent } from '../app-content';
 import { AppSidebarHeader } from '../app-sidebar-header';
-import { Toaster } from 'sonner';
-import { BreadcrumbItem } from '@/types';
-import { AppSidebar } from '../app-sidebar';
 
 export default function AdminLayout(
   {

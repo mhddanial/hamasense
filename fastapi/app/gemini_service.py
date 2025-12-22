@@ -78,7 +78,8 @@ def _clean_and_parse_json(text: str) -> Dict[str, Any]:
 def _build_prompt(predicted_label: str, confidence: float, locale: str, context: Optional[str]) -> str:
     lang = "Indonesia" if locale.lower() == "id" else "English"
     
-    example_json = """
+    # 1. Contoh yang standar untuk deteksi awal - awal
+    example_initial = """
     {
         "description": "Hama yang menyerang daun muda menyebabkan daun mengeriting.",
         "symptoms": ["Bercak kuning pada daun", "Daun menggulung", "Pertumbuhan kerdil"],
@@ -87,24 +88,44 @@ def _build_prompt(predicted_label: str, confidence: float, locale: str, context:
     }
     """
 
-    # Prompt diperhalus agar tidak memicu filter "Dangerous Content"
+    # 2. Contoh QA/Follow-up (Jawab langsung)
+    example_followup = """
+    {
+        "description": "Ya, pada kondisi ini penyiraman dapat ditingkatkan menjadi 2x sehari karena tanah terlihat kering, namun jangan sampai menggenang.",
+        "symptoms": ["Tanah kering pecah-pecah", "Daun layu sementara"],
+        "treatment": ["Tingkatkan frekuensi penyiraman", "Tambahkan mulsa organik"],
+        "prevention": ["Periksa kelembapan tanah rutin"]
+    }
+    """
+
+    # Logic Switch
+    if context:
+        task_desc = "Answer the user's specific question based on the plant's condition."
+        chosen_example = example_followup
+        instruction_extra = "4. VITAL: Your 'description' MUST directly answer the user's question/prompt. Do not just describe the pest again."
+    else:
+        task_desc = "Identify the plant issue and provide safe management tips."
+        chosen_example = example_initial
+        instruction_extra = "4. Keep explanation concise and educational."
+
+    
     prompt = f"""
     Context: Agricultural Science & Plant Protection.
-    Task: Identify the plant issue and provide safe management tips.
-    Target: "{predicted_label}" (Confidence: {confidence:.2f}).
+    Task: {task_desc}
+    Target Plant/Issue: "{predicted_label}"
     Language: {lang}.
 
     INSTRUCTIONS:
     1. Output MUST be valid JSON only. No markdown formatting.
-    2. STRICTLY follow the JSON structure provided in the example.
+    2. STRICTLY follow the JSON structure provided below.
     3. SAFETY RULE: Do NOT provide instructions on how to manufacture chemicals. Focus on commercially available solutions and biological control (IPM).
-    4. Keep explanation concise and educational.
-    5. IF IMAGES ARE PROVIDED: Compare the conditions if requested. If 'context' asks for comparison, the input images are [Old, New].
-    
-    Expected JSON Structure:
-    {example_json}
+    {instruction_extra}
+    5. If images are provided (Old vs New), compare them to see progress.
 
-    Generate JSON for "{predicted_label}":
+    Expected JSON Structure:
+    {chosen_example}
+
+    BEGIN GENERATION for "{predicted_label}":
     """
     return prompt.strip()
 
@@ -140,20 +161,20 @@ async def get_gemini_advice(
         "max_output_tokens": 1000,
     }
 
-    # Construct the Prompt Parts
+    # Menyusun Bagian Prompt
     prompt_parts = []
     
-    # 1. System/Context Prompt
+    # 1. Sistem prompt/konteks
     prompt = _build_prompt(predicted_label, confidence, locale, context)
     prompt_parts.append(prompt)
     
-    # 2. Images (if any)
+    # 2. Gambar
     if image_parts:
         for img in image_parts:
-            # img expected format: {"mime_type": "image/jpeg", "data": bytes}
+            # Format gambar yang diharapkan: {"mime_type": "image/jpeg", "data": bytes}
             prompt_parts.append(img)
             
-    # 3. User Context / Specific Follow-up Prompt
+    # 3. Konteks Pengguna / Tindak Lanjut Spesifik
     if context:
         prompt_parts.append(f"\nUser Additional Notes/Context: {context}")
 
@@ -166,7 +187,7 @@ async def get_gemini_advice(
         try:
             print(f"[Gemini] Attempt {attempt+1}/{max_retries} using {env_model} for {predicted_label}...")
             
-            # Generate content with list of parts (Text + Images)
+            # Buat konten dengan daftar bagian (Teks + Gambar)
             resp = await model.generate_content_async(
                 prompt_parts, 
                 generation_config=generation_config, 

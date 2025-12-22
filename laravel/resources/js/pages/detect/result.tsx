@@ -21,9 +21,9 @@ import {
   Camera,
   AlertTriangle,
 } from "lucide-react";
-import { router, usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+
 
 interface APIAdvice {
   label: string;
@@ -55,12 +55,9 @@ interface Props {
   image_path: string | null;
 }
 
-export default function ResultPage({ result, error, abstain_reasons, image_url, image_path  }: Props) {
-  const { flash } = usePage().props as any;
-  useEffect(() => {
-    if (flash?.success) toast.success(flash.success);
-    if (flash?.error) toast.error(flash.error);
-  }, [flash]);
+export default function ResultPage({ result, error, abstain_reasons, image_url, image_path }: Props) {
+  // Flash message handling is now in AppSidebarLayout
+
 
   const isAbstain =
     error ||
@@ -91,7 +88,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
           </p>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            
+
             {/* GAMBAR */}
             <div className="space-y-3 lg:col-span-1">
               <p className="font-semibold text-base">Gambar yang Diunggah</p>
@@ -119,7 +116,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
                   dan jelas untuk mendapatkan hasil deteksi yang lebih akurat.
                 </p>
               </div>
-          </div>
+            </div>
 
             {/* KOLOM KANAN: PENJELASAN ERROR */}
             <div className="lg:col-span-2">
@@ -193,8 +190,6 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
     );
   };
 
-
-
   return (
     <AppLayout breadcrumbs={[{ title: "Hasil Deteksi", href: "#" }]}>
       <Head title="Hasil Analisis" />
@@ -218,7 +213,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* KOLOM KIRI: Gambar Preview */}  
+          {/* KOLOM KIRI: Gambar Preview */}
           <div className="space-y-3 lg:col-span-1">
             <p className="font-semibold text-base">Gambar yang Diunggah</p>
 
@@ -250,7 +245,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
             <div className="flex items-start gap-2 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800">
               <AlertTriangle className="w-4 h-4 text-emerald-600 mt-1" />
               <p className="text-xs text-muted-foreground leading-normal">
-                <span className="font-medium">Tips:</span> Pastikan foto yang Anda upload bersih, 
+                <span className="font-medium">Tips:</span> Pastikan foto yang Anda upload bersih,
                 jernih, agar mendapatkan hasil deteksi yang lebih akurat.
               </p>
             </div>
@@ -259,7 +254,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
 
           {/* KOLOM KANAN: Detail Hasil */}
           <div className="space-y-6 lg:col-span-2">
-            
+
             {/* 1. KARTU HASIL UTAMA */}
             <Card className="border-l-4 border-l-emerald-500 shadow-md">
               <CardHeader>
@@ -307,7 +302,7 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Bug className="w-5 h-5 text-red-500" />
-                      Gejala Umum
+                    Gejala Umum
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

@@ -21,7 +21,6 @@ __pycache__/
 
 # dotenv / secrets
 .env
-.env.*
 
 # PyCharm / VSCode
 .idea/

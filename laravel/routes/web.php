@@ -32,19 +32,11 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('/detect', [DetectController::class, 'index'])->name('detect.index');
     Route::post('/detect', [DetectController::class, 'store'])->name('detect.store');
     Route::post('/detect/save-history', [DetectController::class, 'saveHistory'])->name('detect.save');
-    // Konek database
     Route::get('/detect-history', [DetectController::class, 'listHistory'])->name('detect.history');
-
-    // Frontend history
-    Route::get('/detect-history-test', function () {
-        return Inertia::render('detect/history');
-    })->name('detect.history.test');
-
     Route::get('/detect-history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
+    Route::delete('/detect-history/{id}', [DetectController::class, 'deleteHistory'])->name('detect.history.delete');
 
-    Route::get('/pest-info', function () {
-        return Inertia::render('pest-info/index');
-    })->name('pest.user.index');
+    Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.user.index');
 
     Route::get('/pest-info/{slug}', [PestController::class, 'show'])->name('pest.user.show');
 

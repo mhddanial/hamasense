@@ -298,9 +298,9 @@ export default function DetectPage() {
   // 1. DATA SAMPLE
   const sampleImages = [
     {
-      label: "Bercak Daun",
-      url: "/images/tomato_bacterial_spot.jpg",
-      filename: "sample_bercak.jpg",
+      label: "Penyakit Moko Pisang",
+      url: "/images/banana_moko_disease.jpg",
+      filename: "sample_moko.jpg",
     },
     {
       label: "Green Mite",

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { LayoutGrid, List, SearchX, Calendar, CheckCircle2 } from "lucide-react";
+import { LayoutGrid, List, SearchX, Calendar, CheckCircle2, Trash2, ArrowRight } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 
 // Import UI Components (Hanya Button, Badge, Separator)
@@ -11,6 +11,17 @@ import SearchBar from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface HistoryItem {
     id: number;
@@ -52,7 +63,7 @@ export default function DetectionHistory({ history, filters }: Props) {
 
             {/* MAIN WRAPPER */}
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-hidden rounded-xl p-4 md:px-12">
-                
+
                 {/* --- HEADER SECTION --- */}
                 <section className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div className="space-y-1">
@@ -63,7 +74,7 @@ export default function DetectionHistory({ history, filters }: Props) {
                             Arsip hasil analisis dan diagnosa tanaman Anda.
                         </p>
                     </div>
-                    
+
                     {/* View Toggles */}
                     <div className="items-center gap-2 bg-muted/50 p-1 rounded-lg border hidden md:flex">
                         <Button
@@ -99,7 +110,7 @@ export default function DetectionHistory({ history, filters }: Props) {
                             className="bg-background"
                         />
                     </div>
-                    
+
                     <div className="text-sm text-muted-foreground whitespace-nowrap hidden sm:block">
                         Menampilkan <strong>{filtered.length}</strong> data
                     </div>
@@ -109,18 +120,24 @@ export default function DetectionHistory({ history, filters }: Props) {
                 <div className="relative flex-1 overflow-visible rounded-xl min-h-[50vh]">
                     {filtered.length > 0 ? (
                         <div className="space-y-8">
-                            
+
                             {viewMode === "list" ? (
                                 /* LIST VIEW - Menggunakan Div manual + Tailwind */
                                 <div className="grid gap-4">
                                     {filtered.map((item) => (
-                                        <Link 
-                                            key={item.id} 
-                                            href={route("detect.history.detail", item.id)}
+                                        <div
+                                            key={item.id}
                                             className="group relative flex flex-col sm:flex-row overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:border-primary/50"
                                         >
+                                            <Link
+                                                href={route("detect.history.detail", item.id)}
+                                                className="absolute inset-0 z-0"
+                                            >
+                                                <span className="sr-only">Lihat Detail</span>
+                                            </Link>
+
                                             {/* Image Section */}
-                                            <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-muted">
+                                            <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-muted z-10 pointer-events-none">
                                                 <img
                                                     src={`/storage/${item.image_path}`}
                                                     alt={item.label || "Deteksi"}
@@ -128,9 +145,9 @@ export default function DetectionHistory({ history, filters }: Props) {
                                                     loading="lazy"
                                                 />
                                             </div>
-                                            
+
                                             {/* Text Content */}
-                                            <div className="flex flex-1 flex-col justify-between p-4 sm:p-6">
+                                            <div className="flex flex-1 flex-col justify-between p-4 sm:p-6 z-10 pointer-events-none">
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between items-start">
                                                         <h3 className="font-semibold text-lg tracking-tight group-hover:text-primary transition-colors">
@@ -149,26 +166,56 @@ export default function DetectionHistory({ history, filters }: Props) {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                
-                                                <div className="mt-4 flex items-center justify-end">
-                                                    <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                                                        Lihat Detail <CheckCircle2 className="h-3 w-3" />
-                                                    </span>
+
+                                                <div className="mt-4 flex items-center justify-end gap-2 pointer-events-auto">
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 z-20 relative">
+                                                                <Trash2 className="h-4 w-4 mr-1" /> Hapus
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Hapus Riwayat Deteksi?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Tindakan ini tidak dapat dibatalkan. Riwayat ini akan dihapus secara permanen dari server kami.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => router.delete(route('detect.history.delete', item.id))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:cursor-pointer">
+                                                                    <span className="text-white">Hapus</span>
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+
+                                                    <Link href={route("detect.history.detail", item.id)}>
+                                                        <Button variant="outline" size="sm" className="h-8 text-xs font-medium z-20 relative">
+                                                            Lihat Detail <ArrowRight className="h-3 w-3 ml-1" />
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                             </div>
-                                        </Link>
+                                        </div>
                                     ))}
                                 </div>
                             ) : (
                                 /* GRID VIEW - Menggunakan Div manual + Tailwind */
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                     {filtered.map((item) => (
-                                        <Link 
-                                            key={item.id} 
-                                            href={route("detect.history.detail", item.id)}
-                                            className="group block rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 h-full"
+                                        <div
+                                            key={item.id}
+                                            className="group relative block rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 h-full"
                                         >
-                                            <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                                            <Link
+                                                href={route("detect.history.detail", item.id)}
+                                                className="absolute inset-0 z-0"
+                                            >
+                                                <span className="sr-only">Lihat Detail</span>
+                                            </Link>
+
+                                            <div className="relative aspect-[4/3] overflow-hidden bg-muted z-10 pointer-events-none">
                                                 <img
                                                     src={`/storage/${item.image_path}`}
                                                     alt={item.label || ""}
@@ -180,8 +227,32 @@ export default function DetectionHistory({ history, filters }: Props) {
                                                         {Math.round((item.confidence ?? 0) * 100)}%
                                                     </Badge>
                                                 </div>
+
+                                                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto">
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full shadow-md">
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Hapus Riwayat Deteksi?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Tindakan ini tidak dapat dibatalkan. Riwayat ini akan dihapus secara permanen dari server kami.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => router.delete(route('detect.history.delete', item.id))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                    <span className="text-white">Hapus</span>
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
                                             </div>
-                                            <div className="p-4 flex-1">
+                                            <div className="p-4 flex-1 z-10 pointer-events-none">
                                                 <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
                                                     {item.label ?? "Tidak diketahui"}
                                                 </h3>
@@ -190,7 +261,7 @@ export default function DetectionHistory({ history, filters }: Props) {
                                                     {new Date(item.created_at).toLocaleDateString('id-ID')}
                                                 </p>
                                             </div>
-                                        </Link>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -231,8 +302,8 @@ export default function DetectionHistory({ history, filters }: Props) {
                             <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                                 Kami tidak dapat menemukan data yang cocok dengan "{search}".
                             </p>
-                            <Button 
-                                variant="link" 
+                            <Button
+                                variant="link"
                                 onClick={() => setSearch("")}
                                 className="mt-2 text-primary"
                             >

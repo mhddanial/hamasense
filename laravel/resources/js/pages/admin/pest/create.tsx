@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Upload, Paperclip, X } from
-'lucide-react';
 import { useForm } from '@inertiajs/react';
+import { Upload, Paperclip, X } from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
 
 export default function TambahHama() {
@@ -53,8 +52,7 @@ return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left Column - Upload */}
                     <div>
-                        <div
-                            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
                             <h3 className="text-lg font-semibold mb-6">Upload Foto</h3>
 
                             {uploadedImage ? (
