@@ -1,50 +1,32 @@
-import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Settings } from 'lucide-react';
+import { Users, Bug, FileText} from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
-// import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { usePage } from '@inertiajs/react';
+
+
 
 export default function HamaSenseDashboard() {
-  const [activeMenu, setActiveMenu] = useState('Dashboard');
 
-  const menuItems = [
-    { icon: Home, label: 'Dashboard' },
-    { icon: Users, label: 'Kelola Pengguna' },
-    { icon: Sprout, label: 'Kelola Tanaman' },
-    { icon: Bug, label: 'Kelola Hama' },
-    { icon: FileText, label: 'Kelola Artikel' },
-    { icon: MessageSquare, label: 'Kelola Komunitas' },
-    { icon: Settings, label: 'Pengaturan' }
-  ];
+  const { detection_total, active_user, article_total, ai_accuracy } = usePage().props;
 
-  const chartData = [
-    { month: 'JAN', value: 400 },
-    { month: 'FEB', value: 450 },
-    { month: 'MAR', value: 550 },
-    { month: 'APR', value: 500 },
-    { month: 'MAY', value: 600 },
-    { month: 'JUN', value: 650 },
-    { month: 'JUL', value: 700 },
-    { month: 'AUG', value: 680 }
-  ];
 
   const statsCards = [
     {
       title: 'Total Deteksi Hama',
-      value: '150',
+      value: detection_total,
       icon: Bug,
       bgColor: 'bg-blue-100',
       iconColor: 'text-blue-600'
     },
     {
       title: 'Pengguna Aktif',
-      value: '150',
+      value: active_user,
       icon: Users,
       bgColor: 'bg-white',
       iconColor: 'text-gray-700'
     },
     {
       title: 'Akurasi AI',
-      value: '80%',
+      value: `${ai_accuracy}%`,
       icon: '⚠️',
       bgColor: 'bg-white',
       iconColor: 'text-gray-700',
@@ -52,7 +34,7 @@ export default function HamaSenseDashboard() {
     },
     {
       title: 'Total Artikel',
-      value: '150',
+      value: article_total,
       icon: FileText,
       bgColor: 'bg-white',
       iconColor: 'text-gray-700'

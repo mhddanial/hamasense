@@ -1,6 +1,5 @@
-import { Link, useForm } from "@inertiajs/react";
+import { Link, router, useForm } from "@inertiajs/react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Plus, Search } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
 
@@ -9,8 +8,13 @@ export default function NavSearch({title, href, button_title, page}: {title: str
     keyword: ''
   });
 
+  console.log(page)
+
   const submit_handler = () => {
-    get(route('admin.plant.index'));
+    console.log(data.keyword)
+    console.log('adasd')
+
+    router.get(route(`admin.${page}.index` , {keyword: data.keyword}));
   }
 
   return (<>

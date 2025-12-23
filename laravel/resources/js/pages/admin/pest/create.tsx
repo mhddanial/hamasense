@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Upload, Paperclip, X } from
+import { Upload, Paperclip } from
 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 export default function TambahHama() {
 
+  const [ createButton, setCreateButton ] = useState(true);
+
 const {data, setData, post} = useForm({
-name: '',
-scientific_name: '',
-description: '',
-img_path: null
+  name: '',
+  scientific_name: '',
+  description: '',
+  img_path: null
 });
 const [uploadedImage, setUploadedImage] = useState<string|null>(null);
 
@@ -36,9 +38,10 @@ const handleCancel = () => {
 };
 
 const create = async () => {
-post('/admin/pest/', {
-forceFormData: true
-});
+  setCreateButton(!createButton);
+  post('/admin/pest/', {
+    forceFormData: true
+  });
 }
 
 return (
@@ -125,7 +128,7 @@ return (
                                     className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
                                     Batal
                                 </button>
-                                <button onClick={create} type='button'
+                                <button onClick={create} type='button' disabled={!createButton}
                                     className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
                                     Tambahkan
                                 </button>
