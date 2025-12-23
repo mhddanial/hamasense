@@ -22,6 +22,7 @@ return new class extends Migration
             $table->json('abstain_reasons')->nullable();
             $table->json('info')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             // $table->id();
             // $table->foreignId('plant_id')->constrained(
             //     table: 'plants',

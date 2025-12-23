@@ -1,36 +1,20 @@
 import os
-
-
-
-
-
-
-
 import tempfile
 import asyncio
 from typing import Optional
-
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
 from pydantic import BaseModel
-
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from urllib.request import urlretrieve
-
 import numpy as np
-
-
-
-
-
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
-
 # --- IMPORT GEMINI SERVICE ---
 from .gemini_service import get_gemini_advice, AdviceResponse
+
 
 load_dotenv()
 
@@ -251,41 +235,38 @@ async def predict(
 @app.post("/analyze-followup")
 async def analyze_followup(
     file_old: UploadFile = File(...),
-    file_new: UploadFile = File(...),
+    file_new: Optional[UploadFile] = File(None),
     predicted_label: str = Form(...),
     confidence: float = Form(...),
     user_prompt: str = Form(...),
 ):
     """
-    Endpoint khusus untuk membandingkan kondisi tanaman (Old vs New).
+    Endpoint khusus untuk membandingkan kondisi tanaman (Old vs New) atau menjawab pertanyaan user.
     """
     print(f"Follow-up Analysis for {predicted_label}...")
 
     # 1. Read files into memory (bytes)
-    # Gemini (google-generativeai) bisa menerima raw bytes dengan mime_type
-
     content_old = await file_old.read()
-    content_new = await file_new.read()
-
-    # MIME type sniffing (sederhana)
     mime_old = file_old.content_type or "image/jpeg"
-    mime_new = file_new.content_type or "image/jpeg"
 
-    # 2. Siapkan Image Parts untuk Gemini
-    # Urutan: [Foto Lama, Foto Baru]
-    image_parts = [
-        {"mime_type": mime_old, "data": content_old},
-        {"mime_type": mime_new, "data": content_new},
-    ]
+    image_parts = [{"mime_type": mime_old, "data": content_old}]
 
-    # 3. Buat Context khusus Comparison
+    if file_new:
+        content_new = await file_new.read()
+        mime_new = file_new.content_type or "image/jpeg"
+        image_parts.append({"mime_type": mime_new, "data": content_new})
+        comparison_text = "Compare Image 1 (Original) with Image 2 (Current) to see progress."
+    else:
+        comparison_text = "Assess the situation based on the Original image (Image 1)."
+
+    # 2. Structure context for Gemini
     context_instruction = (
-        f"COMPARE TWO IMAGES. Image 1: Original condition. Image 2: Current condition. "
-        f"User Note: {user_prompt}. "
-        f"Analyze if the condition has improved, worsened, or stayed the same based on the treatment."
+        f"{comparison_text}\n"
+        f"USER REQUEST: {user_prompt}\n"
+        f"Please answer the user request specifically while considering the plant history."
     )
 
-    # 4. Call Gemini
+    # 3. Call Gemini
     try:
         gemini_result = await get_gemini_advice(
             predicted_label=predicted_label,
@@ -297,8 +278,9 @@ async def analyze_followup(
         return gemini_result
 
     except Exception as e:
+        print(f"Error in analyze-followup: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-        
+
 @app.get("/health")
 def health():
     return {"status": "ok"}

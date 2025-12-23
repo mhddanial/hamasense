@@ -122,7 +122,7 @@ class DashboardController extends Controller
             
             return $this->analyzePestRisk($response->json(), $cityName);
 
-        } catch (\Exception $e) {            
+        } catch (\Exception $e) {
             dd("Koneksi Error:", $e->getMessage());
         }
         return null; 

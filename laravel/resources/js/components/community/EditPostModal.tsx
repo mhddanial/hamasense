@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import axios from 'axios';
 import { X, ImageIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,6 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
   });
   const [imagePreview, setImagePreview] = useState<string>('');
 
-  // Load post data when modal opens
   useEffect(() => {
     if (post) {
       setFormData({
@@ -49,7 +49,6 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
     }
   }, [post]);
 
-  // Handle image upload
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -62,24 +61,21 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
     }
   };
 
-  // Remove image preview
   const removeImage = () => {
     setImagePreview('');
     setFormData({ ...formData, image: '' });
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({ category: '', content: '', image: '' });
     setImagePreview('');
   };
 
-  // Handle Update Post
   const handleUpdatePost = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.content.trim() || !formData.category) {
-      alert('Mohon isi kategori dan konten postingan');
+      toast.error('Mohon isi kategori dan konten postingan');
       return;
     }
 
@@ -87,24 +83,21 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
 
     setIsSubmitting(true);
 
-    router.put(`/community/${post.id}`, formData, {
-      preserveScroll: true,
-      onSuccess: (page) => {
-        const updatedPost = page.props.updatedPost;
-        if (updatedPost && onSuccess) {
-          onSuccess(updatedPost);
-        }
+    try {
+      const response = await axios.put(`/community/${post.id}`, formData);
+
+      if (response.data.success && onSuccess) {
+        onSuccess(response.data.post);
+        toast.success('Postingan berhasil diupdate!');
         resetForm();
         onClose();
-      },
-      onError: (errors) => {
-        console.error('Error:', errors);
-        alert('Gagal mengupdate postingan');
-      },
-      onFinish: () => {
-        setIsSubmitting(false);
       }
-    });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Gagal mengupdate postingan');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -126,7 +119,6 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
 
         <form onSubmit={handleUpdatePost}>
           <div className="grid gap-4 py-4">
-            {/* Category Selection */}
             <div className="grid gap-2">
               <Label htmlFor="category">
                 Kategori <span className="text-red-500">*</span>
@@ -146,7 +138,6 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
               </select>
             </div>
 
-            {/* Content */}
             <div className="grid gap-2">
               <Label htmlFor="content">
                 Konten <span className="text-red-500">*</span>
@@ -161,7 +152,6 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
               />
             </div>
 
-            {/* Image Upload */}
             <div className="grid gap-2">
               <Label htmlFor="image">Gambar (Opsional)</Label>
               <div className="flex items-center gap-2">
@@ -183,7 +173,6 @@ export default function EditPostModal({ isOpen, onClose, post, onSuccess }: Edit
                 </Button>
               </div>
 
-              {/* Image Preview */}
               {imagePreview && (
                 <div className="relative mt-2 rounded-lg overflow-hidden border">
                   <img

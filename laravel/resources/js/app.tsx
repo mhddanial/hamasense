@@ -1,10 +1,12 @@
 import '../css/app.css';
+import { Toaster } from 'sonner';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 import { SharedData } from './types';
+
 import { route as ziggyRoute } from 'ziggy-js';
 
 const appName = import.meta.env.VITE_APP_NAME;
@@ -22,8 +24,14 @@ createInertiaApp<SharedData>({
                 ...props.initialPage.props.ziggy,
                 location: new URL(props.initialPage.props.ziggy.location),
             });
-        const root = createRoot(el);
-        root.render(<App {...props} />);
+            const root = createRoot(el);
+
+            root.render(
+                <>
+                    <Toaster position="top-center" />
+                    <App {...props} />
+                </>
+            );
     },
     progress: {
         color: '#4B5563',

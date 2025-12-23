@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 interface User {
   id: number;
@@ -23,7 +25,10 @@ interface Post {
 export function useCommunityPosts(initialPosts: Post[] = []) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
 
-  const handleLike = (postId: number) => {
+  // LIKE - Integrasi dengan Backend
+  const handleLike = async (postId: number) => {
+    // Optimistic update
+    const originalPosts = [...posts];
     setPosts(posts.map(post => {
       if (post.id === postId) {
         return {
@@ -34,8 +39,31 @@ export function useCommunityPosts(initialPosts: Post[] = []) {
       }
       return post;
     }));
+
+    try {
+      const response = await axios.post(`/community/${postId}/like`);
+
+      if (response.data.success) {
+        // Update dengan data dari server (lebih akurat)
+        setPosts(posts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              isLiked: response.data.data.isLiked,
+              likes: response.data.data.likeCount
+            };
+          }
+          return post;
+        }));
+      }
+    } catch (error: any) {
+      // Rollback jika error
+      setPosts(originalPosts);
+      toast.error(error.response?.data?.message || 'Gagal memproses like');
+    }
   };
 
+  // BOOKMARK - Integrasi dengan Backend
   const handleBookmark = (postId: number) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
@@ -43,6 +71,9 @@ export function useCommunityPosts(initialPosts: Post[] = []) {
       }
       return post;
     }));
+
+    // TODO: Implement backend bookmark jika perlu
+    // axios.post(`/community/${postId}/bookmark`);
   };
 
   const addPost = (newPost: Post) => {

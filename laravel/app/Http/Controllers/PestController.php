@@ -11,6 +11,13 @@ use Inertia\Inertia;
 
 class PestController extends Controller
 {
+    public function userIndex() {
+        $pests = Pest::all();
+        return Inertia::render('pest-info/index', [
+            'pests' => $pests
+        ]);
+    }
+
     public function index(Request $request)
     {
         $keyword = $request->query('keyword');
@@ -39,13 +46,6 @@ class PestController extends Controller
         // $pest->load(['plantTypes', 'images']);
         return Inertia::render('admin/pest/show', [
             'pest' => $pest,
-        ]);
-    }
-
-    public function get()
-    {
-        return response()->json([
-            'datas' => Pest::with('plantTypes')->get()
         ]);
     }
 

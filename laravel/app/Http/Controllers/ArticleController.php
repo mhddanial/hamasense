@@ -23,7 +23,8 @@ class ArticleController extends Controller
         })->latest()->paginate(12);
 
         return Inertia::render('admin/article/index', [
-            'articles' => $articles
+            'articles' => $articles,
+            'categories' => ArticleCategory::all()
         ]);
     }
 
@@ -49,13 +50,6 @@ class ArticleController extends Controller
                 'content' => 'required|string',
                 'category_id' => 'required|int|exists:article_categories,id',
                 'image' => 'nullable|file|image|max:2048',
-                // 'tags' => 'nullable|array',
-                // 'summary' => 'nullable|string',
-                // 'published_at' => 'nullable|date',
-                // 'views_count' => 'nullable|integer',
-                // 'estimated_read_time' => 'nullable|string',
-                // 'related_article_ids' => 'nullable|array',
-                // 'related_article_ids.*' => 'exists:articles,id'
             ]);
 
             if (empty($validated['slug'])) {
@@ -74,11 +68,6 @@ class ArticleController extends Controller
 
             // Create Article
             $new_article = Article::create($validated);
-
-            // Sync Relationships
-            // if (!empty($validated['related_article_ids'])) {
-            //     $new_article->relatedArticles()->sync($validated['related_article_ids']);
-            // }
 
             DB::commit();
 
@@ -109,61 +98,33 @@ class ArticleController extends Controller
         try{
             // Validate similar to store, but minimal required fields from edit form
             $validated = $request->validate([
+                'image' => 'nullable',
                 'title' => 'required|string',
-                'slug' => 'nullable|string|unique:articles,slug,' . $article->id,
-                'content' => 'required|string',
                 'category_id' => 'required|int|exists:article_categories,id',
-                'image' => 'nullable', // Can be string (old URL) or File (new upload)
-                'status' => 'required|string|in:published,draft,scheduled',
-                // 'tags' => 'nullable|string', // Frontend sends string "tag1, tag2"
-                // 'summary' => 'nullable|string',
-                // 'published_at' => 'nullable|date',
-                // 'estimated_read_time' => 'nullable|string',
-                // 'related_article_ids' => 'nullable|array',
+                'content' => 'required|string',
+                'slug' => 'nullable|string|unique:articles,slug,' . $article->id,
+                // 'status' => 'required|string|in:published,draft,scheduled',
             ]);
 
             // Handle Image Upload
             if ($request->hasFile('image')) {
-                // Delete old image if exists and not default? (Optional, skip for now to be safe)
                 $path = $request->file('image')->store('articles', 'public');
                 $validated['image'] = '/storage/' . $path;
             } else {
-                // If it's a string (old URL) or null, we don't need to update the 'image' column 
-                // unless we want to allow clearing it?
-                // For now, if no file is uploaded, we exclude 'image' from update to keep existing.
-                // UNLESS the user explicitly wants to delete it? 
-                // show.tsx sends 'image' as null if deleted.
                 if ($request->input('image') === null) {
                    $validated['image'] = null;
                 } else {
-                   // It's a string (existing URL), so remove it from validated so we don't re-save URL string if logic handles paths differently
                    unset($validated['image']);
                 }
             }
-            
-            // Handle tags if needed (convert string to array logic? Model casts array)
-            // But user commented out tags logic in store, so keep it simple here too.
 
             $article->update($validated);
-            
-            // Sync relationships if needed
-            // if ($request->has('related_article_ids')) {
-            //      $article->relatedArticles()->sync($request->input('related_article_ids'));
-            // }
 
             DB::commit();
 
-            return to_route('article.index')->with('success', 'Article updated successfully'); // Redirect to index as standard
-            
-            // Original return JSON? Admin usually expects redirect. Frontend uses router.post/patch.
-            /*
-            return response()->json([
-                'status' => true,
-                'message' => 'Article updated successfully',
-                'result' => $updated_article
-            ]);
-            */
-        }catch(\Exception $e) {
+            return redirect()->route('article.index')->with('success', 'Article updated successfully'); // Redirect to index as standard
+
+        } catch(\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['message' => $e->getMessage()]);
         }
@@ -177,16 +138,10 @@ class ArticleController extends Controller
             $article->delete();
 
             DB::commit();
-            return response()->json([
-                'status' => true,
-                'message' => 'Article deleted successfully',
-            ]);
-        }catch(\Exception $e) {
+            return redirect()->route('article.index')->with('success', 'Article deleted successfully');
+        } catch(\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return back()->withErrors(['message' => $e->getMessage()]);
         }
     }
 }
