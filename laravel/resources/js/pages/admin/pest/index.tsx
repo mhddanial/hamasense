@@ -11,10 +11,11 @@ import { AdminNotificationToast } from '@/components/admin/InformationToast';
 
 interface Props extends PageProps {
   pests: Pest[];
+  search?: string;
 }
 
 
-export default function KelolaDataHama({pests} : Props) {
+export default function KelolaDataHama({pests, search} : Props) {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [ deleteModal, setDeleteModal ] = useState(false);
 
@@ -43,7 +44,7 @@ export default function KelolaDataHama({pests} : Props) {
     return (
         <>
             <div className="flex-1 min-h-screen p-8">
-                <NavSearch href='/admin/pest/create' title='Kelola Hama' button_title="Tambah Data Hama" page="pest" />
+                <NavSearch href='/admin/pest/create' title='Kelola Hama' button_title="Tambah Data Hama" page="pest" search={search} />
 
                 {/* Table */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -12,10 +12,11 @@ import { AdminNotificationToast } from '@/components/admin/InformationToast';
 
 interface Props extends PageProps {
 plants: Plant[];
+search?: string;
 }
 
 
-export default function KelolaTanaman({ plants } : Props) {
+export default function KelolaTanaman({ plants, search } : Props) {
 
      const [notifications, setNotifications] = useState<any[]>([]);
     
@@ -52,7 +53,7 @@ return (
     {/* Main Content */}
     <div className="flex-1 min-h-screen p-8">
 
-        <NavSearch href='/admin/plant/create' title='Kelola Tanaman' button_title="Tambah Tanaman" page='plant' />
+        <NavSearch href='/admin/plant/create' title='Kelola Tanaman' button_title="Tambah Tanaman" page='plant' search={search} />
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

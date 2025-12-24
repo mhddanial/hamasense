@@ -1,15 +1,23 @@
 import { Button } from "../ui/button";
 import { Plus, Search } from "lucide-react";
-import { Link, useForm } from "@inertiajs/react";
-import SearchBar from "@/components/SearchBar"
+import { Link, useForm, router } from "@inertiajs/react";
+// import SearchBar from "@/components/SearchBar"
 
-export default function NavSearch({title, href, button_title, page}: {title: string, href: string, button_title: string, page: string}) {
-  const { data, setData, get } = useForm({
-    keyword: ''
+
+export default function NavSearch({title, href, button_title, page, search}: {title: string, href: string, button_title: string, page: string, search?: string}) {
+  const { data, setData } = useForm({
+    keyword: search || ''
   });
 
-  const submit_handler = () => {
-    get(route('admin.plant.index'));
+  const submit_handler = (e: React.FormEvent) => {
+    e.preventDefault();
+    const routeName = page === 'plant' ? 'admin.plant.index' : 'admin.pest.index';
+    
+    // Explicitly send the keyword param using router.get to ensure it is attached
+    router.get(route(routeName), { keyword: data.keyword }, {
+      preserveState: true,
+      replace: true
+    });
   }
 
   return (<>
@@ -29,7 +37,7 @@ export default function NavSearch({title, href, button_title, page}: {title: str
     </div>
 
     {/* Search Bar */}
-    <div className="w-full md:w-1/3">
+    {/* <div className="w-full md:w-1/3">
       <SearchBar 
         value={data.keyword}
         onChange={(e) => {
@@ -38,8 +46,8 @@ export default function NavSearch({title, href, button_title, page}: {title: str
         placeholder="Cari hama berdasarkan nama, nama ilmiah, atau tanaman ..."
         className="bg-white"
       />
-    </div>
-    {/* <div className="relative flex gap-2">
+    </div> */}
+    <form onSubmit={submit_handler} className="relative flex gap-2">
       <div className="relative flex-1">
         <Search className="bg-white absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" />
 
@@ -57,8 +65,8 @@ export default function NavSearch({title, href, button_title, page}: {title: str
         />
 
       </div>
-      <Button className="h-full py-3 my-auto" onClick={submit_handler}>Search</Button>
-    </div> */}
+      <Button type="submit" className="h-full py-3 my-auto">Search</Button>
+    </form>
 
   </div>
 

@@ -16,7 +16,7 @@ class PlantTypeController extends Controller
         $keyword = $request->query('keyword');
         
         $plants = PlantType::query()->when($keyword, function ($query, $keyword) {
-            $search_term = "%{$keyword}%";
+            $search_term = "{$keyword}%";
             return $query->where(function ($q) use ($search_term) {
                 $q->where('name', 'like', $search_term)
                     ->orWhere('scientific_name',  'like', $search_term);
@@ -25,7 +25,8 @@ class PlantTypeController extends Controller
 
 
         return Inertia::render('admin/plant/index', [
-            'plants' => $plants
+            'plants' => $plants,
+            'search' => $keyword
         ]);
     }
 

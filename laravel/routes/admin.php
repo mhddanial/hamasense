@@ -1,5 +1,6 @@
 <?php
 
+
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PestController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\PlantTypeController;
 use App\Http\Controllers\ArticleCategoryController;
+
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
     Route::get('/user', [AdminController::class, 'user']);
@@ -18,11 +20,3 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
     Route::resource('/article-category', ArticleCategoryController::class);
     Route::resource('/disease', DiseaseController::class);
 });
-
-// Route::prefix('/api')->group(function () {
-//     Route::apiResource('/article', ArticleController::class);
-
-//     Route::apiResource('/article_category', ArticleCategoryController::class);
-//     Route::apiResource('/pest', PestController::class);
-
-// });

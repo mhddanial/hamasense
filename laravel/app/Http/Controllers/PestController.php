@@ -22,7 +22,7 @@ class PestController extends Controller
     {
         $keyword = $request->query('keyword');
         $pests = Pest::query()->when($keyword, function ($query, $keyword) {
-            $search_term = "%{$keyword}%";
+            $search_term = "{$keyword}%";
             return $query->where(function ($q) use ($search_term) {
                 $q->where('name', 'like', $search_term)
                     ->orWhere('scientific_name', 'like', $search_term);
@@ -30,7 +30,8 @@ class PestController extends Controller
         })->latest()->paginate(8);
 
         return Inertia::render('admin/pest/index', [
-            'pests' => $pests
+            'pests' => $pests,
+            'search' => $keyword 
         ]);
     }
 
