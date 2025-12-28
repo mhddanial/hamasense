@@ -4,55 +4,57 @@ import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
 import { Link, router, usePage, useForm } from "@inertiajs/react";
 import {
-  SquarePen,
-  Trash2,
-  FolderOpen,
-  Plus,
-  Tag,
-  Edit2,
-  X
+    SquarePen,
+    Trash2,
+    FolderOpen,
+    Plus,
+    Tag,
+    Edit2,
+    X
 } from 'lucide-react';
 import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
-import { AdminNotificationToast } from "@/components/admin/InformationToast"; 
+import { AdminNotificationToast } from "@/components/admin/InformationToast";
 
 
 interface Props extends PageProps {
-  articles: Article[];
-  categories: Category[];
+    articles: Article[];
+    categories: Category[];
 }
 
 
 const KelolaArtikel = ({ articles, categories }: Props) => {
-  const [ searchTerm, setSearchTerm ] = useState("");
-  const [ deleteModal, setDeleteModal ] = useState(false);
-  const [ notifications, setNotifications ] = useState<any[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [notifications, setNotifications] = useState<any[]>([]);
 
-  // Tab State
-  const [activeTab, setActiveTab] = useState<'articles' | 'categories'>('articles');
+    // Tab State
+    const [activeTab, setActiveTab] = useState<'articles' | 'categories'>('articles');
 
-  // Article Operation State
-  const [selectedItem, setSelectedItem] = useState({
-    'id': 0,
-    'name': ''
-  });
+    // Article Operation State
+    const [selectedItem, setSelectedItem] = useState({
+        'id': 0,
+        'name': ''
+    });
 
-  // Category Operation State
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [categoryModalMode, setCategoryModalMode] = useState<'create' | 'edit'>('create');
-  const [categoryId, setCategoryId] = useState(0);
-  const categoryForm = useForm({
-    name: ''
-  });
+    // Category Operation State
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [categoryModalMode, setCategoryModalMode] = useState<'create' | 'edit'>('create');
+    const [categoryId, setCategoryId] = useState(0);
+    const categoryForm = useForm({
+        name: ''
+    });
 
     const { flash } = usePage().props;
     const success = flash?.success;
     const error = flash?.error;
 
     useEffect(() => {
-        if(success){
-            setNotifications((prev) => [...prev, {type: 'success', message: success}])}
-        if(error){
-            setNotifications((prev) => [...prev, {type: 'error', message: error}])}
+        if (success) {
+            setNotifications((prev) => [...prev, { type: 'success', message: success }])
+        }
+        if (error) {
+            setNotifications((prev) => [...prev, { type: 'error', message: error }])
+        }
     }, [success, error]);
 
     const removeNotification = (id: number) => {
@@ -62,13 +64,13 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
     // Category Handlers
     const openCreateCategoryModal = () => {
         setCategoryModalMode('create');
-        categoryForm.setData({name: ''});
+        categoryForm.setData({ name: '' });
         setShowCategoryModal(true);
     };
 
     const openEditCategoryModal = (category: Category) => {
         setCategoryModalMode('edit');
-        categoryForm.setData({name: category.name});
+        categoryForm.setData({ name: category.name });
         setCategoryId(category.id);
         setShowCategoryModal(true);
     };
@@ -76,7 +78,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
     const closeCategoryModal = () => {
         setShowCategoryModal(false);
         setCategoryModalMode('create');
-        categoryForm.setData({name: ''});
+        categoryForm.setData({ name: '' });
         setCategoryId(0);
     };
 
@@ -91,7 +93,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
             });
         }
     };
-    
+
     // Unified Delete Handler
     // For articles, we use 'article' type. For categories, we use 'category' type.
     // However, the current DeleteConfirmationModal is simple. We can reuse it by tracking what we are deleting.
@@ -141,24 +143,22 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
 
             {/* Navigation Tabs */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 flex overflow-x-auto gap-2">
-                <button 
+                <button
                     onClick={() => setActiveTab('articles')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                        activeTab === 'articles' 
-                        ? 'bg-blue-600 text-white shadow-sm' 
+                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'articles'
+                        ? 'bg-blue-600 text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                        }`}
                 >
                     <FolderOpen className="w-5 h-5" />
                     Articles
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('categories')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                        activeTab === 'categories' 
-                        ? 'bg-blue-600 text-white shadow-sm' 
+                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'categories'
+                        ? 'bg-blue-600 text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                        }`}
                 >
                     <Tag className="w-5 h-5" />
                     Categories
@@ -172,12 +172,12 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Image</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gambar</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Judul</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -185,8 +185,8 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                     <tr key={article.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="h-16 w-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                                <img 
-                                                    src={article.image} 
+                                                <img
+                                                    src={article.image}
                                                     alt={article.title}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -220,7 +220,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Link 
+                                                <Link
                                                     href={`/admin/article/${article.id}`}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                     title="Edit"
@@ -256,13 +256,13 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <div className="flex items-center justify-center gap-3">
-                                                <button 
+                                                <button
                                                     onClick={() => openEditCategoryModal(category)}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                 >
                                                     <Edit2 className="w-5 h-5" />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handleDeleteClick('category', category.id, category.name)}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                 >
@@ -288,20 +288,19 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                 {activeTab === 'articles' && articles.last_page >= 2 && (
                     <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/30">
                         <div className="flex justify-center gap-1">
-                                {articles.links.map((link, i: number) => (
+                            {articles.links.map((link, i: number) => (
                                 link.url ? (
-                                    <Link 
+                                    <Link
                                         key={i}
                                         href={link.url}
-                                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                            link.active 
-                                                ? 'bg-blue-600 text-white shadow-sm' 
-                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                        }`}
+                                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${link.active
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                            }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ) : (
-                                    <span 
+                                    <span
                                         key={i}
                                         className="px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
                                         dangerouslySetInnerHTML={{ __html: link.label }}
@@ -313,15 +312,15 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                 )}
             </div>
 
-            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
+            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification} />
 
-            <DeleteConfirmationModal 
-                isOpen={deleteModal} 
+            <DeleteConfirmationModal
+                isOpen={deleteModal}
                 onClose={() => {
                     setDeleteModal(false)
-                    setSelectedItem({'id': 0, 'name': ''});
-                }} 
-                onConfirm={handleConfirmDelete} 
+                    setSelectedItem({ 'id': 0, 'name': '' });
+                }}
+                onConfirm={handleConfirmDelete}
                 itemName={selectedItem.name}
             />
 
@@ -334,7 +333,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                             <h2 className="text-xl font-bold text-gray-900">
                                 {categoryModalMode === 'create' ? 'Add New Category' : 'Edit Category'}
                             </h2>
-                            <button 
+                            <button
                                 onClick={closeCategoryModal}
                                 className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors"
                             >
@@ -350,7 +349,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                             <input
                                 type="text"
                                 value={categoryForm.data.name}
-                                onChange={(e) => categoryForm.setData({name: e.target.value})}
+                                onChange={(e) => categoryForm.setData({ name: e.target.value })}
                                 placeholder="Enter category name..."
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                                 autoFocus
@@ -362,13 +361,13 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
 
                         {/* Modal Footer */}
                         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 bg-gray-50/50">
-                            <button 
+                            <button
                                 onClick={closeCategoryModal}
                                 className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-200 rounded-lg transition-colors"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 onClick={handleCategorySubmit}
                                 disabled={categoryForm.processing}
                                 className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"

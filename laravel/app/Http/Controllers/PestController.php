@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pest;
-use App\Models\PestImg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PestController extends Controller
@@ -15,6 +15,13 @@ class PestController extends Controller
         $pests = Pest::all();
         return Inertia::render('pest-info/index', [
             'pests' => $pests
+        ]);
+    }
+
+    public function userShow($slug) {
+        $pest = Pest::where('slug', $slug)->firstOrFail();
+        return Inertia::render('pest-info/detail', [
+            'pest' => $pest
         ]);
     }
 
@@ -57,10 +64,24 @@ class PestController extends Controller
         try {
             $field = $request->validate([
                 'name' => 'required|string',
+                'slug' => 'nullable|string|unique:pests,slug',
                 'scientific_name' => 'required|string',
-                'description' => 'required|string',
-                'img_path' => 'image'
+                'description' => 'nullable|string',
+                'category' => 'required|string',
+                'risk_level' => 'required|in:rendah,sedang,tinggi',
+                'plant' => 'nullable|array',
+                'plant.*' => 'string',
+                'pencegahan' => 'nullable|array',
+                'pencegahan.*' => 'string',
+                'penanganan' => 'nullable|array',
+                'penanganan.*' => 'string',
+                'img_path' => 'nullable|image'
             ]);
+
+            // Auto-generate slug from name if not provided
+            if (empty($field['slug'])) {
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid();
+            }
 
             if($request->hasFile('img_path')) {
                 $file = $request->file('img_path');
@@ -68,13 +89,11 @@ class PestController extends Controller
                 
                 $file->storeAs('pest', $file_name, 'public');
                 $field['img_path'] = $file_name;
-
             }
 
             $new_pest = Pest::create($field);
 
             DB::commit();
-
 
             return redirect('admin/pest')->with('success', 'New Pest Added Successfully!');
 
@@ -86,20 +105,33 @@ class PestController extends Controller
 
     public function update(Request $request, Pest $pest)
     {
-        
         DB::beginTransaction();
         
         try{
             $field = $request->validate([
                 'name' => 'required|string',
+                'slug' => 'nullable|string|unique:pests,slug,' . $pest->id,
                 'scientific_name' => 'required|string',
-                'description' => 'required|string',
-                'new_img' => 'image|nullable',
-                'old_img' => 'string|nullable'
+                'description' => 'nullable|string',
+                'category' => 'required|string',
+                'risk_level' => 'required|in:rendah,sedang,tinggi',
+                'plant' => 'nullable|array',
+                'plant.*' => 'string',
+                'pencegahan' => 'nullable|array',
+                'pencegahan.*' => 'string',
+                'penanganan' => 'nullable|array',
+                'penanganan.*' => 'string',
+                'new_img' => 'nullable|image',
+                'old_img' => 'nullable|string'
             ]);
+
+            // Auto-generate slug from name if not provided
+            if (empty($field['slug'])) {
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid();
+            }
             
             if($request->hasFile('new_img')){
-                Storage::disk('public')->delete('/plant/' . $pest->img_path);
+                Storage::disk('public')->delete('/pest/' . $pest->img_path);
                 $file = $request->file('new_img');
                 $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
                 $file->storeAs('pest', $file_name, 'public');
@@ -108,73 +140,22 @@ class PestController extends Controller
 
             $pest->update([
                 'name' => $field['name'],
+                'slug' => $field['slug'],
                 'scientific_name' => $field['scientific_name'],
-                'description' => $field['description'],
+                'description' => $field['description'] ?? null,
                 'category' => $field['category'],
                 'risk_level' => $field['risk_level'],
+                'plant' => $field['plant'] ?? null,
+                'pencegahan' => $field['pencegahan'] ?? null,
+                'penanganan' => $field['penanganan'] ?? null,
+                'img_path' => $field['img_path'] ?? $pest->img_path,
             ]);
-
-            // Menangani gambar baru
-            if ($request->hasFile('images')) {
-                $files = $request->file('images');
-                $imagesData = [];
-                
-                foreach ($files as $file) {
-                    $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-                    $file->storeAs('images', $filename, 'public');
-
-                    $imagesData[] = [
-                        'pest_id' => $pest->id,
-                        'filename' => $filename 
-                    ];
-                }
-                
-                if (!empty($imagesData)) {
-                    PestImg::insert($imagesData);
-                }
-            }
-
-            // Menangani penghapusan gambar
-            if (!empty($request->deleted_images)) {
-                $imagesToDelete = PestImg::whereIn('filename', $request->deleted_images)
-                                        ->where('pest_id', $pest->id)
-                                        ->get();
-
-                foreach ($imagesToDelete as $img) {
-                    Storage::disk('public')->delete('images/' . $img->filename);
-                    $img->delete();
-                }
-            }
-
-            // Sync Plant Types
-            if (isset($request->plant_types)) {
-                $plantIds = [];
-                foreach ($request->plant_types as $plantName) {
-                    $plant = \App\Models\PlantType::firstOrCreate(
-                        ['name' => $plantName],
-                        ['scientific_name' => '-', 'detail' => '-']
-                    );
-                    $plantIds[] = $plant->id;
-                }
-                $pest->plantTypes()->sync($plantIds);
-            }
-
-            // Update main image_path if needed
-            $firstImage = $pest->images()->first();
-            if ($firstImage) {
-                $pest->update(['image_path' => 'images/' . $firstImage->filename]);
-            } else {
-                 $pest->update(['image_path' => null]);
-            }
 
             DB::commit();
             return redirect('admin/pest')->with('success', 'Data hama berhasil diperbarui!');
 
         }catch(\Exception $e) {
             DB::rollBack();
-            return [
-                'message' => $e->getMessage()
-            ];
 
             return redirect('admin/pest')->with('error', 'Error when updating pest: ' . $e->getMessage());
         }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('scientific_name');
             $table->text('detail');
+            $table->string('img_path')->nullable();
             $table->timestamps();
         });
     }

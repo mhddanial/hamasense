@@ -27,6 +27,11 @@ export interface PlantType {
     detail: string;
 }
 
+export type Reference = {
+    source_name: string;
+    url: string;
+}
+
 export type ArticleInput = {
     image?: string | File | null;
     title: string;
@@ -36,16 +41,10 @@ export type ArticleInput = {
     related_articles?: Article[]; // Untuk melihat hubungan
     content: string;
     slug?: string;
-    // writer_id: number;
-    // writer: Writer;
-    // tags?: string[] | null;
-    // summary?: string | null;
-    // published_at?: string | null;
-    // views_count?: number;
-    // estimated_read_time?: string | null;
+    references?: Reference[];
 }
 
-export interface Article extends ArticleInput, Id, Timestamps {}
+export interface Article extends ArticleInput, Id, Timestamps { }
 
 export type PlantInput = {
     name: string;
@@ -54,30 +53,32 @@ export type PlantInput = {
     images: string[];
 }
 
-export interface Plant extends PlantInput, Id, Timestamps {}
+export interface Plant extends PlantInput, Id, Timestamps { }
 
 export type DiseaseInput = {
+    label: string;
     name: string;
-    description: string;
-    cause: string;
-    solution: string;
-    severity_level: string;
+    description?: string;
+    severity_level: 'rendah' | 'sedang' | 'tinggi';
     plant_type_id: number;
-    img_path: string;
+    img_path?: string;
 }
 
-export interface Disease extends DiseaseInput, Id, Timestamps {}
+export interface Disease extends DiseaseInput, Id, Timestamps { }
 
 export type PestInput = {
     name: string;
+    slug?: string;
     scientific_name: string;
-    description: string;
-    img_path: string;
+    description?: string;
+    img_path?: string;
+    category: string;
+    risk_level: 'rendah' | 'sedang' | 'tinggi';
+    plant?: string[];
+    pencegahan?: string[];
+    penanganan?: string[];
 }
 
 export interface Pest extends PestInput, Id, Timestamps {
-    category: string;
-    risk_level: string;
-    image_path?: string;
     plant_types?: PlantType[];
 }

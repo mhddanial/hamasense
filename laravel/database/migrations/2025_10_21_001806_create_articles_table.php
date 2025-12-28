@@ -16,12 +16,14 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->string('image')->nullable();
+            $table->string('img_path')->nullable();
             $table->json('tags')->nullable();
             $table->text('summary')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->integer('views_count')->default(0);
             $table->string('estimated_read_time')->nullable();
             $table->text('content');
+            $table->json('references')->nullable();
             $table->foreignId('writer_id')->constrained(
                 table:'users',
                 column: 'id'

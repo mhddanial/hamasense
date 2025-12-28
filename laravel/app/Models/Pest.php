@@ -8,11 +8,21 @@ class Pest extends Model
 {
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'scientific_name',
         'img_path',
         'category',
-        'risk_level'
+        'risk_level',
+        'plant',
+        'pencegahan',
+        'penanganan',
+    ];
+
+    protected $casts = [
+        'plant' => 'array',
+        'pencegahan' => 'array',
+        'penanganan' => 'array',
     ];
 
     // hubungan ini antara pest menyebabkan
@@ -25,10 +35,5 @@ class Pest extends Model
     public function plantTypes()
     {
         return $this->belongsToMany(PlantType::class, 'plant_type_pests', 'pest_id', 'plant_type_id');
-    }
-
-    public function images()
-    {
-        return $this->hasMany(PestImg::class, 'pest_id', 'id');
     }
 }

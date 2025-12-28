@@ -59,11 +59,10 @@ class DiseaseController extends Controller
 
         try {
             $field = $request->validate([
+                'label' => 'required|string|unique:diseases,label',
                 'name' => 'required|string',
-                'cause' => 'required|string',
-                'description' => 'required|string',
-                'solution' => 'required|string',
-                'severity_level' => 'required|numeric',
+                'description' => 'nullable|string',
+                'severity_level' => 'required|in:rendah,sedang,tinggi',
                 'plant_type_id' => 'required|numeric',
                 'img_path' => 'image|nullable'
             ]);
@@ -107,11 +106,10 @@ class DiseaseController extends Controller
 
         try{
             $field = $request->validate([
+                'label' => 'required|string|unique:diseases,label,' . $disease->id,
                 'name' => 'required|string',
-                'cause' => 'required|string',
-                'description' => 'required|string',
-                'solution' => 'required|string',
-                'severity_level' => 'required|numeric',
+                'description' => 'nullable|string',
+                'severity_level' => 'required|in:rendah,sedang,tinggi',
                 'plant_type_id' => 'required|numeric',
                 'new_img' => 'image|nullable'
             ]);

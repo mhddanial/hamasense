@@ -25,46 +25,6 @@ import {
 } from "@/components/ui/select";
 import PestCardItem from "./PestCardItem";
 
-// ✅ DATA DUMMY
-const dummyPests: Pest[] = [
-    {
-        id: 1,
-        name: "Ulat Grayak",
-        scientific_name: "Spodoptera frugiperda",
-        category: "Serangga",
-        risk_level: "Berat",
-        image_path: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPKUXRelYvTOphG_cftpYKXBo3qKYL9FQhKQ&s',
-        plant_types: [{ name: "Jagung" }, { name: "Padi" }],
-    } as unknown as Pest,
-    {
-        id: 2,
-        name: "Kutu Daun",
-        scientific_name: "Aphis gossypii",
-        category: "Serangga",
-        risk_level: "Sedang",
-        image_path: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEk_Q7Li3HwiRF8iIWF3WKRUWAPo1Wa_YbJg&s',
-        plant_types: [{ name: "Cabai" }, { name: "Terong" }],
-    } as unknown as Pest,
-    {
-        id: 3,
-        name: "Embun Tepung",
-        scientific_name: "Erysiphe spp.",
-        category: "Jamur",
-        risk_level: "Sedang",
-        image_path: 'https://asset.kompas.com/crops/LSdhT-yT4K73DLEDR_0GyMdRWLA=/193x128:1727x1151/1200x800/data/photo/2021/04/04/60695dc2cee05.jpg',
-        plant_types: [{ name: "Mentimun" }, { name: "Melon" }],
-    } as unknown as Pest,
-    {
-        id: 4,
-        name: "Spider Mite",
-        scientific_name: "Tetranychus urticae",
-        category: "Serangga",
-        risk_level: "Berat",
-        image_path: 'https://cdn.shopify.com/s/files/1/0442/8929/4491/files/Red_Spider_Mite_1_CANVA25.jpg?v=1755692684',
-        plant_types: [{ name: "Tomat" }, { name: "Kentang" }],
-    } as unknown as Pest,
-];
-
 interface Props {
     pests: Pest[];
 }
@@ -74,21 +34,18 @@ export default function PestInfo({ pests }: Props) {
         { title: "Info Hama", href: route("pest.user.index") },
     ];
 
-    // Gunakan data dummy jika props kosong
-    const pestsData = pests?.length ? pests : dummyPests;
-
     const [search, setSearch] = useState("");
     const [kategori, setKategori] = useState("Semua Kategori");
     const [risiko, setRisiko] = useState("Semua Risiko");
 
     // Logic Filtering
-    const filteredPests = pestsData.filter((p) => {
+    const filteredPests = pests.filter((p) => {
         const matchSearch =
             p.name.toLowerCase().includes(search.toLowerCase()) ||
             p.scientific_name.toLowerCase().includes(search.toLowerCase()) ||
-            (p.plant_types &&
-                p.plant_types.some((pt: any) =>
-                    pt.name.toLowerCase().includes(search.toLowerCase())
+            (p.plant &&
+                p.plant.some((plantName: string) =>
+                    plantName.toLowerCase().includes(search.toLowerCase())
                 ));
 
         const matchKategori = kategori === "Semua Kategori" || p.category === kategori;
@@ -100,10 +57,20 @@ export default function PestInfo({ pests }: Props) {
     // Helper untuk warna badge risiko
     const getRiskColor = (level: string) => {
         switch (level.toLowerCase()) {
-            case 'berat': return "bg-red-100 text-red-700 border-red-200 hover:bg-red-200";
+            case 'tinggi': return "bg-red-100 text-red-700 border-red-200 hover:bg-red-200";
             case 'sedang': return "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200";
             case 'rendah': return "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200";
             default: return "bg-gray-100 text-gray-700 border-gray-200";
+        }
+    };
+
+    // Helper untuk label risiko
+    const getRiskLabel = (level: string) => {
+        switch (level.toLowerCase()) {
+            case 'tinggi': return 'Tinggi';
+            case 'sedang': return 'Sedang';
+            case 'rendah': return 'Rendah';
+            default: return level;
         }
     };
 
@@ -158,6 +125,8 @@ export default function PestInfo({ pests }: Props) {
                                 <SelectItem value="Jamur">Jamur</SelectItem>
                                 <SelectItem value="Bakteri">Bakteri</SelectItem>
                                 <SelectItem value="Virus">Virus</SelectItem>
+                                <SelectItem value="Nematoda">Nematoda</SelectItem>
+                                <SelectItem value="Gulma">Gulma</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -171,9 +140,9 @@ export default function PestInfo({ pests }: Props) {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Semua Risiko">Semua Risiko</SelectItem>
-                                <SelectItem value="Rendah">Rendah</SelectItem>
-                                <SelectItem value="Sedang">Sedang</SelectItem>
-                                <SelectItem value="Berat">Berat</SelectItem>
+                                <SelectItem value="rendah">Rendah</SelectItem>
+                                <SelectItem value="sedang">Sedang</SelectItem>
+                                <SelectItem value="tinggi">Tinggi</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -185,7 +154,7 @@ export default function PestInfo({ pests }: Props) {
                     {filteredPests.length > 0 ? (
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {filteredPests.map((pest) => (
-                                <PestCardItem key={pest.id} pest={pest} getRiskColor={getRiskColor} />
+                                <PestCardItem key={pest.id} pest={pest} getRiskColor={getRiskColor} getRiskLabel={getRiskLabel} />
                             ))}
                         </div>
                     ) : (

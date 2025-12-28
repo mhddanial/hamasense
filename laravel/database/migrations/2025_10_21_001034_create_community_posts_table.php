@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
-            $table->integer('like_total');
+            $table->string('category');
+            $table->string('image')->nullable();
+            $table->integer('like_total')->default(0);
             $table->foreignId('created_by')->constrained(
                 table: 'users',
                 column: 'id'

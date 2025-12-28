@@ -34,7 +34,7 @@ class ArticleController extends Controller
         $categories = ArticleCategory::all();
 
         return Inertia::render('admin/article/create', [
-             'articles' => $articles, 
+            'articles' => $articles, 
             'categories' => $categories
         ]);
     }
@@ -49,8 +49,19 @@ class ArticleController extends Controller
                 'slug' => 'nullable|string|unique:articles,slug',
                 'content' => 'required|string',
                 'category_id' => 'required|int|exists:article_categories,id',
-                'image' => 'nullable|file|image|max:2048',
+                'img_path' => 'nullable|file|image|max:2048',
+                'references' => 'nullable|array',
+                'references.*.source_name' => 'nullable|string',
+                'references.*.url' => 'nullable|string',
             ]);
+
+            // Filter out empty references
+            if (!empty($validated['references'])) {
+                $validated['references'] = array_filter($validated['references'], function($ref) {
+                    return !empty($ref['source_name']) || !empty($ref['url']);
+                });
+                $validated['references'] = array_values($validated['references']); // Re-index
+            }
 
             if (empty($validated['slug'])) {
                 $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid(); 
@@ -103,8 +114,18 @@ class ArticleController extends Controller
                 'category_id' => 'required|int|exists:article_categories,id',
                 'content' => 'required|string',
                 'slug' => 'nullable|string|unique:articles,slug,' . $article->id,
-                // 'status' => 'required|string|in:published,draft,scheduled',
+                'references' => 'nullable|array',
+                'references.*.source_name' => 'nullable|string',
+                'references.*.url' => 'nullable|string',
             ]);
+
+            // Filter out empty references
+            if (!empty($validated['references'])) {
+                $validated['references'] = array_filter($validated['references'], function($ref) {
+                    return !empty($ref['source_name']) || !empty($ref['url']);
+                });
+                $validated['references'] = array_values($validated['references']); // Re-index
+            }
 
             // Handle Image Upload
             if ($request->hasFile('image')) {

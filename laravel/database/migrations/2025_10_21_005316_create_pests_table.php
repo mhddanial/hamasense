@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('pests', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->string('scientific_name');
-            $table->text('description');
-            $table->string('image_path')->nullable();
+            $table->text('description')->nullable();
+            $table->string('img_path')->nullable();
             $table->string('category')->default('Serangga');
-            $table->string('risk_level')->default('Sedang');
+            $table->enum('risk_level', ['rendah', 'sedang', 'tinggi'])->default('sedang');
+            $table->json('plant')->nullable();
+            $table->json('pencegahan')->nullable();
+            $table->json('penanganan')->nullable();
             $table->timestamps();
         });
     }

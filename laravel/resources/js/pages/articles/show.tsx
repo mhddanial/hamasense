@@ -17,13 +17,10 @@ import {
 } from '@/components/ui/breadcrumb';
 
 
+
 type Reference = {
-  id: number;
-  source: string;
-  title: string;
-  author?: string;
+  source_name: string;
   url: string;
-  accessedAt: string; // ISO
 };
 
 type ArticleShow = {
@@ -36,7 +33,7 @@ type ArticleShow = {
   date: string;        // ISO
   image: string;
   readingTime: string; // contoh: "6 menit"
-  body: string[];      // controller mengirim array paragraf pada dummy
+  body: string | string[];  // can be string (from DB) or array
   references: Reference[];
 };
 
@@ -247,19 +244,14 @@ export default function ArticleShow(props: ArticleShowProps) {
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold text-gray-700">#</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-700">Sumber</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Penulis</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-700">Tautan</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Diakses</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {article.references.map((ref, i) => (
-                    <tr key={ref.id} className="hover:bg-gray-50/60">
+                    <tr key={i} className="hover:bg-gray-50/60">
                       <td className="px-4 py-3 text-gray-600">{i + 1}</td>
-                      <td className="px-4 py-3 text-gray-900">{ref.source}</td>
-                      <td className="px-4 py-3 text-gray-700">{ref.title}</td>
-                      <td className="px-4 py-3 text-gray-600">{ref.author || '-'}</td>
+                      <td className="px-4 py-3 text-gray-900">{ref.source_name}</td>
                       <td className="px-4 py-3">
                         <a
                           href={ref.url}
@@ -270,7 +262,6 @@ export default function ArticleShow(props: ArticleShowProps) {
                           Kunjungi <ExternalLink className="h-4 w-4" />
                         </a>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{formatDate(ref.accessedAt)}</td>
                     </tr>
                   ))}
                 </tbody>

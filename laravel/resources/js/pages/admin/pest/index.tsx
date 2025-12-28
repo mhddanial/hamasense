@@ -10,14 +10,14 @@ import { AdminNotificationToast } from '@/components/admin/InformationToast';
 
 
 interface Props extends PageProps {
-  pests: Pest[];
-  search?: string;
+    pests: Pest[];
+    search?: string;
 }
 
 
-export default function KelolaDataHama({pests, search} : Props) {
+export default function KelolaDataHama({ pests, search }: Props) {
     const [notifications, setNotifications] = useState<any[]>([]);
-    const [ deleteModal, setDeleteModal ] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
 
     const { flash } = usePage().props;
 
@@ -25,12 +25,14 @@ export default function KelolaDataHama({pests, search} : Props) {
     const error = flash?.error;
 
     useEffect(() => {
-        if(success){
-            setNotifications((prev) => [...prev, {type: 'success', message: success}])}
-        if(error){
-            setNotifications((prev) => [...prev, {type: 'error', message: error}])}
+        if (success) {
+            setNotifications((prev) => [...prev, { type: 'success', message: success }])
+        }
+        if (error) {
+            setNotifications((prev) => [...prev, { type: 'error', message: error }])
+        }
     }
-    , [success, error]);
+        , [success, error]);
 
     const [selectedItem, setSelectedItem] = useState({
         'id': 0,
@@ -55,49 +57,49 @@ export default function KelolaDataHama({pests, search} : Props) {
                                 'name': pest.name
                             });
                             setDeleteModal(true);
-                        }}/>
+                        }} />
                     ))}
+                </div>
+
+                {
+                    pests.last_page >= 2 ? (
+                        <div className="py-12 px-4">
+                            {pests.links.map(link =>
+                                link.url ? (
+                                    <Link
+                                        className={`p-1 mx-1 ${link.active ? 'text-blue-500 font-bold' : ''}`}
+                                        key={link.label}
+                                        href={link.url}
+                                        dangerouslySetInnerHTML={{ __html: link.label }} />
+                                ) : (
+                                    <span
+                                        className="p-1 mx-1 text-slate-300"
+                                        key={link.label}
+                                        dangerouslySetInnerHTML={{ __html: link.label }} ></span>
+                                )
+                            )}
+                        </div>
+                    ) : (<></>)
+                }
             </div>
 
-           {
-                      pests.last_page >= 2 ? (        
-                      <div className="py-12 px-4">
-                      {pests.links.map(link =>
-                          link.url ? (
-                              <Link
-                                  className={`p-1 mx-1 ${link.active ? 'text-blue-500 font-bold' : ''}`}
-                                  key={link.label}
-                                  href={link.url}
-                                  dangerouslySetInnerHTML={{ __html: link.label }} />
-                          ) : (
-                              <span
-                                  className="p-1 mx-1 text-slate-300"
-                                  key={link.label}
-                                  dangerouslySetInnerHTML={{ __html: link.label }} ></span>
-                          )
-                      ) }
-                      </div>
-                      ): (<></>)
-                    }
-          </div>
+            <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
+                setDeleteModal(false)
+                setSelectedItem({ 'id': 0, 'name': '' });
+            }} onConfirm={() => {
+                console.log(`/admin/pest/${selectedItem.id}`)
+                router.delete(`/admin/pest/${selectedItem.id}`);
+                setDeleteModal(false)
 
-    <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
-      setDeleteModal(false)
-      setSelectedItem({'id': 0, 'name': ''});
-    }} onConfirm={() => {
-      console.log(`/admin/pest/${selectedItem.id}`)
-      router.delete(`/admin/pest/${selectedItem.id}`);
-      setDeleteModal(false)
+            }} itemName={selectedItem.name} />
 
-    }} itemName={selectedItem.name}/>
-
-    <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
+            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification} />
         </>
     );
 }
 
 KelolaDataHama.layout = (page: React.ReactElement) => (
-  <AdminLayout page_title='pest'>
-    {page}
-  </AdminLayout>
+    <AdminLayout>
+        {page}
+    </AdminLayout>
 )
