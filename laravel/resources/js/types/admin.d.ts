@@ -50,7 +50,8 @@ export type PlantInput = {
     name: string;
     scientific_name: string;
     detail: string;
-    images: string[];
+    img_path?: string;
+    images?: string[];
 }
 
 export interface Plant extends PlantInput, Id, Timestamps { }

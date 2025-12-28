@@ -4,6 +4,7 @@ import { PageProps } from '@inertiajs/core';
 import { Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { FolderOpen, Paperclip, Upload, Plus, Trash2 } from 'lucide-react';
+import { Editor } from '@/components/blocks/editor-00/editor';
 
 type Reference = {
     source_name: string;
@@ -89,6 +90,11 @@ export default function BuatArtikel({ categories }: Props) {
         setData('references', newRefs);
     };
 
+    // Handle rich text editor content change
+    const handleContentChange = (html: string) => {
+        setData('content', html);
+    };
+
     return (
         <>
             {/* Main Content */}
@@ -147,7 +153,7 @@ export default function BuatArtikel({ categories }: Props) {
                     </div>
 
                     {/* Form */}
-                    <div className="space-y-6">
+                    <div className="space-y-6 mt-6">
                         <div className="grid grid-cols-2 gap-6">
                             {/* Title */}
                             <div>
@@ -184,24 +190,14 @@ export default function BuatArtikel({ categories }: Props) {
                                     ))}
                                 </select>
                             </div>
-                            {errors.image && <div className="text-red-500 text-sm mt-1 text-center">{errors.image}</div>}
                         </div>
 
-                        {/* Content */}
+                        {/* Content - Rich Text Editor */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Konten Artikel
                             </label>
-                            <textarea
-                                name="content"
-                                value={data.content}
-                                onChange={(e) => setData('content', e.target.value)}
-                                placeholder="Tulis konten artikel Anda di sini..."
-                                rows={16}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                            >
-                                {data.content}
-                            </textarea>
+                            <Editor onHtmlChange={handleContentChange} />
                             {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
                         </div>
 

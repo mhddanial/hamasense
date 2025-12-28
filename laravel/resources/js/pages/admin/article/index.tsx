@@ -15,15 +15,30 @@ import {
 import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
 import { AdminNotificationToast } from "@/components/admin/InformationToast";
 
+// Pagination Link Type
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+// Paginated Response Type
+interface PaginatedArticles {
+    data: Article[];
+    links: PaginationLink[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
 
 interface Props extends PageProps {
-    articles: Article[];
+    articles: PaginatedArticles;
     categories: Category[];
 }
 
 
 const KelolaArtikel = ({ articles, categories }: Props) => {
-    const [searchTerm, setSearchTerm] = useState("");
     const [deleteModal, setDeleteModal] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -95,8 +110,6 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
     };
 
     // Unified Delete Handler
-    // For articles, we use 'article' type. For categories, we use 'category' type.
-    // However, the current DeleteConfirmationModal is simple. We can reuse it by tracking what we are deleting.
     const [deleteType, setDeleteType] = useState<'article' | 'category'>('article');
 
     const handleDeleteClick = (type: 'article' | 'category', id: number, name: string) => {
@@ -120,8 +133,8 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
             {/* Header Section */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-blue-600">Article Management Dashboard</h1>
-                    <p className="text-gray-500 mt-1">Manage your articles, categories, and content in one place</p>
+                    <h1 className="text-2xl font-bold text-blue-600">Manajemen Artikel</h1>
+                    <p className="text-gray-500 mt-1">Kelola artikel dan kategori konten dalam satu tempat</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link
@@ -129,14 +142,14 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                         className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-medium"
                     >
                         <Plus className="w-5 h-5" />
-                        Add Article
+                        Tambah Artikel
                     </Link>
                     <button
                         onClick={openCreateCategoryModal}
                         className="flex items-center gap-2 bg-emerald-500 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 font-medium"
                     >
                         <FolderOpen className="w-5 h-5" />
-                        Add Category
+                        Tambah Kategori
                     </button>
                 </div>
             </div>
@@ -151,7 +164,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                         }`}
                 >
                     <FolderOpen className="w-5 h-5" />
-                    Articles
+                    Artikel
                 </button>
                 <button
                     onClick={() => setActiveTab('categories')}
@@ -161,7 +174,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                         }`}
                 >
                     <Tag className="w-5 h-5" />
-                    Categories
+                    Kategori
                 </button>
             </div>
 
@@ -181,63 +194,77 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {articles.data.map((article) => (
-                                    <tr key={article.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="h-16 w-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                                <img
-                                                    src={article.image}
-                                                    alt={article.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-bold text-gray-900">{article.title}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            {article.category ? (
-                                                <span className="px-3 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
-                                                    {article.category.name}
+                                {articles.data && articles.data.length > 0 ? (
+                                    articles.data.map((article) => (
+                                        <tr key={article.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="h-16 w-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
+                                                    {article.image ? (
+                                                        <img
+                                                            src={typeof article.image === 'string' ? article.image : ''}
+                                                            alt={article.title}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                            <FolderOpen className="w-6 h-6" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-bold text-gray-900">{article.title}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {article.category ? (
+                                                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                                                        {article.category.name}
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                                        Tanpa Kategori
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm text-gray-600 line-clamp-2 max-w-xs">{article.content}</p>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-600">
+                                                    {new Date(article.created_at).toLocaleDateString('id-ID', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
                                                 </span>
-                                            ) : (
-                                                <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
-                                                    Uncategorized
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm text-gray-600 line-clamp-2 max-w-xs">{article.content}</p>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm text-gray-600">
-                                                {new Date(article.created_at).toLocaleDateString('id-ID', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Link
-                                                    href={`/admin/article/${article.id}`}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Edit"
-                                                >
-                                                    <SquarePen size={18} />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDeleteClick('article', article.id, article.title)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <Link
+                                                        href={`/admin/article/${article.id}`}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <SquarePen size={18} />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDeleteClick('article', article.id, article.title)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Hapus"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                            Belum ada artikel. Klik "Tambah Artikel" untuk membuat.
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     ) : (
@@ -245,8 +272,8 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                             <thead>
                                 <tr className="bg-gray-50/50 border-b border-gray-100">
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">No</th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-full">Category Name</th>
-                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Actions</th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-full">Nama Kategori</th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -275,7 +302,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                 {categories.length === 0 && (
                                     <tr>
                                         <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-                                            No categories found. Click "Add Category" to create one.
+                                            Belum ada kategori. Klik "Tambah Kategori" untuk membuat.
                                         </td>
                                     </tr>
                                 )}
@@ -284,7 +311,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                     )}
                 </div>
 
-                {/* Pagination - Only for Articles for now since Categories is ArticleCategory::all() */}
+                {/* Pagination - Only for Articles */}
                 {activeTab === 'articles' && articles.last_page >= 2 && (
                     <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/30">
                         <div className="flex justify-center gap-1">
@@ -331,7 +358,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900">
-                                {categoryModalMode === 'create' ? 'Add New Category' : 'Edit Category'}
+                                {categoryModalMode === 'create' ? 'Tambah Kategori Baru' : 'Edit Kategori'}
                             </h2>
                             <button
                                 onClick={closeCategoryModal}
@@ -344,13 +371,13 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                         {/* Modal Body */}
                         <div className="p-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Category Name
+                                Nama Kategori
                             </label>
                             <input
                                 type="text"
                                 value={categoryForm.data.name}
                                 onChange={(e) => categoryForm.setData({ name: e.target.value })}
-                                placeholder="Enter category name..."
+                                placeholder="Masukkan nama kategori..."
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                                 autoFocus
                             />
@@ -365,14 +392,14 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                 onClick={closeCategoryModal}
                                 className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-200 rounded-lg transition-colors"
                             >
-                                Cancel
+                                Batal
                             </button>
                             <button
                                 onClick={handleCategorySubmit}
                                 disabled={categoryForm.processing}
                                 className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {categoryForm.processing ? 'Saving...' : (categoryModalMode === 'create' ? 'Create Category' : 'Update Category')}
+                                {categoryForm.processing ? 'Menyimpan...' : (categoryModalMode === 'create' ? 'Buat Kategori' : 'Update Kategori')}
                             </button>
                         </div>
                     </div>

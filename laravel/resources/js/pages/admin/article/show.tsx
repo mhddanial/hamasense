@@ -8,6 +8,7 @@ import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
+import { Editor } from '@/components/blocks/editor-00/editor';
 
 type Reference = {
   source_name: string;
@@ -67,10 +68,10 @@ export default function EditArtikel({ article, categories, articles }: Props) {
     setData('references', newRefs);
   };
 
-  // const goToManageCategories = () => {
-  //   alert('Navigasi ke halaman Kelola Kategori Artikel');
-  //   // Router navigation would go here
-  // };
+  // Handle rich text editor content change
+  const handleContentChange = (html: string) => {
+    setData('content', html);
+  };
 
   return (
     <>
@@ -196,19 +197,18 @@ export default function EditArtikel({ article, categories, articles }: Props) {
         </div>
 
 
-        {/* Content */}
+        {/* Content - Rich Text Editor */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Konten Artikel
           </label>
-          <textarea
-            name="content"
-            value={data.content}
-            onChange={(e) => setData('content', e.target.value)}
-            placeholder="Tulis konten artikel Anda di sini..."
-            rows={16}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none text-gray-900"
-          ></textarea>
+          <Editor
+            initialHtml={article.content}
+            onHtmlChange={handleContentChange}
+          />
+          <p className="text-xs text-gray-500 mt-2">
+            Gunakan toolbar di atas untuk memformat teks. Konten saat ini akan ditampilkan dalam editor.
+          </p>
           {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
         </div>
 

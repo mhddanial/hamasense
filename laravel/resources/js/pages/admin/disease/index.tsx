@@ -8,8 +8,25 @@ import { AdminNotificationToast } from '@/components/admin/InformationToast';
 import { ItemHeaderDemo } from '@/components/admin/card';
 import NavSearch from '@/components/admin/NavSearch';
 
+// Pagination Link Type
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+// Paginated Response Type
+interface PaginatedDiseases {
+    data: Disease[];
+    links: PaginationLink[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
 interface Props extends PageProps {
-    diseases: Disease[];
+    diseases: PaginatedDiseases;
 }
 
 export default function KelolaDataPenyakit({ diseases }: Props) {
@@ -28,8 +45,7 @@ export default function KelolaDataPenyakit({ diseases }: Props) {
         if (error) {
             setNotifications((prev) => [...prev, { type: 'error', message: error }])
         }
-    }
-        , [success, error]);
+    }, [success, error]);
 
     const [selectedItem, setSelectedItem] = useState({
         'id': 0,
@@ -42,6 +58,9 @@ export default function KelolaDataPenyakit({ diseases }: Props) {
         setNotifications(prev => prev.filter(notif => notif.id !== id));
     };
 
+    // Get diseases data safely
+    const diseasesData = diseases?.data || [];
+
     return (
         <>
             <div className="flex-1 min-h-screen p-8">
@@ -51,20 +70,27 @@ export default function KelolaDataPenyakit({ diseases }: Props) {
                 {/* Table */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                    {diseases.data.map((disease) => (
-                        <ItemHeaderDemo id={disease.id} name={disease.name} img_path={'disease'} filename={disease.img_path}
-                            scientific_name={'a'} delete_onclick={() => {
+                    {diseasesData.map((disease) => (
+                        <ItemHeaderDemo
+                            key={disease.id}
+                            id={disease.id}
+                            name={disease.name}
+                            img_path={'disease'}
+                            filename={disease.img_path}
+                            scientific_name={disease.label || '-'}
+                            delete_onclick={() => {
                                 setSelectedItem({
                                     'id': disease.id,
                                     'name': disease.name
                                 });
                                 setDeleteModal(true);
-                            }} />
+                            }}
+                        />
                     ))}
 
                     {/* Empty State */}
-                    {diseases.length === 0 && (
-                        <div className="text-center py-12">
+                    {diseasesData.length === 0 && (
+                        <div className="col-span-full text-center py-12">
                             <p className="text-gray-500 text-lg">Tidak ada data Penyakit yang ditemukan</p>
                         </div>
                     )}
@@ -74,7 +100,6 @@ export default function KelolaDataPenyakit({ diseases }: Props) {
                 setDeleteModal(false)
                 setSelectedItem({ 'id': 0, 'name': '' });
             }} onConfirm={() => {
-                console.log(`/admin/disease/${selectedItem.id}`)
                 router.delete(`/admin/disease/${selectedItem.id}`);
                 setDeleteModal(false)
 
