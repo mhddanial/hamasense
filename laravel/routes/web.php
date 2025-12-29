@@ -45,9 +45,6 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::delete('/community/{post}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
 
     // PEST INFO
-    // Route::get('/pest-info/{id}', function ($id) {
-    //     return Inertia::render('pest-info/detail', ['id' => $id]);
-    // })->name('pest.user.show');
     Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.user.index');
     Route::get('/pest-info/{slug}', [PestController::class, 'userShow'])->name('pest.user.show');
 

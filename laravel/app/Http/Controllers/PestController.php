@@ -13,10 +13,38 @@ use Illuminate\Support\Facades\Storage;
 
 class PestController extends Controller
 {
-    public function userIndex() {
-        $pests = Pest::all();
+    public function userIndex(Request $request) {
+        $search = $request->query('search');
+        $category = $request->query('category');
+        $risk = $request->query('risk');
+
+        $pests = Pest::query()
+            ->when($search, function ($query, $search) {
+                $searchTerm = "%{$search}%";
+                return $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                      ->orWhere('scientific_name', 'like', $searchTerm);
+                });
+            })
+            ->when($category && $category !== 'Semua Kategori', function ($query) use ($category) {
+                return $query->where('category', $category);
+            })
+            ->when($risk && $risk !== 'Semua Risiko', function ($query) use ($risk) {
+                return $query->where('risk_level', $risk);
+            })
+            ->latest()
+            ->get();
+
+        $categories = ArticleCategory::all();
+        
         return Inertia::render('pest-info/index', [
-            'pests' => $pests
+            'pests' => $pests,
+            'categories' => $categories,
+            'filters' => [
+                'search' => $search,
+                'category' => $category,
+                'risk' => $risk
+            ]
         ]);
     }
 
@@ -29,13 +57,37 @@ class PestController extends Controller
 
     public function index(Request $request)
     {
-        $pests = Pest::latest()->paginate(10);
+        $search = $request->query('search');
+        $category = $request->query('category');
+        $risk = $request->query('risk');
+
+        $pests = Pest::query()
+            ->when($search, function ($query, $search) {
+                $searchTerm = "%{$search}%";
+                return $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                      ->orWhere('scientific_name', 'like', $searchTerm);
+                });
+            })
+            ->when($category && $category !== 'Semua Kategori', function ($query) use ($category) {
+                return $query->where('category', $category);
+            })
+            ->when($risk && $risk !== 'Semua Risiko', function ($query) use ($risk) {
+                return $query->where('risk_level', $risk);
+            })
+            ->latest()
+            ->paginate(10);
 
         $categories = ArticleCategory::all(); 
 
         return Inertia::render('admin/pest/index', [
             'pests' => $pests,
-            'categories' => $categories
+            'categories' => $categories,
+            'filters' => [
+                'search' => $search,
+                'category' => $category,
+                'risk' => $risk
+            ]
         ]);
     }
 

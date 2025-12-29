@@ -14,9 +14,10 @@ import {
     ImageIcon,
     Tag,
     SquarePen,
-    Edit2
+    Edit2,
+    Loader2,
+    RefreshCw
 } from 'lucide-react';
-// import { ItemHeaderDemo } from '@/components/admin/card';
 import { Filter, FolderOpen, SearchX } from 'lucide-react';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 import { AdminNotificationToast } from '@/components/admin/InformationToast';
@@ -28,7 +29,6 @@ import {
     SelectValue
 } from '@/components/ui/select';
 
-// Shadcn UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -76,7 +76,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import pest from '@/routes/pest';
 
 // Types
 interface PaginationLink {
@@ -94,22 +93,27 @@ interface PaginatedPests {
     total: number;
 }
 
-interface Props extends PageProps {
-    pests: PaginatedPests;
-    // search?: string;
-    categories: Category[];
+interface Filters {
+    search?: string;
+    category?: string;
+    risk?: string;
 }
 
-export default function KelolaDataHama({ pests, categories }: Props) {
-    // const [searchTerm, setSearchTerm] = useState(search || '');
-    // const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // Deprecated/Unused
+interface Props extends PageProps {
+    pests: PaginatedPests;
+    categories: Category[];
+    filters?: Filters;
+}
+
+export default function KelolaDataHama({ pests, categories, filters }: Props) {
     const [selectedPest, setSelectedPest] = useState<{ id: number; name: string } | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<'pest' | 'category'>('pest');
-    
+
     const [categoryId, setCategoryId] = useState(0);
-    const [search, setSearch] = useState('');
-    const [risiko, setRisiko] = useState("Semua Risiko");
-    const [kategori, setKategori] = useState("Semua Kategori");
+    const [search, setSearch] = useState(filters?.search || '');
+    const [risiko, setRisiko] = useState(filters?.risk || "Semua Risiko");
+    const [kategori, setKategori] = useState(filters?.category || "Semua Kategori");
+    const [isLoading, setIsLoading] = useState(false);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [categoryModalMode, setCategoryModalMode] = useState<'create' | 'edit'>('create');
     const categoryForm = useForm({
@@ -118,32 +122,74 @@ export default function KelolaDataHama({ pests, categories }: Props) {
 
     const [activeTab, setActiveTab] = useState<'articles' | 'categories'>('articles');
 
-    const filteredPests = pests.data.filter((p) => {
-        const matchSearch = 
-            p.name.toLowerCase().includes(search.toLowerCase()) ||
-            p.scientific_name.toLowerCase().includes(search.toLowerCase()) ||
-            (p.plant_types && 
-                p.plant_types.some((pt: any) =>
-                    pt.name.toLowerCase().includes(search.toLowerCase())
-                )
-            );
+    // Server-side search handler
+    const handleSearch = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        setIsLoading(true);
 
-        const matchKategori = kategori === "Semua Kategori" || p.category === kategori;
-        const matchRisiko = risiko === "Semua Risiko" || p.risk_level === risiko;
+        router.get('/admin/pest', {
+            search: search || undefined,
+            category: kategori !== "Semua Kategori" ? kategori : undefined,
+            risk: risiko !== "Semua Risiko" ? risiko : undefined,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
 
-        return matchSearch && matchKategori && matchRisiko;
-    })
+    // Handle filter change with immediate search
+    const handleFilterChange = (type: 'category' | 'risk', value: string) => {
+        if (type === 'category') {
+            setKategori(value);
+        } else {
+            setRisiko(value);
+        }
+
+        setIsLoading(true);
+
+        router.get('/admin/pest', {
+            search: search || undefined,
+            category: type === 'category'
+                ? (value !== "Semua Kategori" ? value : undefined)
+                : (kategori !== "Semua Kategori" ? kategori : undefined),
+            risk: type === 'risk'
+                ? (value !== "Semua Risiko" ? value : undefined)
+                : (risiko !== "Semua Risiko" ? risiko : undefined),
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    // Handle reset filters
+    const handleResetFilters = () => {
+        setSearch("");
+        setKategori("Semua Kategori");
+        setRisiko("Semua Risiko");
+        setIsLoading(true);
+
+        router.get('/admin/pest', {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    // Check if any filter is active
+    const hasActiveFilters = search || kategori !== "Semua Kategori" || risiko !== "Semua Risiko";
 
     // CATEGORY HANDLERS
     const openCreateCategoryModal = () => {
         setCategoryModalMode('create');
-        categoryForm.setData({name: ''})
+        categoryForm.setData({ name: '' })
         setShowCategoryModal(true);
     };
 
     const openEditCategoryModal = (category: Category) => {
         setCategoryModalMode('edit');
-        categoryForm.setData({name: category.name});
+        categoryForm.setData({ name: category.name });
         setCategoryId(category.id);
         setShowCategoryModal(true);
     };
@@ -157,7 +203,7 @@ export default function KelolaDataHama({ pests, categories }: Props) {
     const closeCategoryModal = () => {
         setShowCategoryModal(false);
         setCategoryModalMode('create');
-        categoryForm.setData({name: ''});
+        categoryForm.setData({ name: '' });
         setCategoryId(0);
     }
 
@@ -175,7 +221,7 @@ export default function KelolaDataHama({ pests, categories }: Props) {
     }
 
     const [notifications, setNotifications] = useState<any[]>([]);
-    const [ deleteModal, setDeleteModal ] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
 
     const { flash } = usePage().props;
     const success = flash?.success;
@@ -202,9 +248,13 @@ export default function KelolaDataHama({ pests, categories }: Props) {
 
     const handleConfirmDelete = () => {
         if (selectedPest) {
-            router.delete(`/admin/pest/${selectedPest.id}`);
+            if (deleteTarget === 'pest') {
+                router.delete(`/admin/pest/${selectedPest.id}`);
+            } else {
+                router.delete(`/admin/pest-category/${selectedPest.id}`);
+            }
         }
-        setDeleteDialogOpen(false);
+        setDeleteModal(false);
         setSelectedPest(null);
     };
 
@@ -225,7 +275,7 @@ export default function KelolaDataHama({ pests, categories }: Props) {
 
     return (
         <div className="min-h-screen space-y-6 p-6 bg-gray-50 font-sans">
-            <Head title="Kelola Hama"/>
+            <Head title="Kelola Hama" />
 
             {/* HEADER SECTION */}
             <Card className="shadow-sm mb-6 border-0">
@@ -233,7 +283,7 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <CardTitle className="flex items-center gap-2 font-bold text-2xl text-gray-900">
-                                <Bug className="size-6 text-primary"/>
+                                <Bug className="size-6 text-primary" />
                                 Kelola Hama
                             </CardTitle>
                             <CardDescription className="mt-1">
@@ -247,16 +297,16 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                             <div className="flex items-center gap-3">
                                 <Link
                                     href="/admin/pest/create"
-                                    className="flex items-center gap-2 transition-all shadow-lg shadow-blue-200 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700"
+                                    className="flex items-center gap-2 transition-all shadow-sm bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary/90"
                                 >
-                                    <Plus className="size-5"/>
+                                    <Plus className="size-5" />
                                     Tambah Data Hama
                                 </Link>
                                 <button
                                     onClick={openCreateCategoryModal}
-                                    className="flex items-center gap-2 transition-all shadow-lg shadow-emerald-200 font-medium px-5 py-2.5 rounded-xl hover:bg-emerald-600 bg-emerald-500 text-white"
+                                    className="flex items-center gap-2 transition-all shadow-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/10 bg-primary/5 text-primary border border-primary/20"
                                 >
-                                    <FolderOpen className="size-5"/>
+                                    <FolderOpen className="size-5" />
                                     Tambah Kategori
                                 </button>
                             </div>
@@ -268,43 +318,52 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                     <div className="md:flex md:items-center md:justify-between md:gap-4 md:space-y-0 shadow-sm bg-card border rounded-lg p-4">
 
                         {/* SEARCH */}
-                        <div className="w-full md:w-1/3">
-                            <SearchBar
-                                value={search}
-                                onChange={setSearch}
-                                placeholder="Cari hama..."
-                                className="bg-white"
-                            />
-                        </div>
+                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-2/5 mb-4 md:mb-0">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Cari nama atau ilmiah..."
+                                    className="pl-10 bg-white"
+                                />
+                            </div>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Search className="h-4 w-4" />
+                                )}
+                                <span className="ml-2 hidden sm:inline">Cari</span>
+                            </Button>
+                        </form>
 
                         {/* COMPONENT SELECT FILTERS */}
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
 
                             {/* FILTER KATEGORI */}
-                            <Select value={kategori} onValueChange={setKategori}>
+                            <Select value={kategori} onValueChange={(v) => handleFilterChange('category', v)}>
                                 <SelectTrigger className="w-full sm:w-[200px] bg-white">
                                     <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Filter className="size-4"/>
-                                        <SelectValue placeholder="Kategori"/>
+                                        <Filter className="size-4" />
+                                        <SelectValue placeholder="Kategori" />
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Semua Kategori">Semua Kategori</SelectItem>
-                                    <SelectItem value="Serangga">Serangga</SelectItem>
-                                    <SelectItem value="Jamur">Jamur</SelectItem>
-                                    <SelectItem value="Bakteri">Bakteri</SelectItem>
-                                    <SelectItem value="Virus">Virus</SelectItem>
-                                    <SelectItem value="Namatoda">Nematoda</SelectItem>
-                                    <SelectItem value="Gulma">Gulma</SelectItem>
+                                    {categories.map((cat) => (
+                                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
 
                             {/* FILTER RISIKO */}
-                            <Select value={risiko} onValueChange={setRisiko}>
+                            <Select value={risiko} onValueChange={(v) => handleFilterChange('risk', v)}>
                                 <SelectTrigger className="w-full sm:w-[200px] bg-white">
                                     <div className="flex items-center gap-2 text-muted-foreground">
-                                        <AlertTriangle className="size-4"/>
-                                        <SelectValue placeholder="Risiko"/>
+                                        <AlertTriangle className="size-4" />
+                                        <SelectValue placeholder="Risiko" />
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -314,31 +373,43 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                                     <SelectItem value="tinggi">Tinggi</SelectItem>
                                 </SelectContent>
                             </Select>
+
+                            {/* Reset Button */}
+                            {hasActiveFilters && (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={handleResetFilters}
+                                    disabled={isLoading}
+                                    className="shrink-0"
+                                    title="Reset semua filter"
+                                >
+                                    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
             {/* NAVIGATION TABS */}
-            <div className="flex overflow-x-auto gap-2 rounded-xl shadow-sm border border-gray-100 p-2 bg-white">
+            <div className="flex overflow-x-auto gap-2 rounded-lg shadow-sm border border-gray-100 p-2 bg-white">
                 <button
                     onClick={() => setActiveTab('articles')}
-                    className={`flex flex-1 items-center justify-center transition-all gap-2 px-6 py-3 rounded-lg font-medium ${
-                        activeTab === 'articles'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                    className={`flex flex-1 items-center justify-center transition-all gap-2 px-6 py-3 rounded-lg font-medium ${activeTab === 'articles'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-100'
+                        }`}
                 >
-                    <FolderOpen className="size-5"/>
+                    <FolderOpen className="size-5" />
                     Data Hama
                 </button>
                 <button
                     onClick={() => setActiveTab('categories')}
-                    className={`flex flex-1 items-center justify-center gap-2 transition-all px-6 py-3 rounded-lg font-medium ${
-                        activeTab === 'categories'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                    className={`flex flex-1 items-center justify-center gap-2 transition-all px-6 py-3 rounded-lg font-medium ${activeTab === 'categories'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-100'
+                        }`}
                 >
                     <Tag className="size-5" />
                     Kategori
@@ -364,8 +435,8 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredPests.length > 0 ? (
-                                    filteredPests.map((pest, index) => (
+                                {pests.data.length > 0 ? (
+                                    pests.data.map((pest: Pest, index: number) => (
                                         <TableRow key={pest.id} className="hover:bg-gray-50/50 hover:cursor-pointer">
                                             <TableCell className="font-medium text-gray-500">
                                                 {(pests.current_page - 1) * pests.per_page + index + 1}
@@ -408,9 +479,9 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                 {pest.penanganan && pest.penanganan.length > 0 ? (
+                                                {pest.penanganan && pest.penanganan.length > 0 ? (
                                                     <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                                                        {pest.penanganan.slice(0, 3).map((item, i) => (
+                                                        {pest.penanganan.slice(0, 3).map((item: string, i: number) => (
                                                             <li key={i} className="line-clamp-1">{item}</li>
                                                         ))}
                                                         {pest.penanganan.length > 3 && (
@@ -508,16 +579,8 @@ export default function KelolaDataHama({ pests, categories }: Props) {
 
             <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
                 setDeleteModal(false)
-                setSelectedPest({'id': 0, 'name': ''});
-            }} onConfirm={() => {
-                if (deleteTarget === 'pest') {
-                    router.delete(`/admin/pest/${selectedPest?.id}`);
-                } else {
-                    router.delete(`/admin/article-category/${selectedPest?.id}`);
-                }
-                setDeleteModal(false)
-
-            }} itemName={selectedPest?.name || ''}/>
+                setSelectedPest(null);
+            }} onConfirm={handleConfirmDelete} itemName={selectedPest?.name || ''} />
 
             <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
                 <DialogContent>
@@ -526,12 +589,12 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                             {categoryModalMode === 'create' ? 'Tambah Kategori' : 'Edit Kategori'}
                         </DialogTitle>
                         <DialogDescription>
-                            {categoryModalMode === 'create' 
-                                ? 'Tambahkan kategori baru untuk hama dan artikel.' 
+                            {categoryModalMode === 'create'
+                                ? 'Tambahkan kategori baru untuk hama dan artikel.'
                                 : 'Perbarui nama kategori.'}
                         </DialogDescription>
                     </DialogHeader>
-                    
+
                     <form onSubmit={handleCategorySubmit} className="space-y-4">
                         <div className="grid w-full gap-2">
                             <Label htmlFor="category_name">Nama Kategori</Label>
@@ -555,13 +618,13 @@ export default function KelolaDataHama({ pests, categories }: Props) {
                 </DialogContent>
             </Dialog>
 
-            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification}/>
+            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification} />
         </div>
     );
 }
 
 KelolaDataHama.layout = (page: React.ReactElement) => (
-  <AdminLayout>
-    {page}
-  </AdminLayout>
+    <AdminLayout>
+        {page}
+    </AdminLayout>
 )

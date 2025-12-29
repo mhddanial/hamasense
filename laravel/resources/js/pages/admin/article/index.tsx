@@ -2,7 +2,7 @@ import { PageProps } from '@inertiajs/core';
 import { Article, Category } from "@/types/admin";
 import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
-import { Link, router, usePage, useForm } from "@inertiajs/react";
+import { Head, Link, router, usePage, useForm } from "@inertiajs/react";
 import {
     SquarePen,
     Trash2,
@@ -10,10 +10,44 @@ import {
     Plus,
     Tag,
     Edit2,
-    X
+    FileText,
+    ImageIcon,
+    Calendar,
+    Search,
+    Loader2,
+    RefreshCw
 } from 'lucide-react';
+
+// Shadcn UI Components
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
-import { AdminNotificationToast } from "@/components/admin/InformationToast";
+import { toast } from 'sonner';
 
 // Pagination Link Type
 interface PaginationLink {
@@ -32,24 +66,29 @@ interface PaginatedArticles {
     total: number;
 }
 
+interface Filters {
+    keyword?: string;
+}
+
 interface Props extends PageProps {
     articles: PaginatedArticles;
     categories: Category[];
+    filters?: Filters;
 }
 
 
-const KelolaArtikel = ({ articles, categories }: Props) => {
+const KelolaArtikel = ({ articles, categories, filters }: Props) => {
     const [deleteModal, setDeleteModal] = useState(false);
-    const [notifications, setNotifications] = useState<any[]>([]);
 
     // Tab State
     const [activeTab, setActiveTab] = useState<'articles' | 'categories'>('articles');
 
     // Article Operation State
-    const [selectedItem, setSelectedItem] = useState({
-        'id': 0,
-        'name': ''
-    });
+    const [selectedItem, setSelectedItem] = useState<{ id: number; name: string } | null>(null);
+
+    // Search State
+    const [search, setSearch] = useState(filters?.keyword || '');
+    const [isLoading, setIsLoading] = useState(false);
 
     // Category Operation State
     const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -65,16 +104,12 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
 
     useEffect(() => {
         if (success) {
-            setNotifications((prev) => [...prev, { type: 'success', message: success }])
+            toast.success(success as string);
         }
         if (error) {
-            setNotifications((prev) => [...prev, { type: 'error', message: error }])
+            toast.error(error as string);
         }
     }, [success, error]);
-
-    const removeNotification = (id: number) => {
-        setNotifications(prev => prev.filter(notif => notif.id !== id));
-    };
 
     // Category Handlers
     const openCreateCategoryModal = () => {
@@ -97,7 +132,8 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
         setCategoryId(0);
     };
 
-    const handleCategorySubmit = () => {
+    const handleCategorySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         if (categoryModalMode === 'create') {
             categoryForm.post('/admin/article-category', {
                 onSuccess: () => closeCategoryModal()
@@ -119,292 +155,384 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
     };
 
     const handleConfirmDelete = () => {
-        if (deleteType === 'article') {
-            router.delete(`/admin/article/${selectedItem.id}`);
-        } else {
-            router.delete(`/admin/article-category/${selectedItem.id}`);
-
+        if (selectedItem) {
+            if (deleteType === 'article') {
+                router.delete(`/admin/article/${selectedItem.id}`);
+            } else {
+                router.delete(`/admin/article-category/${selectedItem.id}`);
+            }
         }
         setDeleteModal(false);
-    }
+        setSelectedItem(null);
+    };
+
+    // Search Handler
+    const handleSearch = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        setIsLoading(true);
+
+        router.get('/admin/article', {
+            keyword: search || undefined,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    // Reset Filters Handler
+    const handleResetFilters = () => {
+        setSearch('');
+        setIsLoading(true);
+
+        router.get('/admin/article', {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    const hasActiveFilters = search !== '';
+
+    const articlesData = articles?.data || [];
 
     return (
-        <div className="p-6 space-y-6 bg-gray-50 min-h-screen font-sans">
+        <div className="min-h-screen space-y-6 p-6 bg-gray-50 font-sans">
+            <Head title="Kelola Artikel" />
+
             {/* Header Section */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-blue-600">Manajemen Artikel</h1>
-                    <p className="text-gray-500 mt-1">Kelola artikel dan kategori konten dalam satu tempat</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Link
-                        href="/admin/article/create"
-                        className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-medium"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Tambah Artikel
-                    </Link>
-                    <button
-                        onClick={openCreateCategoryModal}
-                        className="flex items-center gap-2 bg-emerald-500 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 font-medium"
-                    >
-                        <FolderOpen className="w-5 h-5" />
-                        Tambah Kategori
-                    </button>
-                </div>
-            </div>
+            <Card className="shadow-sm border-0">
+                <CardHeader className="pb-3">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <CardTitle className="flex items-center gap-2 font-bold text-2xl text-gray-900">
+                                <FileText className="size-6 text-primary" />
+                                Kelola Artikel
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                                Kelola artikel dan kategori konten dalam satu tempat
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="text-sm">
+                                Total: {articles.total} artikel
+                            </Badge>
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    href="/admin/article/create"
+                                    className="flex items-center gap-2 transition-all shadow-sm bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary/90"
+                                >
+                                    <Plus className="size-5" />
+                                    Tambah Artikel
+                                </Link>
+                                <button
+                                    onClick={openCreateCategoryModal}
+                                    className="flex items-center gap-2 transition-all shadow-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/10 bg-primary/5 text-primary border border-primary/20"
+                                >
+                                    <FolderOpen className="size-5" />
+                                    Tambah Kategori
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {/* Search */}
+                    <div className="flex items-center gap-3">
+                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-2/5">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Cari judul artikel..."
+                                    className="pl-10 bg-white"
+                                />
+                            </div>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Search className="h-4 w-4" />
+                                )}
+                                <span className="ml-2 hidden sm:inline">Cari</span>
+                            </Button>
+                        </form>
+                        {hasActiveFilters && (
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleResetFilters}
+                                disabled={isLoading}
+                                title="Reset filter"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Navigation Tabs */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 flex overflow-x-auto gap-2">
+            <div className="flex overflow-x-auto gap-2 rounded-lg shadow-sm border border-gray-100 p-2 bg-white">
                 <button
                     onClick={() => setActiveTab('articles')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'articles'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50'
+                    className={`flex flex-1 items-center justify-center transition-all gap-2 px-6 py-3 rounded-lg font-medium ${activeTab === 'articles'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-100'
                         }`}
                 >
-                    <FolderOpen className="w-5 h-5" />
+                    <FolderOpen className="size-5" />
                     Artikel
                 </button>
                 <button
                     onClick={() => setActiveTab('categories')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'categories'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50'
+                    className={`flex flex-1 items-center justify-center gap-2 transition-all px-6 py-3 rounded-lg font-medium ${activeTab === 'categories'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-100'
                         }`}
                 >
-                    <Tag className="w-5 h-5" />
+                    <Tag className="size-5" />
                     Kategori
                 </button>
             </div>
 
             {/* Content Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
+            <Card className="border-0 shadow-sm">
+                <CardContent className="p-0">
                     {activeTab === 'articles' ? (
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gambar</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Judul</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {articles.data && articles.data.length > 0 ? (
-                                    articles.data.map((article) => (
-                                        <tr key={article.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="h-16 w-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50/80">
+                                    <TableHead className="w-16">No</TableHead>
+                                    <TableHead className="w-20">Gambar</TableHead>
+                                    <TableHead>Judul</TableHead>
+                                    <TableHead>Kategori</TableHead>
+                                    <TableHead>Deskripsi</TableHead>
+                                    <TableHead>Tanggal</TableHead>
+                                    <TableHead className="text-right w-28">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {articlesData.length > 0 ? (
+                                    articlesData.map((article, index) => (
+                                        <TableRow key={article.id} className="hover:bg-gray-50/50 hover:cursor-pointer">
+                                            <TableCell className="font-medium text-gray-500">
+                                                {(articles.current_page - 1) * articles.per_page + index + 1}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                                                     {article.image ? (
                                                         <img
                                                             src={typeof article.image === 'string' ? article.image : ''}
                                                             alt={article.title}
                                                             className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                                            }}
                                                         />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                            <FolderOpen className="w-6 h-6" />
-                                                        </div>
-                                                    )}
+                                                    ) : null}
+                                                    <ImageIcon className={`w-5 h-5 text-gray-400 ${article.image ? 'hidden' : ''}`} />
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm font-bold text-gray-900">{article.title}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="font-medium text-gray-900">{article.title}</p>
+                                            </TableCell>
+                                            <TableCell>
                                                 {article.category ? (
-                                                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                                                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">
                                                         {article.category.name}
-                                                    </span>
+                                                    </Badge>
                                                 ) : (
-                                                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                                    <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-200 border-0">
                                                         Tanpa Kategori
-                                                    </span>
+                                                    </Badge>
                                                 )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm text-gray-600 line-clamp-2 max-w-xs">{article.content}</p>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-sm text-gray-600">
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="text-gray-600 text-sm line-clamp-2 max-w-xs">
+                                                    {article.content}
+                                                </p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="flex items-center gap-1 text-sm text-gray-600">
+                                                    <Calendar className="w-4 h-4" />
                                                     {new Date(article.created_at).toLocaleDateString('id-ID', {
                                                         day: 'numeric',
                                                         month: 'short',
                                                         year: 'numeric'
                                                     })}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Link
-                                                        href={`/admin/article/${article.id}`}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        <SquarePen size={18} />
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Link href={`/admin/article/${article.id}`}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
+                                                            <SquarePen className="text-gray-500 h-4 w-4" />
+                                                        </Button>
                                                     </Link>
-                                                    <button
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                                                         onClick={() => handleDeleteClick('article', article.id, article.title)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Hapus"
                                                     >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ))
                                 ) : (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                            Belum ada artikel. Klik "Tambah Artikel" untuk membuat.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">No</th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-full">Nama Kategori</th>
-                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {categories.map((category, index) => (
-                                    <tr key={category.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{index + 1}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <div className="flex items-center justify-center gap-3">
-                                                <button
-                                                    onClick={() => openEditCategoryModal(category)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                >
-                                                    <Edit2 className="w-5 h-5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick('category', category.id, category.name)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-32 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <FileText className="w-10 h-10 mb-2 opacity-30" />
+                                                <p className="font-medium">Tidak ada artikel ditemukan</p>
+                                                <p className="text-sm">Klik "Tambah Artikel" untuk membuat</p>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {categories.length === 0 && (
-                                    <tr>
-                                        <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-                                            Belum ada kategori. Klik "Tambah Kategori" untuk membuat.
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 )}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-
-                {/* Pagination - Only for Articles */}
-                {activeTab === 'articles' && articles.last_page >= 2 && (
-                    <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/30">
-                        <div className="flex justify-center gap-1">
-                            {articles.links.map((link, i: number) => (
-                                link.url ? (
-                                    <Link
-                                        key={i}
-                                        href={link.url}
-                                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${link.active
-                                            ? 'bg-blue-600 text-white shadow-sm'
-                                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                            }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50/80">
+                                    <TableHead className="w-16">No</TableHead>
+                                    <TableHead>Nama Kategori</TableHead>
+                                    <TableHead className="text-right w-28">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {categories.length > 0 ? (
+                                    categories.map((category, index) => (
+                                        <TableRow key={category.id} className="hover:bg-gray-50/50">
+                                            <TableCell className="font-medium text-gray-500">
+                                                {index + 1}
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="font-medium text-gray-900">{category.name}</p>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 hover:bg-blue-50"
+                                                        onClick={() => openEditCategoryModal(category)}
+                                                    >
+                                                        <Edit2 className="text-gray-500 h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => handleDeleteClick('category', category.id, category.name)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
                                 ) : (
-                                    <span
-                                        key={i}
-                                        className="px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                )
-                            ))}
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="h-32 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <Tag className="w-10 h-10 mb-2 opacity-30" />
+                                                <p className="font-medium">Tidak ada kategori</p>
+                                                <p className="text-sm">Klik "Tambah Kategori" untuk membuat</p>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    )}
+
+                    {/* Pagination - Only for Articles */}
+                    {activeTab === 'articles' && articles.last_page > 1 && (
+                        <div className="px-6 py-4 border-t bg-gray-50/30">
+                            <div className="flex justify-center gap-1">
+                                {articles.links.map((link, i: number) => (
+                                    link.url ? (
+                                        <Link
+                                            key={i}
+                                            href={link.url}
+                                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${link.active
+                                                ? 'bg-primary text-white shadow-sm'
+                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                                }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ) : (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    )
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </CardContent>
+            </Card>
 
-            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification} />
-
+            {/* Delete Confirmation Modal */}
             <DeleteConfirmationModal
                 isOpen={deleteModal}
                 onClose={() => {
-                    setDeleteModal(false)
-                    setSelectedItem({ 'id': 0, 'name': '' });
+                    setDeleteModal(false);
+                    setSelectedItem(null);
                 }}
                 onConfirm={handleConfirmDelete}
-                itemName={selectedItem.name}
+                itemName={selectedItem?.name || ''}
             />
 
             {/* Category Modal */}
-            {showCategoryModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-900">
-                                {categoryModalMode === 'create' ? 'Tambah Kategori Baru' : 'Edit Kategori'}
-                            </h2>
-                            <button
-                                onClick={closeCategoryModal}
-                                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+            <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {categoryModalMode === 'create' ? 'Tambah Kategori' : 'Edit Kategori'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {categoryModalMode === 'create'
+                                ? 'Tambahkan kategori baru untuk artikel.'
+                                : 'Perbarui nama kategori.'}
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        {/* Modal Body */}
-                        <div className="p-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Nama Kategori
-                            </label>
-                            <input
-                                type="text"
+                    <form onSubmit={handleCategorySubmit} className="space-y-4">
+                        <div className="grid w-full gap-2">
+                            <Label htmlFor="category_name">Nama Kategori</Label>
+                            <Input
+                                id="category_name"
                                 value={categoryForm.data.name}
-                                onChange={(e) => categoryForm.setData({ name: e.target.value })}
-                                placeholder="Masukkan nama kategori..."
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                                autoFocus
+                                onChange={e => categoryForm.setData('name', e.target.value)}
+                                placeholder="Contoh: Pertanian"
+                                required
                             />
                             {categoryForm.errors.name && (
-                                <p className="text-red-500 text-sm mt-1">{categoryForm.errors.name}</p>
+                                <p className="text-red-500 text-sm">{categoryForm.errors.name}</p>
                             )}
                         </div>
-
-                        {/* Modal Footer */}
-                        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 bg-gray-50/50">
-                            <button
-                                onClick={closeCategoryModal}
-                                className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-200 rounded-lg transition-colors"
-                            >
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={closeCategoryModal}>
                                 Batal
-                            </button>
-                            <button
-                                onClick={handleCategorySubmit}
-                                disabled={categoryForm.processing}
-                                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                                {categoryForm.processing ? 'Menyimpan...' : (categoryModalMode === 'create' ? 'Buat Kategori' : 'Update Kategori')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                            </Button>
+                            <Button type="submit" disabled={categoryForm.processing}>
+                                {categoryForm.processing ? 'Menyimpan...' : 'Simpan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

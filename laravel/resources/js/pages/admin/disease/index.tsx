@@ -1,21 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
-import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 import { PageProps } from '@inertiajs/core';
 import { Disease } from '@/types/admin';
-import { AdminNotificationToast } from '@/components/admin/InformationToast';
-import { ItemHeaderDemo } from '@/components/admin/card';
-import NavSearch from '@/components/admin/NavSearch';
+import {
+    Worm,
+    Search,
+    Trash2,
+    Eye,
+    AlertTriangle,
+    Plus,
+    ImageIcon
+} from 'lucide-react';
 
-// Pagination Link Type
+// Shadcn UI Components
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { toast } from 'sonner';
+
+// Types
 interface PaginationLink {
     url: string | null;
     label: string;
     active: boolean;
 }
 
-// Paginated Response Type
 interface PaginatedDiseases {
     data: Disease[];
     links: PaginationLink[];
@@ -27,86 +62,234 @@ interface PaginatedDiseases {
 
 interface Props extends PageProps {
     diseases: PaginatedDiseases;
+    search?: string;
 }
 
-export default function KelolaDataPenyakit({ diseases }: Props) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [notifications, setNotifications] = useState<any[]>([]);
+export default function KelolaDataPenyakit({ diseases, search }: Props) {
+    const [searchTerm, setSearchTerm] = useState(search || '');
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [selectedDisease, setSelectedDisease] = useState<{ id: number; name: string } | null>(null);
 
     const { flash } = usePage().props;
-
     const success = flash?.success;
     const error = flash?.error;
 
     useEffect(() => {
         if (success) {
-            setNotifications((prev) => [...prev, { type: 'success', message: success }])
+            toast.success(success as string);
         }
         if (error) {
-            setNotifications((prev) => [...prev, { type: 'error', message: error }])
+            toast.error(error as string);
         }
     }, [success, error]);
 
-    const [selectedItem, setSelectedItem] = useState({
-        'id': 0,
-        'name': ''
-    });
-
-    const [deleteModal, setDeleteModal] = useState(false);
-
-    const removeNotification = (id: number) => {
-        setNotifications(prev => prev.filter(notif => notif.id !== id));
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get('/admin/disease', { keyword: searchTerm }, { preserveState: true });
     };
 
-    // Get diseases data safely
+    const handleDeleteClick = (disease: Disease) => {
+        setSelectedDisease({ id: disease.id, name: disease.name });
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (selectedDisease) {
+            router.delete(`/admin/disease/${selectedDisease.id}`);
+        }
+        setDeleteDialogOpen(false);
+        setSelectedDisease(null);
+    };
+
     const diseasesData = diseases?.data || [];
 
     return (
-        <>
-            <div className="flex-1 min-h-screen p-8">
+        <div className="flex-1 min-h-screen p-6 bg-gray-50/50">
+            <Head title="Kelola Penyakit" />
 
-                <NavSearch href='/admin/disease/create' title='Kelola Penyakit' onChange={(e) => { setSearchTerm(e.target.value) }} search_term={searchTerm} button_title="Tambah Data Penyakit" />
+            {/* Header */}
+            <Card className="mb-6 border-0 shadow-sm">
+                <CardHeader className="pb-3">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                <Worm className="w-6 h-6 text-primary" />
+                                Kelola Penyakit
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                                Kelola daftar penyakit tanaman yang tersedia dalam sistem
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="text-sm">
+                                Total: {diseases.total} penyakit
+                            </Badge>
+                            <Link href="/admin/disease/create">
+                                <Button className="gap-2">
+                                    <Plus className="w-4 h-4" />
+                                    Tambah Penyakit
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {/* Search */}
+                    <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Input
+                                type="text"
+                                placeholder="Cari penyakit..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+                        <Button type="submit" variant="default">
+                            Cari
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
 
-                {/* Table */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Diseases Table */}
+            <Card className="border-0 shadow-sm">
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-gray-50/80">
+                                <TableHead className="w-16">No</TableHead>
+                                <TableHead className="w-20">Gambar</TableHead>
+                                <TableHead>Nama Penyakit</TableHead>
+                                <TableHead>Label</TableHead>
+                                <TableHead>Deskripsi</TableHead>
+                                <TableHead className="text-right w-28">Aksi</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {diseasesData.length > 0 ? (
+                                diseasesData.map((disease, index) => (
+                                    <TableRow key={disease.id} className="hover:bg-gray-50/50 hover:cursor-pointer">
+                                        <TableCell className="font-medium text-gray-500">
+                                            {(diseases.current_page - 1) * diseases.per_page + index + 1}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                {disease.img_path ? (
+                                                    <img
+                                                        src={`/storage/disease/${disease.img_path}`}
+                                                        alt={disease.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <ImageIcon className={`w-5 h-5 text-gray-400 ${disease.img_path ? 'hidden' : ''}`} />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <p className="font-medium text-gray-900">{disease.name}</p>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary" className="font-normal">
+                                                {disease.label || '-'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <p className="text-gray-600 text-sm line-clamp-2 max-w-xs">
+                                                {disease.description || '-'}
+                                            </p>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <Link href={`/admin/disease/${disease.id}`}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
+                                                        <Eye className="text-gray-500 h-4 w-4" />
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => handleDeleteClick(disease)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-32 text-center">
+                                        <div className="flex flex-col items-center justify-center text-gray-500">
+                                            <Worm className="w-10 h-10 mb-2 opacity-30" />
+                                            <p className="font-medium">Tidak ada penyakit ditemukan</p>
+                                            <p className="text-sm">Coba ubah kata kunci pencarian atau tambah penyakit baru</p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
 
-                    {diseasesData.map((disease) => (
-                        <ItemHeaderDemo
-                            key={disease.id}
-                            id={disease.id}
-                            name={disease.name}
-                            img_path={'disease'}
-                            filename={disease.img_path}
-                            scientific_name={disease.label || '-'}
-                            delete_onclick={() => {
-                                setSelectedItem({
-                                    'id': disease.id,
-                                    'name': disease.name
-                                });
-                                setDeleteModal(true);
-                            }}
-                        />
-                    ))}
-
-                    {/* Empty State */}
-                    {diseasesData.length === 0 && (
-                        <div className="col-span-full text-center py-12">
-                            <p className="text-gray-500 text-lg">Tidak ada data Penyakit yang ditemukan</p>
+                    {/* Pagination */}
+                    {diseases.last_page > 1 && (
+                        <div className="px-6 py-4 border-t bg-gray-50/30">
+                            <div className="flex justify-center gap-1">
+                                {diseases.links.map((link, i) => (
+                                    link.url ? (
+                                        <Link
+                                            key={i}
+                                            href={link.url}
+                                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${link.active
+                                                ? 'bg-primary text-white shadow-sm'
+                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                                }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ) : (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    )
+                                ))}
+                            </div>
                         </div>
                     )}
-                </div>
-            </div>
-            <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
-                setDeleteModal(false)
-                setSelectedItem({ 'id': 0, 'name': '' });
-            }} onConfirm={() => {
-                router.delete(`/admin/disease/${selectedItem.id}`);
-                setDeleteModal(false)
+                </CardContent>
+            </Card>
 
-            }} itemName={selectedItem.name} />
-
-            <AdminNotificationToast notifications={notifications} removeNotification={removeNotification} />
-        </>
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                            Konfirmasi Hapus
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus penyakit <strong>{selectedDisease?.name}</strong>?
+                            Tindakan ini tidak dapat dibatalkan.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Hapus
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
     );
 }
 
@@ -114,4 +297,4 @@ KelolaDataPenyakit.layout = (page: React.ReactElement) => (
     <AdminLayout>
         {page}
     </AdminLayout>
-)
+);

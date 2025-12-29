@@ -24,7 +24,10 @@ class ArticleController extends Controller
 
         return Inertia::render('admin/article/index', [
             'articles' => $articles,
-            'categories' => ArticleCategory::all()
+            'categories' => ArticleCategory::all(),
+            'filters' => [
+                'keyword' => $keyword
+            ]
         ]);
     }
 
