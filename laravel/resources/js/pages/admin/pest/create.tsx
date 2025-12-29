@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Upload, Paperclip, Plus, Trash2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
-
-const CATEGORIES = ['Serangga', 'Jamur', 'Bakteri', 'Virus', 'Nematoda', 'Gulma', 'Lainnya'];
+import { Category } from '@/types/admin';
 
 const RISK_LEVELS = [
     { value: 'rendah', label: 'Rendah' },
@@ -11,7 +10,7 @@ const RISK_LEVELS = [
     { value: 'tinggi', label: 'Tinggi' },
 ];
 
-export default function TambahHama() {
+export default function TambahHama({ categories }: { categories: Category[] }) {
 
     const { data, setData, post, processing, errors } = useForm<{
         name: string;
@@ -29,7 +28,7 @@ export default function TambahHama() {
         slug: '',
         scientific_name: '',
         description: '',
-        category: 'Serangga',
+        category: '',
         risk_level: 'sedang',
         plant: [],
         pencegahan: [],
@@ -195,8 +194,9 @@ export default function TambahHama() {
                                                 onChange={(e) => setData('category', e.target.value)}
                                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
                                             >
-                                                {CATEGORIES.map((cat) => (
-                                                    <option key={cat} value={cat}>{cat}</option>
+                                                <option value="" disabled>Pilih Kategori</option>
+                                                {categories.map((cat) => (
+                                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                                                 ))}
                                             </select>
                                             {errors.category && <div className="text-red-500 text-sm mt-1">{errors.category}</div>}

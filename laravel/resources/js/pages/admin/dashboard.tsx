@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Settings } from 'lucide-react';
+import { Home, Users, Sprout, Bug, FileText, MessageSquare, Settings } from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 

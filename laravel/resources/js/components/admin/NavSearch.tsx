@@ -1,24 +1,24 @@
-import { Button } from "../ui/button";
+// import { Button } from "../ui/button";
 import { Plus, Search } from "lucide-react";
 import { Link, useForm, router } from "@inertiajs/react";
 // import SearchBar from "@/components/SearchBar"
 
 
 export default function NavSearch({title, href, button_title, page, search}: {title: string, href: string, button_title: string, page: string, search?: string}) {
-  const { data, setData } = useForm({
-    keyword: search || ''
-  });
+  // const { data, setData } = useForm({
+  //   keyword: search || ''
+  // });
 
-  const submit_handler = (e: React.FormEvent) => {
-    e.preventDefault();
-    const routeName = page === 'plant' ? 'admin.plant.index' : 'admin.pest.index';
+  // const submit_handler = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   const routeName = page === 'plant' ? 'admin.plant.index' : 'admin.pest.index';
     
-    // Explicitly send the keyword param using router.get to ensure it is attached
-    router.get(route(routeName), { keyword: data.keyword }, {
-      preserveState: true,
-      replace: true
-    });
-  }
+  //   // Explicitly send the keyword param using router.get to ensure it is attached
+  //   router.get(route(routeName), { keyword: data.keyword }, {
+  //     preserveState: true,
+  //     replace: true
+  //   });
+  // }
 
   return (<>
   <div className="text-gray-900 mb-10">
@@ -47,7 +47,7 @@ export default function NavSearch({title, href, button_title, page, search}: {ti
         className="bg-white"
       />
     </div> */}
-    <form onSubmit={submit_handler} className="relative flex gap-2">
+    {/* <form onSubmit={submit_handler} className="relative flex gap-2">
       <div className="relative flex-1">
         <Search className="bg-white absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" />
 
@@ -66,7 +66,7 @@ export default function NavSearch({title, href, button_title, page, search}: {ti
 
       </div>
       <Button type="submit" className="h-full py-3 my-auto">Search</Button>
-    </form>
+    </form> */}
 
   </div>
 

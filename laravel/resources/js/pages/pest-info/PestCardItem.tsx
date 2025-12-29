@@ -31,7 +31,6 @@ export default function PestCardItem({ pest, getRiskColor, getRiskLabel }: PestC
                         <Skeleton className="h-full w-full" />
                     </div>
                 )}
-
                 {imageUrl ? (
                     <img
                         src={imageUrl}

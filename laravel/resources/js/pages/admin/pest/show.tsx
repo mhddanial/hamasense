@@ -21,7 +21,6 @@ export default function EditHama() {
   const { props } = usePage<{ message: String, pest: Pest }>();
   const { pest } = props;
 
-  const [deleteModal, setDeleteModal] = useState(false);
   const [updateModal, setUpdateModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(pest.img_path ? '/storage/pest/' + pest.img_path : '');
 
@@ -58,6 +57,10 @@ export default function EditHama() {
       setUploadedImage(URL.createObjectURL(file));
     }
   };
+
+  const handleCancel = () => {
+    window.history.back();
+  }
 
   const handleUpdate = () => {
     router.post(`/admin/pest/${pest.id}`, {
@@ -384,10 +387,10 @@ export default function EditHama() {
                 <div className="flex gap-4 pt-4">
                   <button
                     type="button"
-                    onClick={() => setDeleteModal(true)}
+                    onClick={handleCancel}
                     className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >
-                    Hapus
+                    Batal
                   </button>
                   <button
                     type="button"
@@ -403,16 +406,6 @@ export default function EditHama() {
           </div>
         </div>
       </div>
-
-      <DeleteConfirmationModal
-        isOpen={deleteModal}
-        onClose={() => setDeleteModal(false)}
-        onConfirm={() => {
-          router.delete(`/admin/pest/${pest.id}`);
-          setDeleteModal(false);
-        }}
-        itemName={pest.name}
-      />
 
       <UpdateConfirmationModal
         isOpen={updateModal}

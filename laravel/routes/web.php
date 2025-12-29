@@ -24,12 +24,14 @@ Route::get('/articles/{slug}', [HomeController::class, 'articleShow'])->name('ar
 // Community Routes - Public bisa lihat, login untuk aksi
 Route::get('/community', [CommunityPostController::class, 'index'])->name('community.index');
 
-// User Dashboard
+// USER ACCESS
 Route::middleware(['auth', 'verified', 'customer'])->group(function () {
+    // DASHBOARD USER
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/weather-location', [DashboardController::class, 'updateWeatherByGPS'])
     ->name('weather.update-location');
 
+    // DETECTION
     Route::get('/detect', [DetectController::class, 'index'])->name('detect.index');
     Route::post('/detect', [DetectController::class, 'store'])->name('detect.store');
     Route::post('/detect/save-history', [DetectController::class, 'saveHistory'])->name('detect.save');
@@ -37,22 +39,27 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('/detect-history/{id}', [DetectController::class, 'showHistory'])->name('detect.history.detail');
     Route::delete('/detect-history/{id}', [DetectController::class, 'deleteHistory'])->name('detect.history.delete');
 
-    Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.user.index');
-    Route::get('/pest-info/{slug}', [PestController::class, 'userShow'])->name('pest.user.show');
-
-    Route::get('/continuous-care', function() {
-        return Inertia::render('continuous_care/index');
-    })->name('continuous_care.index');
     // Community CRUD
     Route::post('/community', [CommunityPostController::class, 'store'])->name('community.store');
     Route::put('/community/{post}', [CommunityPostController::class, 'update'])->name('community.update');
     Route::delete('/community/{post}', [CommunityPostController::class, 'destroy'])->name('community.destroy');
+
+    // PEST INFO
+    // Route::get('/pest-info/{id}', function ($id) {
+    //     return Inertia::render('pest-info/detail', ['id' => $id]);
+    // })->name('pest.user.show');
+    Route::get('/pest-info', [PestController::class, 'userIndex'])->name('pest.user.index');
+    Route::get('/pest-info/{slug}', [PestController::class, 'userShow'])->name('pest.user.show');
 
     // Community Like & Comment
     Route::post('/community/{post}/like', [CommunityPostController::class, 'toggleLike'])->name('community.like');
     Route::get('/community/{post}/comments', [CommunityPostController::class, 'getComments'])->name('community.comments');
     Route::post('/community/{post}/comments', [CommunityPostController::class, 'storeComment'])->name('community.comment.store');
 
+    // CONTINUOUS CARE
+    Route::get('/continuous-care', function() {
+        return Inertia::render('continuous_care/index');
+    })->name('continuous_care.index');
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
     Route::post('/cases/create-from-detection/{historyId}', [CaseController::class, 'createFormDetection'])->name('cases.createFormDetection');
     Route::get('/cases/{id}', [CaseController::class, 'show'])->name('cases.show');

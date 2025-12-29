@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import PestCardItem from "./PestCardItem";
 
+
 interface Props {
     pests: Pest[];
 }
@@ -115,7 +116,7 @@ export default function PestInfo({ pests }: Props) {
                         <Select value={kategori} onValueChange={setKategori}>
                             <SelectTrigger className="w-full sm:w-[200px] bg-white">
                                 <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Filter className="h-4 w-4" />
+                                    <Filter className="size-4" />
                                     <SelectValue placeholder="Kategori" />
                                 </div>
                             </SelectTrigger>
@@ -134,7 +135,7 @@ export default function PestInfo({ pests }: Props) {
                         <Select value={risiko} onValueChange={setRisiko}>
                             <SelectTrigger className="w-full sm:w-[200px] bg-white">
                                 <div className="flex items-center gap-2 text-muted-foreground">
-                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertTriangle className="size-4" />
                                     <SelectValue placeholder="Risiko" />
                                 </div>
                             </SelectTrigger>
@@ -145,7 +146,6 @@ export default function PestInfo({ pests }: Props) {
                                 <SelectItem value="tinggi">Tinggi</SelectItem>
                             </SelectContent>
                         </Select>
-
                     </div>
                 </div>
 

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Pest;
+use App\Models\PlantType;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ArticleCategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Inertia\Inertia;
 
 class PestController extends Controller
 {
@@ -27,31 +29,26 @@ class PestController extends Controller
 
     public function index(Request $request)
     {
-        $keyword = $request->query('keyword');
-        $pests = Pest::query()->when($keyword, function ($query, $keyword) {
-            $search_term = "{$keyword}%";
-            return $query->where(function ($q) use ($search_term) {
-                $q->where('name', 'like', $search_term)
-                    ->orWhere('scientific_name', 'like', $search_term);
-            });
-        })->latest()->paginate(8);
+        $pests = Pest::latest()->paginate(10);
+
+        $categories = ArticleCategory::all(); 
 
         return Inertia::render('admin/pest/index', [
             'pests' => $pests,
-            'search' => $keyword 
+            'categories' => $categories
         ]);
     }
 
     public function create()
     {
         return Inertia::render('admin/pest/create', [
-            'plantTypes' => \App\Models\PlantType::all()
+            'plantTypes' => PlantType::all(),
+            'categories' => ArticleCategory::all()
         ]);
     }
 
     public function show(Request $request, Pest $pest)
     {
-        // $pest->load(['plantTypes', 'images']);
         return Inertia::render('admin/pest/show', [
             'pest' => $pest,
         ]);
@@ -168,8 +165,8 @@ class PestController extends Controller
         try{
             $pest->plantTypes()->detach();
             
-            if ($pest->image_path) {
-                Storage::disk('public')->delete($pest->image_path);
+            if ($pest->img_path) {
+                Storage::disk('public')->delete('pest/' . $pest->img_path);
             }
             $pest->delete();
             DB::commit();
