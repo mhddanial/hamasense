@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::table('detection_histories', function (Blueprint $table) {
-        //     $table->softDeletes();
-        // });
+        Schema::table('diseases', function(Blueprint $table) {
+            $table->foreignId('plant_type_id')->nullable(true)->change();
+        });
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Schema::table('detection_histories', function (Blueprint $table) {
-        //     $table->dropSoftDeletes();
-        // });
+        Schema::table('diseases', function(Blueprint $table) {
+            $table->foreignId('plant_type_id')->nullable(false)->change();
+        });
     }
 };
