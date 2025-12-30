@@ -13,17 +13,17 @@ export default function AdminLayout(
     breadcrumbs = [],
   }: React.PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
   return (
-        <>
-        <Toaster richColors={false} position="top-center" />
-          <AppShell variant="sidebar">
-            <AdminSidebar>
-              <AppContent variant="sidebar" className="overflow-x-hidden">
-                  <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                  {children}
-              </AppContent>
-            </AdminSidebar>
-          </AppShell>
-        </>
-        
+    <>
+      <Toaster richColors={false} position="top-right" />
+      <AppShell variant="sidebar">
+        <AdminSidebar>
+          <AppContent variant="sidebar" className="overflow-x-hidden">
+            <AppSidebarHeader breadcrumbs={breadcrumbs} />
+            {children}
+          </AppContent>
+        </AdminSidebar>
+      </AppShell>
+    </>
+
   );
 }

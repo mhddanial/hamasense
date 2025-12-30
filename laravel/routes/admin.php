@@ -9,6 +9,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\PlantTypeController;
 use App\Http\Controllers\ArticleCategoryController;
+use App\Http\Controllers\PestCategoryController;
 use App\Http\Controllers\UserController;
 
 
@@ -21,6 +22,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
     Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
 
     Route::resource('/pest', PestController::class);
+    Route::resource('/pest-category', PestCategoryController::class);
     Route::resource('/plant', PlantTypeController::class);
     Route::resource('/article', ArticleController::class);
     Route::resource('/article-category', ArticleCategoryController::class);

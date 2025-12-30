@@ -16,7 +16,8 @@ import {
     SquarePen,
     Edit2,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    ArrowUpDown
 } from 'lucide-react';
 import { Filter, FolderOpen, SearchX } from 'lucide-react';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
@@ -97,6 +98,7 @@ interface Filters {
     search?: string;
     category?: string;
     risk?: string;
+    sort?: string;
 }
 
 interface Props extends PageProps {
@@ -113,6 +115,7 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
     const [search, setSearch] = useState(filters?.search || '');
     const [risiko, setRisiko] = useState(filters?.risk || "Semua Risiko");
     const [kategori, setKategori] = useState(filters?.category || "Semua Kategori");
+    const [sortBy, setSortBy] = useState(filters?.sort || 'latest');
     const [isLoading, setIsLoading] = useState(false);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [categoryModalMode, setCategoryModalMode] = useState<'create' | 'edit'>('create');
@@ -131,6 +134,23 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
             search: search || undefined,
             category: kategori !== "Semua Kategori" ? kategori : undefined,
             risk: risiko !== "Semua Risiko" ? risiko : undefined,
+            sort: sortBy,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    // Sort Handler
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+        setIsLoading(true);
+        router.get('/admin/pest', {
+            search: search || undefined,
+            category: kategori !== "Semua Kategori" ? kategori : undefined,
+            risk: risiko !== "Semua Risiko" ? risiko : undefined,
+            sort: value,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -156,6 +176,7 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
             risk: type === 'risk'
                 ? (value !== "Semua Risiko" ? value : undefined)
                 : (risiko !== "Semua Risiko" ? risiko : undefined),
+            sort: sortBy,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -168,6 +189,7 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
         setSearch("");
         setKategori("Semua Kategori");
         setRisiko("Semua Risiko");
+        setSortBy('latest');
         setIsLoading(true);
 
         router.get('/admin/pest', {}, {
@@ -178,7 +200,7 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
     };
 
     // Check if any filter is active
-    const hasActiveFilters = search || kategori !== "Semua Kategori" || risiko !== "Semua Risiko";
+    const hasActiveFilters = search || kategori !== "Semua Kategori" || risiko !== "Semua Risiko" || sortBy !== 'latest';
 
     // CATEGORY HANDLERS
     const openCreateCategoryModal = () => {
@@ -210,11 +232,11 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
     const handleCategorySubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (categoryModalMode === 'create') {
-            categoryForm.post('/admin/article-category', {
+            categoryForm.post('/admin/pest-category', {
                 onSuccess: () => closeCategoryModal()
             });
         } else {
-            categoryForm.put(`/admin/article-category/${categoryId}`, {
+            categoryForm.put(`/admin/pest-category/${categoryId}`, {
                 onSuccess: () => closeCategoryModal()
             });
         }
@@ -374,6 +396,22 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
                                 </SelectContent>
                             </Select>
 
+                            {/* SORT FILTER */}
+                            <Select value={sortBy} onValueChange={handleSortChange}>
+                                <SelectTrigger className="w-full sm:w-[180px] bg-white">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <ArrowUpDown className="size-4" />
+                                        <SelectValue placeholder="Urutkan" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="latest">Terbaru</SelectItem>
+                                    <SelectItem value="oldest">Terlama</SelectItem>
+                                    <SelectItem value="name_asc">Nama A-Z</SelectItem>
+                                    <SelectItem value="name_desc">Nama Z-A</SelectItem>
+                                </SelectContent>
+                            </Select>
+
                             {/* Reset Button */}
                             {hasActiveFilters && (
                                 <Button
@@ -417,7 +455,7 @@ export default function KelolaDataHama({ pests, categories, filters }: Props) {
             </div>
 
             {/* PEST TABLE */}
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm px-4">
                 <CardContent className="p-0">
                     {activeTab === 'articles' ? (
                         <Table>

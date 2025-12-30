@@ -7,7 +7,7 @@ use App\Models\Pest;
 use App\Models\PlantType;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Models\ArticleCategory;
+use App\Models\PestCategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,7 +35,7 @@ class PestController extends Controller
             ->latest()
             ->get();
 
-        $categories = ArticleCategory::all();
+        $categories = PestCategory::all();
         
         return Inertia::render('pest-info/index', [
             'pests' => $pests,
@@ -60,6 +60,7 @@ class PestController extends Controller
         $search = $request->query('search');
         $category = $request->query('category');
         $risk = $request->query('risk');
+        $sortBy = $request->query('sort', 'latest');
 
         $pests = Pest::query()
             ->when($search, function ($query, $search) {
@@ -74,11 +75,27 @@ class PestController extends Controller
             })
             ->when($risk && $risk !== 'Semua Risiko', function ($query) use ($risk) {
                 return $query->where('risk_level', $risk);
-            })
-            ->latest()
-            ->paginate(10);
+            });
 
-        $categories = ArticleCategory::all(); 
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $pests->oldest();
+                break;
+            case 'name_asc':
+                $pests->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $pests->orderBy('name', 'desc');
+                break;
+            default:
+                $pests->latest();
+                break;
+        }
+
+        $pests = $pests->paginate(10);
+
+        $categories = PestCategory::all(); 
 
         return Inertia::render('admin/pest/index', [
             'pests' => $pests,
@@ -86,7 +103,8 @@ class PestController extends Controller
             'filters' => [
                 'search' => $search,
                 'category' => $category,
-                'risk' => $risk
+                'risk' => $risk,
+                'sort' => $sortBy
             ]
         ]);
     }
@@ -95,7 +113,7 @@ class PestController extends Controller
     {
         return Inertia::render('admin/pest/create', [
             'plantTypes' => PlantType::all(),
-            'categories' => ArticleCategory::all()
+            'categories' => PestCategory::all()
         ]);
     }
 

@@ -15,7 +15,8 @@ import {
     Calendar,
     Search,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    ArrowUpDown
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -46,6 +47,13 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { DeleteConfirmationModal } from "@/components/admin/DeleteConfirmModal";
 import { toast } from 'sonner';
 
@@ -68,6 +76,7 @@ interface PaginatedArticles {
 
 interface Filters {
     keyword?: string;
+    sort?: string;
 }
 
 interface Props extends PageProps {
@@ -88,6 +97,7 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
 
     // Search State
     const [search, setSearch] = useState(filters?.keyword || '');
+    const [sortBy, setSortBy] = useState(filters?.sort || 'latest');
     const [isLoading, setIsLoading] = useState(false);
 
     // Category Operation State
@@ -173,6 +183,21 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
 
         router.get('/admin/article', {
             keyword: search || undefined,
+            sort: sortBy,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    // Sort Handler
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+        setIsLoading(true);
+        router.get('/admin/article', {
+            keyword: search || undefined,
+            sort: value,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -183,6 +208,7 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
     // Reset Filters Handler
     const handleResetFilters = () => {
         setSearch('');
+        setSortBy('latest');
         setIsLoading(true);
 
         router.get('/admin/article', {}, {
@@ -192,7 +218,7 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
         });
     };
 
-    const hasActiveFilters = search !== '';
+    const hasActiveFilters = search !== '' || sortBy !== 'latest';
 
     const articlesData = articles?.data || [];
 
@@ -237,8 +263,8 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {/* Search */}
-                    <div className="flex items-center gap-3">
+                    {/* Search and Sort */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-2/5">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -259,6 +285,18 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
                                 <span className="ml-2 hidden sm:inline">Cari</span>
                             </Button>
                         </form>
+                        <Select value={sortBy} onValueChange={handleSortChange}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <ArrowUpDown className="w-4 h-4 mr-2" />
+                                <SelectValue placeholder="Urutkan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="latest">Terbaru</SelectItem>
+                                <SelectItem value="oldest">Terlama</SelectItem>
+                                <SelectItem value="name_asc">Nama A-Z</SelectItem>
+                                <SelectItem value="name_desc">Nama Z-A</SelectItem>
+                            </SelectContent>
+                        </Select>
                         {hasActiveFilters && (
                             <Button
                                 variant="outline"
@@ -299,7 +337,7 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
             </div>
 
             {/* Content Table */}
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm px-4">
                 <CardContent className="p-0">
                     {activeTab === 'articles' ? (
                         <Table>

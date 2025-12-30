@@ -11,7 +11,9 @@ import {
     MoreHorizontal,
     AlertTriangle,
     Mail,
-    Calendar
+    Calendar,
+    ArrowUpDown,
+    RefreshCw
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -52,7 +54,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 // Types
@@ -84,15 +92,24 @@ interface PaginatedUsers {
     total: number;
 }
 
-interface Props extends PageProps {
-    users: PaginatedUsers;
-    search?: string;
+interface Filters {
+    keyword?: string;
+    sort?: string;
+    role?: string;
 }
 
-export default function KelolaUsers({ users, search }: Props) {
-    const [searchTerm, setSearchTerm] = useState(search || '');
+interface Props extends PageProps {
+    users: PaginatedUsers;
+    filters?: Filters;
+}
+
+export default function KelolaUsers({ users, filters }: Props) {
+    const [searchTerm, setSearchTerm] = useState(filters?.keyword || '');
+    const [sortBy, setSortBy] = useState(filters?.sort || 'latest');
+    const [roleFilter, setRoleFilter] = useState(filters?.role || 'all');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const { flash } = usePage().props;
     const success = flash?.success;
@@ -109,8 +126,55 @@ export default function KelolaUsers({ users, search }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get('/admin/users', { keyword: searchTerm }, { preserveState: true });
+        setIsLoading(true);
+        router.get('/admin/users', {
+            keyword: searchTerm || undefined,
+            sort: sortBy,
+            role: roleFilter !== 'all' ? roleFilter : undefined
+        }, {
+            preserveState: true,
+            onFinish: () => setIsLoading(false)
+        });
     };
+
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+        setIsLoading(true);
+        router.get('/admin/users', {
+            keyword: searchTerm || undefined,
+            sort: value,
+            role: roleFilter !== 'all' ? roleFilter : undefined
+        }, {
+            preserveState: true,
+            onFinish: () => setIsLoading(false)
+        });
+    };
+
+    const handleRoleFilterChange = (value: string) => {
+        setRoleFilter(value);
+        setIsLoading(true);
+        router.get('/admin/users', {
+            keyword: searchTerm || undefined,
+            sort: sortBy,
+            role: value !== 'all' ? value : undefined
+        }, {
+            preserveState: true,
+            onFinish: () => setIsLoading(false)
+        });
+    };
+
+    const handleResetFilters = () => {
+        setSearchTerm('');
+        setSortBy('latest');
+        setRoleFilter('all');
+        setIsLoading(true);
+        router.get('/admin/users', {}, {
+            preserveState: true,
+            onFinish: () => setIsLoading(false)
+        });
+    };
+
+    const hasActiveFilters = searchTerm !== '' || sortBy !== 'latest' || roleFilter !== 'all';
 
     const handleDeleteClick = (user: User) => {
         setSelectedUser(user);
@@ -177,22 +241,58 @@ export default function KelolaUsers({ users, search }: Props) {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {/* Search */}
-                    <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <Input
-                                type="text"
-                                placeholder="Cari berdasarkan nama atau email..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
-                        <Button type="submit" variant="default">
-                            Cari
-                        </Button>
-                    </form>
+                    {/* Search and Filters */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Input
+                                    type="text"
+                                    placeholder="Cari berdasarkan nama atau email..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                            <Button type="submit" variant="default" disabled={isLoading}>
+                                Cari
+                            </Button>
+                        </form>
+                        <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
+                            <SelectTrigger className="w-full sm:w-[160px]">
+                                <Shield className="w-4 h-4 mr-2" />
+                                <SelectValue placeholder="Role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Role</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="customer">Customer</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={sortBy} onValueChange={handleSortChange}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <ArrowUpDown className="w-4 h-4 mr-2" />
+                                <SelectValue placeholder="Urutkan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="latest">Terbaru</SelectItem>
+                                <SelectItem value="oldest">Terlama</SelectItem>
+                                <SelectItem value="name_asc">Nama A-Z</SelectItem>
+                                <SelectItem value="name_desc">Nama Z-A</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {hasActiveFilters && (
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleResetFilters}
+                                disabled={isLoading}
+                                title="Reset filter"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            </Button>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 

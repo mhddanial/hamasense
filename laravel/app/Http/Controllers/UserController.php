@@ -12,6 +12,8 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $keyword = $request->query('keyword');
+        $sortBy = $request->query('sort', 'latest');
+        $role = $request->query('role', 'all');
         
         $users = User::query()
             ->when($keyword, function ($query, $keyword) {
@@ -21,12 +23,35 @@ class UserController extends Controller
                         ->orWhere('email', 'like', $search_term);
                 });
             })
-            ->latest()
-            ->paginate(10);
+            ->when($role && $role !== 'all', function ($query) use ($role) {
+                return $query->where('role', $role);
+            });
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $users->oldest();
+                break;
+            case 'name_asc':
+                $users->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $users->orderBy('name', 'desc');
+                break;
+            default:
+                $users->latest();
+                break;
+        }
+
+        $users = $users->paginate(10);
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
-            'search' => $keyword
+            'filters' => [
+                'keyword' => $keyword,
+                'sort' => $sortBy,
+                'role' => $role
+            ]
         ]);
     }
 

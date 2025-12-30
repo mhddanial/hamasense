@@ -11,7 +11,8 @@ import {
     MoreHorizontal,
     AlertTriangle,
     Plus,
-    ImageIcon
+    ImageIcon,
+    ArrowUpDown
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -51,6 +52,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 // Types
@@ -69,13 +77,19 @@ interface PaginatedPlants {
     total: number;
 }
 
-interface Props extends PageProps {
-    plants: PaginatedPlants;
-    search?: string;
+interface Filters {
+    keyword?: string;
+    sort?: string;
 }
 
-export default function KelolaTanaman({ plants, search }: Props) {
-    const [searchTerm, setSearchTerm] = useState(search || '');
+interface Props extends PageProps {
+    plants: PaginatedPlants;
+    filters?: Filters;
+}
+
+export default function KelolaTanaman({ plants, filters }: Props) {
+    const [searchTerm, setSearchTerm] = useState(filters?.keyword || '');
+    const [sortBy, setSortBy] = useState(filters?.sort || 'latest');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedPlant, setSelectedPlant] = useState<{ id: number; name: string } | null>(null);
 
@@ -94,7 +108,12 @@ export default function KelolaTanaman({ plants, search }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get('/admin/plant', { keyword: searchTerm }, { preserveState: true });
+        router.get('/admin/plant', { keyword: searchTerm, sort: sortBy }, { preserveState: true });
+    };
+
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+        router.get('/admin/plant', { keyword: searchTerm || undefined, sort: value }, { preserveState: true });
     };
 
     const handleDeleteClick = (plant: Plant) => {
@@ -143,27 +162,41 @@ export default function KelolaTanaman({ plants, search }: Props) {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {/* Search */}
-                    <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <Input
-                                type="text"
-                                placeholder="Cari tanaman..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
-                        <Button type="submit" variant="default">
-                            Cari
-                        </Button>
-                    </form>
+                    {/* Search and Sort */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Input
+                                    type="text"
+                                    placeholder="Cari tanaman..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                            <Button type="submit" variant="default">
+                                Cari
+                            </Button>
+                        </form>
+                        <Select value={sortBy} onValueChange={handleSortChange}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <ArrowUpDown className="w-4 h-4 mr-2" />
+                                <SelectValue placeholder="Urutkan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="latest">Terbaru</SelectItem>
+                                <SelectItem value="oldest">Terlama</SelectItem>
+                                <SelectItem value="name_asc">Nama A-Z</SelectItem>
+                                <SelectItem value="name_desc">Nama Z-A</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </CardContent>
             </Card>
 
             {/* Plants Table */}
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm px-4">
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>
