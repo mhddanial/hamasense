@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PlantType extends Model
 {
     protected $fillable = [
-        'name', 'scientific_name', 'detail', 'img_path'
+        'name', 'scientific_name', 'detail', 'img_path', 'slug'
     ];
 
     // lagi dibuat untuk model pic
@@ -30,6 +30,6 @@ class PlantType extends Model
 
     public function pest()
     {
-        return $this->hasMany(PlantTypePest::class, 'plant_tpe_id', 'id');
+        return $this->belongsToMany(Pest::class, 'plant_type_pests', 'plant_type_id', 'pest_id');
     }
 }

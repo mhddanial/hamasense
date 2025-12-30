@@ -9,10 +9,11 @@ class Pest extends Model
     protected $fillable = [
         'name',
         'description',
+        'slug',
         'scientific_name',
         'img_path',
-        'category',
-        'risk_level'
+        // 'category',
+        // 'risk_level'
     ];
 
     // hubungan ini antara pest menyebabkan
@@ -22,7 +23,7 @@ class Pest extends Model
         return $this->hasMany(PestCauseDisease::class, 'pest_id', 'id');
     }
 
-    public function plantTypes()
+    public function plant_type()
     {
         return $this->belongsToMany(PlantType::class, 'plant_type_pests', 'pest_id', 'plant_type_id');
     }
