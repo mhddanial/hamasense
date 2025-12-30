@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Menu, Bell, User, Home, Users, Sprout, Bug, FileText, MessageSquare, Paperclip, Upload } from 'lucide-react';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { Paperclip, Upload } from 'lucide-react';
+import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
@@ -8,27 +8,37 @@ import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
 
 import { PageProps } from '@inertiajs/core';
 
-import { Plant } from '@/types/admin';
+import { Disease, Pest, Plant } from '@/types/admin';
+import { BadgeDemo } from '@/components/admin/Badge';
+import { DataTableDemo } from '@/components/admin/Table';
 
 interface Props extends PageProps  {
   plant: Plant;
+  diseases: Disease[];
+  pest: Pest[]
 }
 
-export default function EditInformasiTanaman({ plant } : Props) {
+
+export default function EditInformasiTanaman({ plant, diseases, pests } : Props) {
 
   const [ deleteModal, setDeleteModal ] = useState(false);
   const [ updateModal, setUpdateModal ] = useState(false);
   const [ uploadedImage, setUploadedImage ] = useState(plant.img_path ? '/storage/plant/' + plant.img_path : '');
-  
+
+  const [ pestList, setPestList ] = useState(plant.pest.map((disease) => disease.id));
+  console.log('pestList')
+  console.log(pestList)
 
   const { data, setData, submit } = useForm({
     name: plant.name,
     scientific_name: plant.scientific_name,
     detail: plant.detail,
     old_img: plant.img_path,
-    new_img: null
+    new_img: null,
   });
-
+  
+  const [ diseasesList, SetDiseasesList ] = useState(diseases);
+  
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -128,7 +138,24 @@ export default function EditInformasiTanaman({ plant } : Props) {
                       />
                     </div>
                   </div>
-
+                    <div className='col-span-2 '>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanaman yang Diserang
+                      </label>
+                      
+                        <div className='w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500'>
+                          <DataTableDemo allDatas={pests} checkedDatas={pestList} onChange={(value) => {
+                            setPestList((prev) => {
+                              if (!pestList.includes(value)) {
+                                console.log(value) 
+                                return prev.includes(value) ? prev : [...prev, value];
+                              }
+                              return prev.filter((id) => id !== value);
+                            });
+                          }} name={'plants'}/>
+                          <BadgeDemo checkedItems={pestList} allItems={pests} onClick={(id: number) => { setPestList((disease) => disease.filter((disease: Disease) => disease.id !== id))}}/>
+                        </div>
+                      </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Detail
@@ -165,11 +192,16 @@ export default function EditInformasiTanaman({ plant } : Props) {
             </div>
         </div>
       </div>
+
+      {/* <BadgeDemo items={diseasesList} onClick={(id: number) => { SetDiseasesList(() => diseasesList.filter((disease: Disease) => disease.id !== id))}}/>
+
+      <BadgeDemo items={diseasesList} onClick={(id: number) => { SetDiseasesList(() => diseasesList.filter((disease: Disease) => disease.id !== id))}}/> */}
+
       <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
         setDeleteModal(false)
 
       }} onConfirm={() => {
-        submit('delete', `/admin/plant/${plant.id}`, {forceFormData: true, preserveScroll: true});
+        submit('delete', `/admin/plant/${plant.slug}`, {forceFormData: true, preserveScroll: true});
         setDeleteModal(false);
   
       }} itemName={plant.name}/>
@@ -177,11 +209,15 @@ export default function EditInformasiTanaman({ plant } : Props) {
       <UpdateConfirmationModal isOpen={updateModal} onClose={() => {
         setUpdateModal(false);
       }} onConfirm={() => {
-          router.post('/admin/plant/' + plant.id, {
+
+          router.post('/admin/plant/' + plant.slug, {
             _method: 'patch',
             forceFormData: true,
-            ...data
+            ...data,
+            pests: pestList
+            // diseases: diseasesList.map((disease) => disease.id)
           });
+          setUpdateModal(false);
       }} itemName={plant.name}/>
     </>
   );

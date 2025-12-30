@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Upload, Paperclip } from 'lucide-react';
-import { router, useForm } from '@inertiajs/react';
+import { button, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { PageProps } from '@inertiajs/core';
 import { Disease, Plant } from '@/types/admin';
+import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
+import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
+import { ExampleCombobox } from '@/components/admin/Combobox';
 
 interface Props extends PageProps {
     plants: Plant[];
@@ -12,11 +15,8 @@ interface Props extends PageProps {
 }
 
 export default function TambahkanTanaman({ plants, disease }: Props) {
-  
-    console.log(plants);
-    console.log(disease);
 
-  const { data, setData } = useForm({
+  const { data, setData, submit } = useForm({
     name: disease.name,
     description: disease.description,
     cause: disease.cause,
@@ -26,7 +26,9 @@ export default function TambahkanTanaman({ plants, disease }: Props) {
     new_img: null,
     plant_type_id: disease.plant_type_id
   });
-  
+
+  const [ deleteModal, setDeleteModal ] = useState(false);
+  const [ updateModal, setUpdateModal ] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(disease.img_path ? `/storage/disease/${disease.img_path}` : '');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,19 +153,8 @@ export default function TambahkanTanaman({ plants, disease }: Props) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Kategori
                 </label>
-                <select
-                  name="category"
-                  value={data.plant_type_id}
-                  onChange={(e) => setData((prev) => ({...prev, 'plant_type_id': (+e.target.value)}))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
-                >
-                  <option value="">Pilih kategori...</option>
-                  {plants.map((plant, index) => (
-                    <option key={index} value={plant.id}>
-                      {plant.name}
-                    </option>
-                  ))}
-                </select>
+                    <ExampleCombobox value={data['plant_type_id']} setValue={setData} keyValue={'plant_type_id'} items={plants.map(plant => ({value: String(plant.id), label: plant.name}))} onSelect={(value : any) => {setData('plant_type_id', value)}}/>
+
               </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -180,15 +171,17 @@ export default function TambahkanTanaman({ plants, disease }: Props) {
                   </div>
 
                   <div className="flex gap-4 pt-2">
-                    <button 
-                    //   onClick={handleCancel}
+                    <button
+                      onClick={() => {
+                        setDeleteModal(true)
+                      }}
                       className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                     >
-                      Batal
+                      Hapus
                     </button>
                     <button 
                       onClick={() => {
-                        router.post( `/admin/disease/${disease.id}`, {
+                        router.post(`/admin/disease/${disease.slug}`, {
                           _method: 'patch',
                           forceFormData: true,
                           ...data
@@ -206,6 +199,25 @@ export default function TambahkanTanaman({ plants, disease }: Props) {
           </div>
         </div>
       </div>
+
+      <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
+        setDeleteModal(false)
+
+      }} onConfirm={() => {
+        submit('delete', `/admin/disease/${disease.slug}`, {forceFormData: true, preserveScroll: true});
+        setDeleteModal(false);
+  
+      }} itemName={disease.name}/>
+
+      <UpdateConfirmationModal isOpen={updateModal} onClose={() => {
+        setUpdateModal(false);
+      }} onConfirm={() => {
+          router.post('/admin/disease/' + disease.slug, {
+            _method: 'patch',
+            forceFormData: true,
+            ...data
+          });
+      }} itemName={disease.name}/>      
 </>
   );
 }

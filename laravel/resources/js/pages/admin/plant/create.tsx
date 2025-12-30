@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import { Upload, Paperclip } from 'lucide-react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
+import { DataTableDemo } from '@/components/admin/Table';
+import { BadgeDemo } from '@/components/admin/Badge';
+import { Pest } from '@/types/admin';
 
 
 export default function TambahkanTanaman() {
+
+  const [ uploadedImage, setUploadedImage] = useState('');
+  const [ buttonDisable, setButtonDisable ] = useState(false);
+  const [ pestList, setPestList ] = useState([]);
   
   const { data, setData, post } = useForm({
       name: '',
       scientific_name: '',
       detail: '',
-      img_path: null
+      img_path: null,
+      pests: pestList
   });
-  
-  const [uploadedImage, setUploadedImage] = useState('');
 
-  const create = async () => {
-    console.log(data);
+  const { pests } = usePage().props;
+
+  const handleSubmit = async () => {
+    setButtonDisable(true);
     post('/admin/plant/');
   }
 
@@ -27,6 +35,17 @@ export default function TambahkanTanaman() {
     if (file) {
       setUploadedImage(URL.createObjectURL(file));
     }
+  };
+
+  const handleCancel = () => {
+    setData({
+      name: '',
+      scientific_name: '',
+      detail: '',
+      img_path: null,
+      pests: []
+    });
+    setUploadedImage('');
   };
 
   return (
@@ -116,6 +135,25 @@ export default function TambahkanTanaman() {
                       />
                     </div>
                   </div>
+                  <div className='col-span-2 '>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanaman yang Diserang
+                      </label>
+                      
+                        <div className='w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500'>
+                          <DataTableDemo allDatas={pests} checkedDatas={data.pests} onChange={(value: number) => {
+                              const checkedPest: number[] = data.pests;
+                              if (!data.pests.includes(value)) {
+                                setData('pests', [...checkedPest, value]);
+                                return;
+                              }else {
+                                setData('pests', [...checkedPest.filter((id) => value !== id)]);
+                                return;
+                              }
+                          }} name={'plants'}/>
+                          <BadgeDemo checkedItems={data.pests} allItems={pests} onClick={(id: number) => { setPestList((pest) => pest.filter((pest: Pest) => pest.id !== id))}}/>
+                        </div>
+                      </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Detail
@@ -132,15 +170,16 @@ export default function TambahkanTanaman() {
 
                   <div className="flex gap-4 pt-2">
                     <button 
-                    //   onClick={handleCancel}
+                      onClick={handleCancel}
                       className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                     >
                       Batal
                     </button>
                     <button 
-                      onClick={create}
+                      disabled={buttonDisable}
+                      onClick={handleSubmit}
                       type='button'
-                      className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                      className={`px-8 py-3 ${ buttonDisable ? 'bg-gray-300 text-gray-900' : 'bg-teal-600 text-white hover:bg-teal-700' }   rounded-lg  transition-colors font-medium`}
                     >
                       Tambahkan
                     </button>

@@ -5,6 +5,7 @@ import AdminLayout from '@/components/admin/layout';
 
 import { PageProps } from '@inertiajs/core';
 import { Plant } from '@/types/admin';
+import { ExampleCombobox } from '@/components/admin/Combobox';
 
 interface Props extends PageProps {
     plants: Plant[]
@@ -25,8 +26,10 @@ export default function TambahkanTanaman({ plants }: Props) {
   });
   
   const [uploadedImage, setUploadedImage] = useState('');
+  const [ disableCreate, setDisableCreate ] = useState(false);
 
   const create = async () => {
+    setDisableCreate(true);
     post('/admin/disease/');
   }
 
@@ -149,24 +152,14 @@ export default function TambahkanTanaman({ plants }: Props) {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
                       />
                     </div>
-                                  <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategori
-                </label>
-                <select
-                  name="category"
-                  value={data.plant_type_id}
-                  onChange={(e) => setData((prev) => ({...prev, 'plant_type_id': (+e.target.value)}))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
-                >
-                  <option value="">Pilih kategori...</option>
-                  {plants.map((plant, index) => (
-                    <option key={index} value={plant.id}>
-                      {plant.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                    <div>
+
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanaman Terkait
+                      </label>
+                          <ExampleCombobox value={data['plant_type_id']} setValue={setData} keyValue={'plant_type_id'} items={plants.map(plant => ({value: String(plant.id), label: plant.name}))} onSelect={(value : any) => {setData('plant_type_id', value)}}/>
+                      
+                    </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Description
@@ -189,9 +182,10 @@ export default function TambahkanTanaman({ plants }: Props) {
                       Batal
                     </button>
                     <button 
+                      disabled={disableCreate}
                       onClick={create}
                       type='button'
-                      className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                      className={`px-8 py-3 ${ disableCreate ? 'bg-gray-300 text-gray-900' : 'bg-teal-600 text-white hover:bg-teal-700' }  rounded-lg  transition-colors font-medium`} 
                     >
                       Tambahkan
                     </button>

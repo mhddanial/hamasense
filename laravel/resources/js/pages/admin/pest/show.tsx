@@ -6,13 +6,19 @@ import AdminLayout from '@/components/admin/layout';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
 
-import { Pest } from '@/types/admin';
+import { Pest, Plant } from '@/types/admin';
+import { BadgeDemo } from '@/components/admin/Badge';
+import { DataTableDemo } from '@/components/admin/Table';
 
 
 export default function HamaSenseEdit() {
 
   const { props } = usePage<{message: String, pest: Pest}>();
-  const { message, pest } = props;
+  const { message, pest, plants } = props;
+
+  const [ plantList, setPlantList ] = useState(pest.plant_type?.map(plant => plant.id));
+  // const [ allPlant, setAll]
+  console.log(plants)
 
   const [ deleteModal, setDeleteModal ] = useState(false);
   const [ updateModal, setUpdateModal ] = useState(false);
@@ -50,28 +56,7 @@ export default function HamaSenseEdit() {
             <h1 className="text-2xl font-bold mb-8 text-gray-900">Edit Informasi Hama</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column - Images */}
-              {/* <div>
-                <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-lg overflow-hidden mb-4 aspect-video flex items-center justify-center">
-                  <img
-                    src="https://images.unsplash.com/photo-1563126116-1e160c81e57c?w=500&h=350&fit=crop"
-                    alt="Kutu daun"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-green-700 to-green-900">
-                      <img
-                        src="https://images.unsplash.com/photo-1563126116-1e160c81e57c?w=200&h=200&fit=crop"
-                        alt={`Thumbnail ${i}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div> */}
+
                 <div className="rounded-lg overflow-hidden">
 
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
@@ -150,9 +135,27 @@ export default function HamaSenseEdit() {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                     </div>
+                    <div className='col-span-2 '>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanaman yang Diserang
+                      </label>
+                      
+                      <div className='w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500'>
+                        <DataTableDemo allDatas={plants} checkedDatas={plantList} onChange={(value) => {
+                          setPlantList((prev) => {
+                            if (!plantList.includes(value)) {
+                              console.log(value) 
+                              return prev.includes(value) ? prev : [...prev, value];
+                            }
+                            return prev.filter((id) => id !== value);
+                          });
+                        }} name={'plants'}/>
+                        <BadgeDemo checkedItems={plantList} allItems={plants} onClick={(id: number) => { setPlantList((plants) => plants.filter((disease: Plant) => disease.id !== id))}}/>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
+                  <div className='mt-10'>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Detail
                     </label>
@@ -180,26 +183,33 @@ export default function HamaSenseEdit() {
                 </div>
               </div>
             </div>
+
+
           </div>
         </div>
+
+
 
       <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
         setDeleteModal(false)
       }} onConfirm={() => {
-        console.log(`/admin/article/${pest.id}`);
-        submit('delete', `/admin/pest/${pest.id}`);
+        console.log(`/admin/article/${pest.slug}`);
+        submit('delete', `/admin/pest/${pest.slug}`);
         setDeleteModal(false)
   
       }} itemName={pest.name}/>
 
+
+
       <UpdateConfirmationModal isOpen={updateModal} onClose={() => {
         setUpdateModal(false)
       }} onConfirm={() => {
-        console.log(`/admin/pest/${pest.id}`);
-        router.post( `/admin/pest/${pest.id}`, {
+        console.log(`/admin/pest/${pest.slug}`);
+        router.post( `/admin/pest/${pest.slug}`, {
           _method: 'patch',
           forceFormData: true,
-          ...data
+          ...data,
+          plants: plantList
         });
         setUpdateModal(false)
 
