@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { Link } from "@inertiajs/react";
 import { Edit2, Eye, Trash2 } from "lucide-react";
 
-export function ItemHeaderDemo({id, name, img_path, scientific_name, delete_onclick, filename}: {id:number, name: string, img_path: string, scientific_name:string, delete_onclick: any, filename: string}) {
+export function ItemHeaderDemo({id, name, img_path, scientific_name,  delete_onclick, filename, slug}: {id:number, name: string, img_path: string, scientific_name:string, delete_onclick: any, filename: string, slug:string}) {
   
   console.log(img_path)
   return (
@@ -37,7 +37,7 @@ export function ItemHeaderDemo({id, name, img_path, scientific_name, delete_oncl
                       <p className="text-sm text-gray-600 italic">{scientific_name}</p>
                     </div>
                     <div className="flex gap-2 ml-2">
-                      <Link href={`/admin/${img_path}/${id}`} className="text-gray-600 hover:text-teal-600 transition-colors">
+                      <Link href={`/admin/${img_path}/${slug}`} className="text-gray-600 hover:text-teal-600 transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </Link>
                       <button onClick={delete_onclick} className="text-gray-600 hover:text-red-600 transition-colors">
