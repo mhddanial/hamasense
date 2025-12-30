@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pest;
 use App\Models\Plant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,9 @@ class PlantController extends Controller
 
     public function create()
     {
-        return Inertia::render('admin/pest/add_hama');
+        return Inertia::render('admin/pest/add_hama', [
+            'pests' => Pest::all()
+        ]);
     }
 
     public function edit()
@@ -56,15 +59,7 @@ class PlantController extends Controller
 
                 $file->storeAs('plant', $file_name, 'public');
                 $field['img_path'] = $file_name;
-
-                // return response()->json([
-                //     'message' => 'foto berhasil'
-                // ]);
             }
-
-            // return response()->json([
-            //     'message' => 'foto gagal'
-            // ]);
 
             $new_pest = Plant::create($field);
 

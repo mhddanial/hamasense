@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pest;
-use App\Models\PestImg;
+use App\Models\PlantType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PestController extends Controller
@@ -37,7 +38,7 @@ class PestController extends Controller
     public function create()
     {
         return Inertia::render('admin/pest/create', [
-            'plantTypes' => \App\Models\PlantType::all()
+            'plants' => \App\Models\PlantType::all(),
         ]);
     }
 
@@ -45,7 +46,8 @@ class PestController extends Controller
     {
         // $pest->load(['plantTypes', 'images']);
         return Inertia::render('admin/pest/show', [
-            'pest' => $pest,
+            'pest' => $pest->load('plant_type'),
+            'plants' => PlantType::all()
         ]);
     }
 
@@ -58,8 +60,15 @@ class PestController extends Controller
                 'name' => 'required|string',
                 'scientific_name' => 'required|string',
                 'description' => 'required|string',
-                'img_path' => 'image'
+                'img_path' => 'image',
+                'slug' => 'string|nullable',
+                'plants' => 'array',
+                'plants*' => 'integer'
             ]);
+
+            if (empty($field['slug'])) {
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
+            }
 
             if($request->hasFile('img_path')) {
                 $file = $request->file('img_path');
@@ -71,9 +80,9 @@ class PestController extends Controller
             }
 
             $new_pest = Pest::create($field);
+            $new_pest->plant_type()->sync($field['plants']);
 
             DB::commit();
-
 
             return redirect('admin/pest')->with('success', 'New Pest Added Successfully!');
 
@@ -94,11 +103,20 @@ class PestController extends Controller
                 'scientific_name' => 'required|string',
                 'description' => 'required|string',
                 'new_img' => 'image|nullable',
-                'old_img' => 'string|nullable'
+                'old_img' => 'string|nullable',
+                'slug' => 'string|nullable',
+                'plants*' => 'integer',
+                'plants' => 'array'
             ]);
+
+            $pest->plant_type()->sync($field['plants'] ?? []);
+            
+            if (empty($field['slug'])) {
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
+            }
             
             if($request->hasFile('new_img')){
-                Storage::disk('public')->delete('/plant/' . $pest->img_path);
+                Storage::disk('public')->delete('/pest/' . $pest->img_path);
                 $file = $request->file('new_img');
                 $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
                 $file->storeAs('pest', $file_name, 'public');
@@ -109,62 +127,63 @@ class PestController extends Controller
                 'name' => $field['name'],
                 'scientific_name' => $field['scientific_name'],
                 'description' => $field['description'],
-                'category' => $field['category'],
-                'risk_level' => $field['risk_level'],
+                // 'category' => $field['category'],
+                // 'risk_level' => $field['risk_level'],
+                'slug' => $field['slug']
             ]);
 
-            // Menangani gambar baru
-            if ($request->hasFile('images')) {
-                $files = $request->file('images');
-                $imagesData = [];
+            // // Menangani gambar baru
+            // if ($request->hasFile('images')) {
+            //     $files = $request->file('images');
+            //     $imagesData = [];
                 
-                foreach ($files as $file) {
-                    $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-                    $file->storeAs('images', $filename, 'public');
+            //     foreach ($files as $file) {
+            //         $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+            //         $file->storeAs('images', $filename, 'public');
 
-                    $imagesData[] = [
-                        'pest_id' => $pest->id,
-                        'filename' => $filename 
-                    ];
-                }
+            //         $imagesData[] = [
+            //             'pest_id' => $pest->id,
+            //             'filename' => $filename 
+            //         ];
+            //     }
                 
-                if (!empty($imagesData)) {
-                    PestImg::insert($imagesData);
-                }
-            }
+            //     if (!empty($imagesData)) {
+            //         PestImg::insert($imagesData);
+            //     }
+            // }
 
-            // Menangani penghapusan gambar
-            if (!empty($request->deleted_images)) {
-                $imagesToDelete = PestImg::whereIn('filename', $request->deleted_images)
-                                        ->where('pest_id', $pest->id)
-                                        ->get();
+            // // Menangani penghapusan gambar
+            // if (!empty($request->deleted_images)) {
+            //     $imagesToDelete = PestImg::whereIn('filename', $request->deleted_images)
+            //                             ->where('pest_id', $pest->id)
+            //                             ->get();
 
-                foreach ($imagesToDelete as $img) {
-                    Storage::disk('public')->delete('images/' . $img->filename);
-                    $img->delete();
-                }
-            }
+            //     foreach ($imagesToDelete as $img) {
+            //         Storage::disk('public')->delete('images/' . $img->filename);
+            //         $img->delete();
+            //     }
+            // }
 
-            // Sync Plant Types
-            if (isset($request->plant_types)) {
-                $plantIds = [];
-                foreach ($request->plant_types as $plantName) {
-                    $plant = \App\Models\PlantType::firstOrCreate(
-                        ['name' => $plantName],
-                        ['scientific_name' => '-', 'detail' => '-']
-                    );
-                    $plantIds[] = $plant->id;
-                }
-                $pest->plantTypes()->sync($plantIds);
-            }
+            // // Sync Plant Types
+            // if (isset($request->plant_types)) {
+            //     $plantIds = [];
+            //     foreach ($request->plant_types as $plantName) {
+            //         $plant = \App\Models\PlantType::firstOrCreate(
+            //             ['name' => $plantName],
+            //             ['scientific_name' => '-', 'detail' => '-']
+            //         );
+            //         $plantIds[] = $plant->id;
+            //     }
+            //     $pest->plantTypes()->sync($plantIds);
+            // }
 
-            // Update main image_path if needed
-            $firstImage = $pest->images()->first();
-            if ($firstImage) {
-                $pest->update(['image_path' => 'images/' . $firstImage->filename]);
-            } else {
-                 $pest->update(['image_path' => null]);
-            }
+            // // Update main image_path if needed
+            // $firstImage = $pest->images()->first();
+            // if ($firstImage) {
+            //     $pest->update(['image_path' => 'images/' . $firstImage->filename]);
+            // } else {
+            //      $pest->update(['image_path' => null]);
+            // }
 
             DB::commit();
             return redirect('admin/pest')->with('success', 'Data hama berhasil diperbarui!');
