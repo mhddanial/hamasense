@@ -52,6 +52,8 @@ export type PlantInput = {
     scientific_name: string;
     detail: string;
     images: string[];
+    disease: Disease[];
+    pest: Pest[];
 }
 
 export interface Plant extends PlantInput, Id, Timestamps {}
@@ -79,5 +81,5 @@ export interface Pest extends PestInput, Id, Timestamps {
     category: string;
     risk_level: string;
     image_path?: string;
-    plant_types?: PlantType[];
+    plant_type?: PlantType[];
 }
