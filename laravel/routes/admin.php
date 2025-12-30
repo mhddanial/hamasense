@@ -12,11 +12,11 @@ use App\Http\Controllers\ArticleCategoryController;
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
     Route::get('/user', [AdminController::class, 'user']);
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::resource('/pest', PestController::class);
-    Route::resource('/plant', PlantTypeController::class);
-    Route::resource('/article', ArticleController::class);
+    Route::resource('/pest', PestController::class)->parameters(['pest' => 'pest:slug']);
+    Route::resource('/plant', PlantTypeController::class)->parameters(['plant' => 'plant:slug']);
+    Route::resource('/article', ArticleController::class)->parameters(['article' => 'article:slug']);
     Route::resource('/article-category', ArticleCategoryController::class);
-    Route::resource('/disease', DiseaseController::class);
+    Route::resource('/disease', DiseaseController::class)->parameters(['disease' => 'disease:slug']);
 });
 
 // Route::prefix('/api')->group(function () {
