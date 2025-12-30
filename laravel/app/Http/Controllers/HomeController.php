@@ -157,25 +157,15 @@ class HomeController extends Controller
 
     public function articles(Request $request)
     {
-        // 1. Fetch real articles (skip dummy for now, we'll merge on FE or here)
-        // We do it here to make it clean. But FE expects a specific list.
-        // Let's fetch all and map them.
+        // Fetch articles from database
         $dbArticlesRaw = Article::with(['category', 'writer'])->latest()->get();
 
         $dbArticles = $dbArticlesRaw->map(function ($item) {
-            // Generate dynamic Properties
-            // slug: title-slug-id ? or just slug helper. Frontend dummy is just string.
-            // We use standard slug + id to be safe/unique.
+            // Generate dynamic slug
             $slug = Str::slug($item->title) . '-' . $item->id;
             
             return [
-                'id' => 9000 + $item->id, // Offset ID so it doesn't clash with dummy? Or just let it be. FE uses ID for key.
-                // better to keep original ID but maybe ensure uniqueness if dummy has same IDs. 
-                // Dummy IDs are 1..6, 42. Real IDs likely start at 1. 
-                // Let's add prefix or just hope for best? 
-                // Actually safer to map ID to something distinct if we mix them.
-                // But user wants "latest version below original".
-                
+                'id' => $item->id,
                 'title' => $item->title,
                 'slug' => $slug,
                 'excerpt' => Str::limit(strip_tags($item->content), 120),
@@ -184,9 +174,8 @@ class HomeController extends Controller
                 'date' => $item->created_at->toIso8601String(),
                 'image' => $item->image ?? '/images/why-choose-us.png',
                 'readingTime' => ceil(str_word_count(strip_tags($item->content)) / 200) . ' menit',
-                'views' => 0, // DB has no views
-                'is_dynamic' => true, // Flag for FE if needed
-                'body' => $item->content, // Passed for detail, but list doesn't strictly need it.
+                'views' => $item->views_count ?? 0,
+                'references' => $item->references ?? [],
             ];
         });
 
@@ -198,101 +187,35 @@ class HomeController extends Controller
 
     public function articleShow($slug)
     {
-        // 1) DUMMY DATA – bisa dipindah ke file config/ atau service jika mau
-        $articles = collect([
-            [
-                'id' => 42,
-                'title' => 'Rotasi Tanaman Efektif untuk Menekan Busuk Daun pada Tomat',
-                'slug' => 'rotasi-tanaman-busuk-daun-tomat',
-                'excerpt' => 'Panduan praktis menerapkan rotasi tanaman, sanitasi lahan, dan pemantauan mikroklimat…',
-                'category' => 'Budidaya',
-                'author' => 'Rina Putri',
-                'date' => '2025-07-12',
-                'image' => '/images/tomato_late_blight.jpg',
-                'readingTime' => '6 menit',
-                // Konten paragraf
-                'body' => [
-                    'Rotasi tanaman yang tepat dapat menekan insiden busuk daun pada tomat secara signifikan dengan cara memutus siklus patogen di lahan dan menurunkan inokulum di tanah maupun sisa tanaman. Praktik ini efektif bila dipadukan dengan sanitasi, manajemen kelembapan, dan penggunaan varietas toleran serta fungisida protektan saat kondisi rawan.',
-                ],
-                // Referensi sumber (untuk anti-hoaks)
-                'references' => [
-                    [
-                        'id' => 1,
-                        'source' => 'Food and Agriculture Organization (FAO)',
-                        'title' => 'Integrated Pest Management for Tomato: Late Blight',    
-                        'author' => 'FAO Plant Production and Protection Division',
-                        'url' => 'https://www.fao.org/',
-                        'accessedAt' => '2025-11-08',
-                    ],
-                    [
-                        'id' => 2,
-                        'source' => 'University Extension',
-                        'title' => 'Managing Late Blight in Tomatoes',
-                        'author' => 'Dept. of Plant Pathology',
-                        'url' => 'https://example-extension.edu/late-blight',
-                        'accessedAt' => '2025-11-09',
-                    ],
-                    [
-                        'id' => 3,
-                        'source' => 'Journal of Plant Disease Management',
-                        'title' => 'Crop Rotation and Disease Suppression in Solanaceae',
-                        'author' => 'S. Rahman et al.',
-                        'url' => 'https://doi.org/10.0000/jpdm.2025.12345',
-                        'accessedAt' => '2025-11-10',
-                    ],
-                ],
-            ],
-            // …kalau mau tambah artikel dummy lain di sini
-        ]);
-
-        // 2) Cari artikel berdasarkan slug
-        $article = $articles->firstWhere('slug', $slug);
-
-        // EXTRA: Cek di Database jika tidak ada di dummy
-        if (!$article) {
-            // Asumsi slug format: judul-berita-123 (id di belakang)
-            // Atau kita coba cari strict match jika kita simpan slug.
-            // Tapi karena slug generated, kita extract ID dari string.
-            try {
-                // Explode by dash, take last part
-                $parts = explode('-', $slug);
-                $potentialId = end($parts);
-                
-                if (is_numeric($potentialId)) {
-                    $dbItem = Article::with(['category', 'writer'])->find($potentialId);
-                    if ($dbItem) {
-                        // Re-verify slug construction matches roughly or just accept ID?
-                        // For looseness, we just accept ID match.
-                        
-                        $article = [
-                            'id' => 9000 + $dbItem->id,
-                            'title' => $dbItem->title,
-                            'slug' => $slug,
-                            'excerpt' => Str::limit(strip_tags($dbItem->content), 120),
-                            'category' => $dbItem->category->name ?? 'Uncategorized',
-                            'author' => $dbItem->writer->name ?? 'Admin',
-                            'date' => $dbItem->created_at->toIso8601String(),
-                            'image' => $dbItem->image ?? '/images/why-choose-us.png',
-                            'readingTime' => ceil(str_word_count(strip_tags($dbItem->content)) / 200) . ' menit',
-                            'body' => [ $dbItem->content ], // Structure as array for existing frontend compatibility?
-                            // Check Frontend: show.tsx likely iterates or displays direct.
-                            // Checking existing code below... logic is implicit.
-                            'references' => [],
-                            'views' => 0,
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                // ignore
-            }
-        }
-
-        // 3) 404 kalau tidak ketemu (biar siap produksi)
-        if (!$article) {
+        // Extract article ID from slug (format: title-slug-{id})
+        $parts = explode('-', $slug);
+        $potentialId = end($parts);
+        
+        if (!is_numeric($potentialId)) {
             abort(404);
         }
 
-        // 4) Kirim ke halaman React (Inertia)
+        $dbItem = Article::with(['category', 'writer'])->find($potentialId);
+        
+        if (!$dbItem) {
+            abort(404);
+        }
+
+        $article = [
+            'id' => $dbItem->id,
+            'title' => $dbItem->title,
+            'slug' => $slug,
+            'excerpt' => Str::limit(strip_tags($dbItem->content), 120),
+            'category' => $dbItem->category->name ?? 'Uncategorized',
+            'author' => $dbItem->writer->name ?? 'Admin',
+            'date' => $dbItem->created_at->toIso8601String(),
+            'image' => $dbItem->image ?? '/images/why-choose-us.png',
+            'readingTime' => ceil(str_word_count(strip_tags($dbItem->content)) / 200) . ' menit',
+            'body' => $dbItem->content,
+            'references' => $dbItem->references ?? [],
+            'views' => $dbItem->views_count ?? 0,
+        ];
+
         return Inertia::render('articles/show', [
             'navItems' => $this->navItems,
             'article'  => $article,

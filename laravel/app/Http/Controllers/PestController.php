@@ -2,49 +2,123 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Pest;
 use App\Models\PlantType;
 use Illuminate\Http\Request;
+use App\Models\PestCategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
 
 class PestController extends Controller
 {
-    public function userIndex() {
-        $pests = Pest::all();
+    public function userIndex(Request $request) {
+        $search = $request->query('search');
+        $category = $request->query('category');
+        $risk = $request->query('risk');
+
+        $pests = Pest::query()
+            ->when($search, function ($query, $search) {
+                $searchTerm = "%{$search}%";
+                return $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                      ->orWhere('scientific_name', 'like', $searchTerm);
+                });
+            })
+            ->when($category && $category !== 'Semua Kategori', function ($query) use ($category) {
+                return $query->where('category', $category);
+            })
+            ->when($risk && $risk !== 'Semua Risiko', function ($query) use ($risk) {
+                return $query->where('risk_level', $risk);
+            })
+            ->latest()
+            ->get();
+
+        $categories = PestCategory::all();
+        
         return Inertia::render('pest-info/index', [
-            'pests' => $pests
+            'pests' => $pests,
+            'categories' => $categories,
+            'filters' => [
+                'search' => $search,
+                'category' => $category,
+                'risk' => $risk
+            ]
+        ]);
+    }
+
+    public function userShow($slug) {
+        $pest = Pest::where('slug', $slug)->firstOrFail();
+        return Inertia::render('pest-info/detail', [
+            'pest' => $pest
         ]);
     }
 
     public function index(Request $request)
     {
-        $keyword = $request->query('keyword');
-        $pests = Pest::query()->when($keyword, function ($query, $keyword) {
-            $search_term = "%{$keyword}%";
-            return $query->where(function ($q) use ($search_term) {
-                $q->where('name', 'like', $search_term)
-                    ->orWhere('scientific_name', 'like', $search_term);
+        $search = $request->query('search');
+        $category = $request->query('category');
+        $risk = $request->query('risk');
+        $sortBy = $request->query('sort', 'latest');
+
+        $pests = Pest::query()
+            ->when($search, function ($query, $search) {
+                $searchTerm = "%{$search}%";
+                return $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                      ->orWhere('scientific_name', 'like', $searchTerm);
+                });
+            })
+            ->when($category && $category !== 'Semua Kategori', function ($query) use ($category) {
+                return $query->where('category', $category);
+            })
+            ->when($risk && $risk !== 'Semua Risiko', function ($query) use ($risk) {
+                return $query->where('risk_level', $risk);
             });
-        })->latest()->paginate(8);
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $pests->oldest();
+                break;
+            case 'name_asc':
+                $pests->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $pests->orderBy('name', 'desc');
+                break;
+            default:
+                $pests->latest();
+                break;
+        }
+
+        $pests = $pests->paginate(10);
+
+        $categories = PestCategory::all(); 
 
         return Inertia::render('admin/pest/index', [
-            'pests' => $pests
+            'pests' => $pests,
+            'categories' => $categories,
+            'filters' => [
+                'search' => $search,
+                'category' => $category,
+                'risk' => $risk,
+                'sort' => $sortBy
+            ]
         ]);
     }
 
     public function create()
     {
         return Inertia::render('admin/pest/create', [
-            'plants' => \App\Models\PlantType::all(),
+            'plants' => PlantType::all(),
+            'categories' => PestCategory::all()
         ]);
     }
 
     public function show(Request $request, Pest $pest)
     {
-        // $pest->load(['plantTypes', 'images']);
         return Inertia::render('admin/pest/show', [
             'pest' => $pest->load('plant_type'),
             'plants' => PlantType::all()
@@ -58,16 +132,23 @@ class PestController extends Controller
         try {
             $field = $request->validate([
                 'name' => 'required|string',
+                'slug' => 'nullable|string|unique:pests,slug',
                 'scientific_name' => 'required|string',
-                'description' => 'required|string',
-                'img_path' => 'image',
-                'slug' => 'string|nullable',
-                'plants' => 'array',
-                'plants*' => 'integer'
+                'description' => 'nullable|string',
+                'category' => 'required|string',
+                'risk_level' => 'required|in:rendah,sedang,tinggi',
+                'plants' => 'nullable|array',
+                'plants.*' => 'string',
+                'pencegahan' => 'nullable|array',
+                'pencegahan.*' => 'string',
+                'penanganan' => 'nullable|array',
+                'penanganan.*' => 'string',
+                'img_path' => 'nullable|image',
             ]);
 
+            // Auto-generate slug from name if not provided
             if (empty($field['slug'])) {
-                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid();
             }
 
             if($request->hasFile('img_path')) {
@@ -76,7 +157,6 @@ class PestController extends Controller
                 
                 $file->storeAs('pest', $file_name, 'public');
                 $field['img_path'] = $file_name;
-
             }
 
             $new_pest = Pest::create($field);
@@ -94,25 +174,29 @@ class PestController extends Controller
 
     public function update(Request $request, Pest $pest)
     {
-        
         DB::beginTransaction();
         
         try{
             $field = $request->validate([
                 'name' => 'required|string',
+                'slug' => 'nullable|string|unique:pests,slug,' . $pest->id,
                 'scientific_name' => 'required|string',
-                'description' => 'required|string',
-                'new_img' => 'image|nullable',
-                'old_img' => 'string|nullable',
-                'slug' => 'string|nullable',
-                'plants*' => 'integer',
-                'plants' => 'array'
+                'description' => 'nullable|string',
+                'category' => 'required|string',
+                'risk_level' => 'required|in:rendah,sedang,tinggi',
+                'plant' => 'nullable|array',
+                'plant.*' => 'string',
+                'pencegahan' => 'nullable|array',
+                'pencegahan.*' => 'string',
+                'penanganan' => 'nullable|array',
+                'penanganan.*' => 'string',
+                'new_img' => 'nullable|image',
+                'old_img' => 'nullable|string'
             ]);
 
-            $pest->plant_type()->sync($field['plants'] ?? []);
-            
+            // Auto-generate slug from name if not provided
             if (empty($field['slug'])) {
-                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid();
             }
             
             if($request->hasFile('new_img')){
@@ -125,74 +209,22 @@ class PestController extends Controller
 
             $pest->update([
                 'name' => $field['name'],
+                'slug' => $field['slug'],
                 'scientific_name' => $field['scientific_name'],
-                'description' => $field['description'],
-                // 'category' => $field['category'],
-                // 'risk_level' => $field['risk_level'],
-                'slug' => $field['slug']
+                'description' => $field['description'] ?? null,
+                'category' => $field['category'],
+                'risk_level' => $field['risk_level'],
+                'plant' => $field['plant'] ?? null,
+                'pencegahan' => $field['pencegahan'] ?? null,
+                'penanganan' => $field['penanganan'] ?? null,
+                'img_path' => $field['img_path'] ?? $pest->img_path,
             ]);
-
-            // // Menangani gambar baru
-            // if ($request->hasFile('images')) {
-            //     $files = $request->file('images');
-            //     $imagesData = [];
-                
-            //     foreach ($files as $file) {
-            //         $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-            //         $file->storeAs('images', $filename, 'public');
-
-            //         $imagesData[] = [
-            //             'pest_id' => $pest->id,
-            //             'filename' => $filename 
-            //         ];
-            //     }
-                
-            //     if (!empty($imagesData)) {
-            //         PestImg::insert($imagesData);
-            //     }
-            // }
-
-            // // Menangani penghapusan gambar
-            // if (!empty($request->deleted_images)) {
-            //     $imagesToDelete = PestImg::whereIn('filename', $request->deleted_images)
-            //                             ->where('pest_id', $pest->id)
-            //                             ->get();
-
-            //     foreach ($imagesToDelete as $img) {
-            //         Storage::disk('public')->delete('images/' . $img->filename);
-            //         $img->delete();
-            //     }
-            // }
-
-            // // Sync Plant Types
-            // if (isset($request->plant_types)) {
-            //     $plantIds = [];
-            //     foreach ($request->plant_types as $plantName) {
-            //         $plant = \App\Models\PlantType::firstOrCreate(
-            //             ['name' => $plantName],
-            //             ['scientific_name' => '-', 'detail' => '-']
-            //         );
-            //         $plantIds[] = $plant->id;
-            //     }
-            //     $pest->plantTypes()->sync($plantIds);
-            // }
-
-            // // Update main image_path if needed
-            // $firstImage = $pest->images()->first();
-            // if ($firstImage) {
-            //     $pest->update(['image_path' => 'images/' . $firstImage->filename]);
-            // } else {
-            //      $pest->update(['image_path' => null]);
-            // }
 
             DB::commit();
             return redirect('admin/pest')->with('success', 'Data hama berhasil diperbarui!');
 
         }catch(\Exception $e) {
             DB::rollBack();
-            return [
-                'message' => $e->getMessage()
-            ];
 
             return redirect('admin/pest')->with('error', 'Error when updating pest: ' . $e->getMessage());
         }
@@ -205,8 +237,8 @@ class PestController extends Controller
         try{
             $pest->plantTypes()->detach();
             
-            if ($pest->image_path) {
-                Storage::disk('public')->delete($pest->image_path);
+            if ($pest->img_path) {
+                Storage::disk('public')->delete('pest/' . $pest->img_path);
             }
             $pest->delete();
             DB::commit();

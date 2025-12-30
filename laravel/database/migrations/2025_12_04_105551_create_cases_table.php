@@ -14,17 +14,24 @@ return new class extends Migration
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
 
+            // User relation
+            $table->unsignedBigInteger('user_id')->index();
+
             // Relasi ke riwayat deteksi
             $table->unsignedBigInteger('detection_history_id');
 
             // Informasi dasar tanaman / hama dari hasil deteksi
             $table->string('plant_name')->nullable();
             $table->string('pest_name')->nullable();
+            $table->string('label')->nullable();
+            $table->float('confidence')->nullable();
+            $table->float('entropy')->nullable();
             $table->string('image_path')->nullable();
 
             
             // Rekomendasi utama dari sistem
             $table->text('recommended_treatment')->nullable();
+            $table->json('ai_summary')->nullable();
 
             // Status case
             $table->string('status', 50);

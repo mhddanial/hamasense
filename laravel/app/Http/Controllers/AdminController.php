@@ -4,24 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\User;
+use App\Models\DetectionHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AdminController extends Controller
 {
-    public function dashboard () 
+    public function dashboard(Request $request)
     {
-        $detection_total = 1;
-        $active_user = User::count();
-        $article_total = Article::count();
-        $ai_ccuracy = 1;
+        $year = $request->input('year', date('Y'));
+
+        $detectionTrend = DetectionHistory::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->whereYear('created_at', $year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->month => $item->count];
+            });
+
+        // Ensure all 12 months are present
+        $monthlyData = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyData[] = [
+                'month' => date('M', mktime(0, 0, 0, $i, 1)),
+                'value' => $detectionTrend->get($i, 0)
+            ];
+        }
 
         return Inertia::render('admin/dashboard', [
-            'detection_total' => $detection_total,
-            'active_user' => $active_user,
-            'article_total' => $article_total,
-            'ai_accuracy' => $ai_ccuracy
+            'detectionTrend' => $monthlyData,
+            'selectedYear' => (int)$year
         ]);
     }
 

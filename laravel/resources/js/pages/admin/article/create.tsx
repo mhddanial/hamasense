@@ -3,25 +3,32 @@ import { Category } from '@/types/admin';
 import { PageProps } from '@inertiajs/core';
 import { Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
-import { FolderOpen, Paperclip, Upload } from 'lucide-react';
+import { FolderOpen, Paperclip, Upload, Plus, Trash2 } from 'lucide-react';
+import { Editor } from '@/components/blocks/editor-00/editor';
 
+type Reference = {
+    source_name: string;
+    url: string;
+};
 
 interface Props extends PageProps {
     categories: Category[];
 }
 
 
-export default function BuatArtikel({categories}: Props) {
+export default function BuatArtikel({ categories }: Props) {
     const { data, setData, post, processing, errors } = useForm<{
         title: string;
         category_id: number;
         content: string;
         image: File | null;
+        references: Reference[];
     }>({
         title: '',
         category_id: 0,
         content: '',
         image: null,
+        references: [],
     });
 
     const [uploadedImage, setUploadedImage] = useState('');
@@ -35,8 +42,14 @@ export default function BuatArtikel({categories}: Props) {
         post('/admin/article', {
             forceFormData: true,
             onError: (errors) => {
-                console.log(errors);
-                alert('Gagal menyimpan artikel. Periksa input Anda.');
+                console.log('Validation errors:', errors);
+                // Show first error message if available
+                const firstError = Object.values(errors)[0];
+                if (firstError) {
+                    alert(`Gagal menyimpan artikel: ${firstError}`);
+                } else {
+                    alert('Gagal menyimpan artikel. Periksa input Anda.');
+                }
             }
         });
     };
@@ -47,18 +60,39 @@ export default function BuatArtikel({categories}: Props) {
             category_id: 0,
             content: '',
             image: null,
+            references: [],
         });
 
         setUploadedImage('');
     };
 
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
 
         if (file) {
             setData('image', file);
             setUploadedImage(URL.createObjectURL(file));
         }
+    };
+
+    const addReference = () => {
+        setData('references', [...data.references, { source_name: '', url: '' }]);
+    };
+
+    const removeReference = (index: number) => {
+        const newRefs = data.references.filter((_, i) => i !== index);
+        setData('references', newRefs);
+    };
+
+    const updateReference = (index: number, field: keyof Reference, value: string) => {
+        const newRefs = [...data.references];
+        newRefs[index] = { ...newRefs[index], [field]: value };
+        setData('references', newRefs);
+    };
+
+    // Handle rich text editor content change
+    const handleContentChange = (html: string) => {
+        setData('content', html);
     };
 
     return (
@@ -82,7 +116,11 @@ export default function BuatArtikel({categories}: Props) {
                                     className="w-full h-80 object-cover rounded-lg mb-4"
                                 />
                                 <button
-                                    onClick={() => setUploadedImage('')}
+                                    type="button"
+                                    onClick={() => {
+                                        setData('image', null);
+                                        setUploadedImage('');
+                                    }}
                                     className="text-sm text-red-500 hover:text-red-700"
                                 >
                                     Hapus gambar
@@ -99,7 +137,7 @@ export default function BuatArtikel({categories}: Props) {
                                 </p>
                             </div>
                         )}
-                    
+
                         <label className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors mx-auto">
                             <Paperclip className="w-5 h-5" />
                             <span className="font-medium">Pilih File</span>
@@ -115,7 +153,7 @@ export default function BuatArtikel({categories}: Props) {
                     </div>
 
                     {/* Form */}
-                    <div className="space-y-6">
+                    <div className="space-y-6 mt-6">
                         <div className="grid grid-cols-2 gap-6">
                             {/* Title */}
                             <div>
@@ -152,36 +190,83 @@ export default function BuatArtikel({categories}: Props) {
                                     ))}
                                 </select>
                             </div>
-                            {errors.image && <div className="text-red-500 text-sm mt-1 text-center">{errors.image}</div>}
                         </div>
 
-                        {/* Content */}
+                        {/* Content - Rich Text Editor */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Konten Artikel
                             </label>
-                            <textarea
-                                name="content"
-                                value={data.content}
-                                onChange={(e) => setData('content', e.target.value)}
-                                placeholder="Tulis konten artikel Anda di sini..."
-                                rows={16}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                            >
-                                {data.content}
-                            </textarea>
+                            <Editor onHtmlChange={handleContentChange} />
                             {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
+                        </div>
+
+                        {/* References */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Referensi Sumber
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={addReference}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Tambah Referensi
+                                </button>
+                            </div>
+
+                            {data.references.length === 0 && (
+                                <p className="text-sm text-gray-500 italic">Belum ada referensi. Klik tombol di atas untuk menambah.</p>
+                            )}
+
+                            <div className="space-y-3">
+                                {data.references.map((ref, index) => (
+                                    <div key={index} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div className="flex-1 grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Nama Sumber</label>
+                                                <input
+                                                    type="text"
+                                                    value={ref.source_name}
+                                                    onChange={(e) => updateReference(index, 'source_name', e.target.value)}
+                                                    placeholder="Contoh: FAO, Jurnal Pertanian"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">URL</label>
+                                                <input
+                                                    type="url"
+                                                    value={ref.url}
+                                                    onChange={(e) => updateReference(index, 'url', e.target.value)}
+                                                    placeholder="https://..."
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeReference(index)}
+                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex gap-4 pt-2">
-                            <button 
+                            <button
                                 onClick={handleCancel}
                                 className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                             >
                                 Batal
                             </button>
-                            <button 
+                            <button
                                 onClick={handleSubmit}
                                 disabled={processing}
                                 className={`px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -197,7 +282,7 @@ export default function BuatArtikel({categories}: Props) {
 }
 
 BuatArtikel.layout = (page: React.ReactElement) => (
-  <AdminLayout page_title='article'>
-    {page}
-  </AdminLayout>
+    <AdminLayout>
+        {page}
+    </AdminLayout>
 );

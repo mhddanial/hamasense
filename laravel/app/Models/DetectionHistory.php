@@ -20,7 +20,7 @@ class DetectionHistory extends Model
     ];
 
     protected $casts = [
-    'abstain_reasons' => 'array',
+        'abstain_reasons' => 'array',
         'info' => 'array',
         'should_abstain' => 'boolean'
     ];

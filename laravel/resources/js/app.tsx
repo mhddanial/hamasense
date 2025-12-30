@@ -1,5 +1,4 @@
 import '../css/app.css';
-import { Toaster } from 'sonner';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -24,14 +23,9 @@ createInertiaApp<SharedData>({
                 ...props.initialPage.props.ziggy,
                 location: new URL(props.initialPage.props.ziggy.location),
             });
-            const root = createRoot(el);
+        const root = createRoot(el);
 
-            root.render(
-                <>
-                    <Toaster position="top-center" />
-                    <App {...props} />
-                </>
-            );
+        root.render(<App {...props} />);
     },
     progress: {
         color: '#4B5563',

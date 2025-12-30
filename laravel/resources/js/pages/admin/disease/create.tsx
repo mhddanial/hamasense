@@ -8,43 +8,47 @@ import { Plant } from '@/types/admin';
 import { ExampleCombobox } from '@/components/admin/Combobox';
 
 interface Props extends PageProps {
-    plants: Plant[]
+  plants: Plant[]
 }
 
-export default function TambahkanTanaman({ plants }: Props) {
-  
-  console.log(plants);
+const SEVERITY_LEVELS = [
+  { value: 'rendah', label: 'Rendah' },
+  { value: 'sedang', label: 'Sedang' },
+  { value: 'tinggi', label: 'Tinggi' },
+];
 
-  const { data, setData, post } = useForm({
-    name:'',
+export default function TambahkanPenyakit({ plants }: Props) {
+
+  const { data, setData, post, processing, errors } = useForm({
+    label: '',
+    name: '',
     description: '',
-    cause: '',
-    solution: '',
     severity_level: '',
-    img_path: null,
+    img_path: null as File | null,
     plant_type_id: 0,
   });
-  
+
   const [uploadedImage, setUploadedImage] = useState('');
   const [ disableCreate, setDisableCreate ] = useState(false);
 
   const create = async () => {
-    setDisableCreate(true);
-    post('/admin/disease/');
+    post('/admin/disease/', {
+      forceFormData: true,
+    });
   }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    setData('img_path', file);
-
-    setUploadedImage(URL.createObjectURL(file));
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setData('img_path', file);
+      setUploadedImage(URL.createObjectURL(file));
+    }
   };
 
   return (
-  <>
+    <>
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-
 
         {/* Content */}
         <div className="p-8 text-gray-900 ">
@@ -56,16 +60,20 @@ export default function TambahkanTanaman({ plants }: Props) {
               <div>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
                   <h3 className="text-lg font-semibold mb-6">Upload Foto</h3>
-                  
+
                   {uploadedImage ? (
                     <div className="mb-4">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Preview" 
+                      <img
+                        src={uploadedImage}
+                        alt="Preview"
                         className="w-full h-80 object-cover rounded-lg mb-4"
                       />
                       <button
-                        onClick={() => setUploadedImage('')}
+                        type="button"
+                        onClick={() => {
+                          setData('img_path', null);
+                          setUploadedImage('');
+                        }}
                         className="text-sm text-red-500 hover:text-red-700"
                       >
                         Hapus gambar
@@ -82,7 +90,7 @@ export default function TambahkanTanaman({ plants }: Props) {
                       </p>
                     </div>
                   )}
-                  
+
                   <label className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors mx-auto">
                     <Paperclip className="w-5 h-5" />
                     <span className="font-medium">Pilih File</span>
@@ -93,6 +101,7 @@ export default function TambahkanTanaman({ plants }: Props) {
                       className="hidden"
                     />
                   </label>
+                  {errors.img_path && <div className="text-red-500 text-sm mt-2">{errors.img_path}</div>}
                 </div>
               </div>
 
@@ -100,94 +109,102 @@ export default function TambahkanTanaman({ plants }: Props) {
               {/* Right Column - Form */}
               <div>
                 <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Penyakit
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value) }
-                        placeholder="Tomat"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Penyebab
-                      </label>
-                      <input
-                        type="text"
-                        name="cause"
-                        value={data.cause}
-                        onChange={(e) => setData('cause', e.target.value)}
-                        placeholder="Solanum lycopersicum"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Solusi
-                      </label>
-                      <input
-                        type="text"
-                        name="solution"
-                        value={data.solution}
-                        onChange={(e) => setData('solution', e.target.value)}
-                        placeholder="Solanum lycopersicum"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
-                      />
-                    </div>                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Severity Level
-                      </label>
-                      <input
-                        type="number"
-                        name="severity_level"
-                        value={data.severity_level}
-                        onChange={(e) => setData('severity_level', e.target.value)}
-                        placeholder="Solanum lycopersicum"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
-                      />
-                    </div>
-                    <div>
-
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tanaman Terkait
-                      </label>
-                          <ExampleCombobox value={data['plant_type_id']} setValue={setData} keyValue={'plant_type_id'} items={plants.map(plant => ({value: String(plant.id), label: plant.name}))} onSelect={(value : any) => {setData('plant_type_id', value)}}/>
-                      
-                    </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
+                      Label (ID Unik)
+                    </label>
+                    <input
+                      type="text"
+                      name="label"
+                      value={data.label}
+                      onChange={(e) => setData('label', e.target.value)}
+                      placeholder="late_blight"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    {errors.label && <div className="text-red-500 text-sm mt-1">{errors.label}</div>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nama Penyakit
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={data.name}
+                      onChange={(e) => setData('name', e.target.value)}
+                      placeholder="Busuk Daun"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tingkat Keparahan
+                    </label>
+                    <select
+                      name="severity_level"
+                      value={data.severity_level}
+                      onChange={(e) => setData('severity_level', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    >
+                      <option value="">Pilih tingkat keparahan...</option>
+                      {SEVERITY_LEVELS.map((level) => (
+                        <option key={level.value} value={level.value}>
+                          {level.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.severity_level && <div className="text-red-500 text-sm mt-1">{errors.severity_level}</div>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Jenis Tanaman
+                    </label>
+                    <select
+                      name="plant_type_id"
+                      value={data.plant_type_id}
+                      onChange={(e) => setData('plant_type_id', +e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    >
+                      <option value="">Pilih jenis tanaman...</option>
+                      {plants.map((plant) => (
+                        <option key={plant.id} value={plant.id}>
+                          {plant.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.plant_type_id && <div className="text-red-500 text-sm mt-1">{errors.plant_type_id}</div>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deskripsi
                     </label>
                     <textarea
-                      name="detail"
+                      name="description"
                       value={data.description}
                       onChange={(e) => setData('description', e.target.value)}
-                      placeholder="Tomat (Solanum lycopersicum) adalah buah yang sering digunakan sebagai sayuran dalam masakan. Tanaman ini berasal dari Amerika Selatan dan termasuk keluarga Solanaceae."
-                      rows={8}
+                      placeholder="Deskripsi singkat tentang penyakit ini..."
+                      rows={6}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                     ></textarea>
+                    {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                   </div>
 
                   <div className="flex gap-4 pt-2">
-                    <button 
-                    //   onClick={handleCancel}
+                    <button
+                      type="button"
+                      onClick={() => window.history.back()}
                       className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                     >
                       Batal
                     </button>
-                    <button 
-                      disabled={disableCreate}
+                    <button
                       onClick={create}
                       type='button'
-                      className={`px-8 py-3 ${ disableCreate ? 'bg-gray-300 text-gray-900' : 'bg-teal-600 text-white hover:bg-teal-700' }  rounded-lg  transition-colors font-medium`} 
+                      disabled={processing}
+                      className={`px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      Tambahkan
+                      {processing ? 'Menyimpan...' : 'Tambahkan'}
                     </button>
                   </div>
                 </div>
@@ -196,12 +213,12 @@ export default function TambahkanTanaman({ plants }: Props) {
           </div>
         </div>
       </div>
-</>
+    </>
   );
 }
 
-TambahkanTanaman.layout = (page: React.ReactElement) => (
-  <AdminLayout page_title='disease'>
+TambahkanPenyakit.layout = (page: React.ReactElement) => (
+  <AdminLayout>
     {page}
   </AdminLayout>
 )

@@ -15,15 +15,40 @@ class DiseaseController extends Controller
     public function index(Request $request)
     {
         $keyword = $request->query('keyword');
-        $diseases = Disease::query()->when($keyword, function ($query, $keyword) {
-            $search_term = "%$keyword%";
-            return $query->where(function ($q) use ($search_term) {
-                $q->where('name', 'like', $search_term);
+        $sortBy = $request->query('sort', 'latest');
+
+        $diseases = Disease::query()
+            ->when($keyword, function ($query, $keyword) {
+                $search_term = "%$keyword%";
+                return $query->where(function ($q) use ($search_term) {
+                    $q->where('name', 'like', $search_term);
+                });
             });
-        })->latest()->paginate(8);
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $diseases->oldest();
+                break;
+            case 'name_asc':
+                $diseases->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $diseases->orderBy('name', 'desc');
+                break;
+            default:
+                $diseases->latest();
+                break;
+        }
+
+        $diseases = $diseases->paginate(10);
 
         return Inertia::render('admin/disease/index', [
             'diseases' => $diseases,
+            'filters' => [
+                'keyword' => $keyword,
+                'sort' => $sortBy
+            ]
         ]);
     }
 
@@ -60,11 +85,10 @@ class DiseaseController extends Controller
 
         try {
             $field = $request->validate([
+                'label' => 'required|string|unique:diseases,label',
                 'name' => 'required|string',
-                'cause' => 'required|string',
-                'description' => 'required|string',
-                'solution' => 'required|string',
-                'severity_level' => 'required|numeric',
+                'description' => 'nullable|string',
+                'severity_level' => 'required|in:rendah,sedang,tinggi',
                 'plant_type_id' => 'required|numeric',
                 'img_path' => 'image|nullable',
                 // 'plant_type_id' => 'required|numeric',
@@ -113,11 +137,10 @@ class DiseaseController extends Controller
 
         try{
             $field = $request->validate([
+                'label' => 'required|string|unique:diseases,label,' . $disease->id,
                 'name' => 'required|string',
-                'cause' => 'required|string',
-                'description' => 'required|string',
-                'solution' => 'required|string',
-                'severity_level' => 'required|numeric',
+                'description' => 'nullable|string',
+                'severity_level' => 'required|in:rendah,sedang,tinggi',
                 'plant_type_id' => 'required|numeric',
                 'new_img' => 'image|nullable',
                 'slug' => 'string|nullable'

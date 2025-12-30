@@ -15,20 +15,42 @@ class PlantTypeController extends Controller
 {
     public function index(Request $request)
     {
-        
         $keyword = $request->query('keyword');
+        $sortBy = $request->query('sort', 'latest');
         
-        $plants = PlantType::query()->when($keyword, function ($query, $keyword) {
-            $search_term = "%{$keyword}%";
-            return $query->where(function ($q) use ($search_term) {
-                $q->where('name', 'like', $search_term)
-                    ->orWhere('scientific_name',  'like', $search_term);
+        $plants = PlantType::query()
+            ->when($keyword, function ($query, $keyword) {
+                $search_term = "{$keyword}%";
+                return $query->where(function ($q) use ($search_term) {
+                    $q->where('name', 'like', $search_term)
+                        ->orWhere('scientific_name',  'like', $search_term);
+                });
             });
-        })->latest()->paginate(8);
 
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $plants->oldest();
+                break;
+            case 'name_asc':
+                $plants->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $plants->orderBy('name', 'desc');
+                break;
+            default:
+                $plants->latest();
+                break;
+        }
+
+        $plants = $plants->paginate(10);
 
         return Inertia::render('admin/plant/index', [
-            'plants' => $plants
+            'plants' => $plants,
+            'filters' => [
+                'keyword' => $keyword,
+                'sort' => $sortBy
+            ]
         ]);
     }
 

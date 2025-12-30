@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('diseases', function (Blueprint $table) {
             $table->id();
+            $table->string('label')->unique();
             $table->string('name');
-            $table->text('cause');
-            $table->text('solution');
-            $table->integer('severity_level');
+            $table->string('description')->nullable();
+            $table->enum('severity_level', ['rendah', 'sedang', 'tinggi']);
+            $table->string('img_path')->nullable();
             $table->foreignId('plant_type_id')->constrained(
                 table:'plant_types',
                 column:'id'

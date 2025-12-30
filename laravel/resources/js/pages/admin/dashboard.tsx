@@ -1,12 +1,24 @@
-import { Users, Bug, FileText} from 'lucide-react';
+import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
+import { Home, Users, Sprout, Bug, FileText, MessageSquare, Settings } from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { usePage } from '@inertiajs/react';
 
+interface DashboardProps {
+  detectionTrend: { month: string; value: number }[];
+  selectedYear: number;
+}
 
-
-export default function HamaSenseDashboard() {
+export default function HamaSenseDashboard({ detectionTrend = [], selectedYear }: DashboardProps) {
+  const [activeMenu, setActiveMenu] = useState('Dashboard');
 
   const { detection_total, active_user, article_total, ai_accuracy } = usePage().props;
+
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    router.get(route('admin.dashboard'), { year: e.target.value }, { preserveState: true, preserveScroll: true });
+  };
 
 
   const statsCards = [
@@ -72,11 +84,22 @@ export default function HamaSenseDashboard() {
 
           {/* Chart Section */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold mb-6">Tren Deteksi Hama</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Tren Deteksi Hama</h2>
+              <select 
+                value={selectedYear} 
+                onChange={handleYearChange}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
             <div className="h-96">
-              {/* <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={chartData}
+                  data={detectionTrend}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -88,8 +111,8 @@ export default function HamaSenseDashboard() {
                   <YAxis 
                     tick={{ fill: '#666', fontSize: 12 }}
                     axisLine={{ stroke: '#e0e0e0' }}
-                    domain={[0, 1000]}
-                    ticks={[100, 200, 300, 400, 500, 600, 700, 800, 900]}
+                    domain={[0, 100]}
+                    ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -108,7 +131,7 @@ export default function HamaSenseDashboard() {
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
-              </ResponsiveContainer> */}
+              </ResponsiveContainer>
             </div>
           </div>
         </div>

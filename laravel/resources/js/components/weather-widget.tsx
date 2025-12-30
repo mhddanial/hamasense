@@ -1,7 +1,7 @@
 import { router } from "@inertiajs/react";
-import { 
-    CloudRain, Droplets, Wind, MapPin, 
-    AlertTriangle, RefreshCw, HandHeart, Navigation 
+import {
+    CloudRain, Droplets, Wind, MapPin,
+    AlertTriangle, RefreshCw, HandHeart, Navigation
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -50,7 +50,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                 // --- DEBUGGING START ---
                 // Menampilkan data mentah dari GPS Browser untuk verifikasi
                 const { latitude, longitude, accuracy } = position.coords;
-                console.log("📍 GPS Raw Data:", position); 
+                console.log("📍 GPS Raw Data:", position);
                 alert(`✅ GPS Berhasil Didapat!\n\nLatitude: ${latitude}\nLongitude: ${longitude}\nAkurasi: +/- ${Math.round(accuracy)} meter\n\nData ini akan dikirim ke server untuk cuaca presisi.`);
                 // --- DEBUGGING END ---
 
@@ -67,9 +67,9 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                 // GAGAL
                 console.error("Gagal ambil lokasi GPS:", error);
                 setGettingLocation(false);
-                
+
                 let errorMessage = "Gagal mendeteksi lokasi.";
-                switch(error.code) {
+                switch (error.code) {
                     case error.PERMISSION_DENIED:
                         errorMessage = "Izin lokasi ditolak. Mohon aktifkan izin lokasi di browser.";
                         break;
@@ -77,7 +77,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                         errorMessage = "Informasi lokasi tidak tersedia.";
                         break;
                     case error.TIMEOUT:
-                        errorMessage = "Waktu permintaan lokasi habis.";
+                        errorMessage = "Gagal memuat cuaca.";
                         break;
                 }
                 alert(errorMessage);
@@ -98,10 +98,10 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                     <CloudRain className="h-12 w-12 text-slate-300 mb-3" />
                     <p className="text-sm font-medium text-slate-500">Data cuaca tidak tersedia.</p>
                     <div className="flex gap-2 mt-4">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={handleRefresh} 
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRefresh}
                             disabled={isLoading}
                             className="bg-white hover:bg-slate-50 text-slate-700 border-slate-300 gap-2"
                         >
@@ -141,7 +141,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                                 <MapPin className="h-4 w-4 text-emerald-600" />
                                 {weather.city}
                             </div>
-                            <button 
+                            <button
                                 onClick={getPreciseLocation}
                                 disabled={gettingLocation}
                                 className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-emerald-600 transition-colors w-fit"
@@ -152,9 +152,9 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                             </button>
                         </div>
 
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-100/50"
                             onClick={handleRefresh}
                             disabled={isLoading}
@@ -168,9 +168,9 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                     <div className="flex items-center gap-4 mt-6">
                         <div className="relative">
                             <div className="absolute inset-0 bg-yellow-200/20 blur-xl rounded-full scale-150"></div>
-                            <img 
-                                src={weather.icon_url} 
-                                alt={weather.description} 
+                            <img
+                                src={weather.icon_url}
+                                alt={weather.description}
                                 className="h-20 w-20 drop-shadow-sm relative z-10 scale-110"
                             />
                         </div>
@@ -186,7 +186,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Grid Detail (desktop only label) */}
                     <div className="mt-2 grid grid-cols-2 gap-3">
                         <div className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">
@@ -202,7 +202,7 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                                 <p className="text-sm font-bold text-slate-700">{weather.humidity}%</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">                            
+                        <div className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">
                             <div className="p-1.5 bg-slate-100 text-slate-500 rounded-lg">
                                 <Wind className="h-4 w-4" />
                             </div>
@@ -244,8 +244,8 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                                 {weather.risk_level === "high"
                                     ? "RISIKO TINGGI"
                                     : weather.risk_level === "medium"
-                                    ? "WASPADA"
-                                    : "AMAN"}
+                                        ? "WASPADA"
+                                        : "AMAN"}
                             </span>
                         </AlertTitle>
 

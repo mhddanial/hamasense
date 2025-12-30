@@ -13,6 +13,7 @@ class Article extends Model
         'writer_id', 
         'category_id',
         'image',
+        'references',
         // 'tags',
         // 'summary',
         // 'status',
@@ -22,6 +23,7 @@ class Article extends Model
     ];
 
     protected $casts = [
+        'references' => 'array',
         // 'tags' => 'array',
         // 'published_at' => 'datetime',
     ];

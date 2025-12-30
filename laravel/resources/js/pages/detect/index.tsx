@@ -117,6 +117,14 @@ export default function DetectPage() {
       return;
     }
 
+    // Validate file size (max 2MB = 2048KB)
+    const maxSizeKB = 2048;
+    const fileSizeKB = selectedFile.size / 1024;
+    if (fileSizeKB > maxSizeKB) {
+      alert(`Ukuran file terlalu besar (${(fileSizeKB / 1024).toFixed(2)} MB). Maksimal ${maxSizeKB / 1024} MB.`);
+      return;
+    }
+
     // bersihin URL lama
     if (originalPreviewUrl) URL.revokeObjectURL(originalPreviewUrl);
     if (previewUrl && previewUrl !== originalPreviewUrl) {
@@ -268,14 +276,14 @@ export default function DetectPage() {
         setIsAnalyzing(false);
       },
       onProgress: (progressEvent) => {
-      if (typeof progressEvent?.percentage === "number") {
-        setProgress(progressEvent.percentage);
+        if (typeof progressEvent?.percentage === "number") {
+          setProgress(progressEvent.percentage);
 
-        if (progressEvent.percentage >= 100) {
-          setIsAnalyzing(true);
+          if (progressEvent.percentage >= 100) {
+            setIsAnalyzing(true);
+          }
         }
-      }
-    },
+      },
       onSuccess: () => {
         finishAnalyze(startTime);
       },
@@ -284,7 +292,7 @@ export default function DetectPage() {
         finishAnalyze(startTime);
         alert(
           "Gagal mendeteksi. " +
-            (errors.image || errors.system || errors.api || "Terjadi kesalahan.")
+          (errors.image || errors.system || errors.api || "Terjadi kesalahan.")
         );
       },
       onFinish: () => {
@@ -320,10 +328,10 @@ export default function DetectPage() {
       // Tampilkan loading sebentar jika perlu, atau langsung proses
       const response = await fetch(url);
       const blob = await response.blob();
-      
+
       // Buat File object dari Blob (meniru perilaku input type="file")
       const file = new File([blob], filename, { type: blob.type });
-      
+
       // Reuse logic yang sudah ada!
       handleFileSelected(file);
     } catch (error) {
@@ -608,12 +616,12 @@ export default function DetectPage() {
                           {sample.label}
                         </p>
                       </div>
-                      
+
                       {/* Loading overlay saat user klik sample ini */}
                       {processing && (
-                          <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                            <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
-                          </div>
+                        <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+                          <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
+                        </div>
                       )}
                     </button>
                   ))}
@@ -691,7 +699,7 @@ export default function DetectPage() {
                   <Badge variant="outline">PNG</Badge>
                   <Badge variant="outline">WEBP</Badge>
                 </div>
-                <p>Ukuran maksimal: 10 MB per gambar.</p>
+                <p>Ukuran maksimal: 2 MB per gambar.</p>
                 <div className="text-[11px]">
                   <p>
                     Gambar yang terlalu kecil atau pecah dapat menurunkan akurasi

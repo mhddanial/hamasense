@@ -10,14 +10,18 @@ import { cn } from "@/lib/utils";
 interface PestCardItemProps {
     pest: Pest;
     getRiskColor: (level: string) => string;
+    getRiskLabel: (level: string) => string;
 }
 
-export default function PestCardItem({ pest, getRiskColor }: PestCardItemProps) {
+export default function PestCardItem({ pest, getRiskColor, getRiskLabel }: PestCardItemProps) {
     const [isLoaded, setIsLoaded] = useState(false);
+
+    // Build image URL
+    const imageUrl = pest.img_path ? `/storage/pest/${pest.img_path}` : null;
 
     return (
         <Link
-            href={route("pest.user.show", pest.id)}
+            href={route("pest.user.show", pest.slug)}
             className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
         >
             {/* Image Wrapper */}
@@ -27,10 +31,9 @@ export default function PestCardItem({ pest, getRiskColor }: PestCardItemProps) 
                         <Skeleton className="h-full w-full" />
                     </div>
                 )}
-
-                {pest.image_path ? (
+                {imageUrl ? (
                     <img
-                        src={`${pest.image_path}`}
+                        src={imageUrl}
                         alt={pest.name}
                         className={cn(
                             "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
@@ -69,12 +72,12 @@ export default function PestCardItem({ pest, getRiskColor }: PestCardItemProps) 
                     </p>
                 </div>
 
-                {/* Plant Types */}
+                {/* Plant Types - use plant array */}
                 <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
                     <Sprout className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     <span className="line-clamp-1">
-                        {pest.plant_types && pest.plant_types.length > 0
-                            ? pest.plant_types.map((p: any) => p.name).join(", ")
+                        {pest.plant && pest.plant.length > 0
+                            ? pest.plant.join(", ")
                             : "Umum"}
                     </span>
                 </div>
@@ -85,7 +88,7 @@ export default function PestCardItem({ pest, getRiskColor }: PestCardItemProps) 
                         variant="outline"
                         className={`${getRiskColor(pest.risk_level)} border-0`}
                     >
-                        {pest.risk_level}
+                        {getRiskLabel(pest.risk_level)}
                     </Badge>
 
                     <span className="inline-flex items-center justify-center rounded-full p-1 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">

@@ -2,10 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,15 +11,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::firstOrCreate(
-            [
-                'name' => 'gg',
-                'email' => 'test@example.com',
-                'role' => 'admin',
-                'password' => Hash::make('password'),
-            ]
-        );
+        $this->call([
+            // Base tables (no foreign key dependencies)
+            UserSeeder::class,
+            PlantTypeSeeder::class,
+            ArticleCategorySeeder::class,
+            
+            // Tables with foreign key dependencies
+            DiseaseSeeder::class,      // Depends on PlantType
+            ArticleSeeder::class,       // Depends on User and ArticleCategory
+        ]);
     }
 }

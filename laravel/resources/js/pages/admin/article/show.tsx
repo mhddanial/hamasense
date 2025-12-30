@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { PageProps } from '@inertiajs/core';
-import { Input } from "@/components/ui/input"; 
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Paperclip, Upload } from 'lucide-react';
+import { Paperclip, Upload, Plus, Trash2 } from 'lucide-react';
 import { Category, Article } from '@/types/admin';
 import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
+import { Editor } from '@/components/blocks/editor-00/editor';
 
+type Reference = {
+  source_name: string;
+  url: string;
+};
 
 interface Props extends PageProps {
   article: Article;
@@ -18,40 +23,55 @@ interface Props extends PageProps {
 
 
 export default function EditArtikel({ article, categories, articles }: Props) {
-  const [ uploadedImage, setUploadedImage ] = useState(article.image || '');
-  const [ updateModal, setUpdateModal ] = useState(false);
-  const [ deleteModal, setDeleteModal ] = useState(false);
+  // Initialize uploadedImage with the article's existing image URL
+  const [uploadedImage, setUploadedImage] = useState<string>(
+    typeof article.image === 'string' ? article.image : ''
+  );
+  const [updateModal, setUpdateModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   const { data, setData, delete: destroy, errors } = useForm({
     'image': article.image as string | File | null,
     'title': article.title,
-    'category_id': article.category_id, 
+    'category_id': article.category_id,
     'related_article_ids': article.related_article_ids || [],
     'content': article.content,
     'slug': article.slug,
-    // 'tags': article.tags,
-    // 'published_at': article.published_at,
-    // 'estimated_read_time': article.estimated_read_time,
-    // 'summary': article.summary,
+    'references': (article.references || []) as Reference[],
   });
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setData('image', file);
       setUploadedImage(URL.createObjectURL(file));
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement| HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { value, name } = e.target;
     setData(name as any, value);
   };
 
-  // const goToManageCategories = () => {
-  //   alert('Navigasi ke halaman Kelola Kategori Artikel');
-  //   // Router navigation would go here
-  // };
+  const addReference = () => {
+    setData('references', [...data.references, { source_name: '', url: '' }]);
+  };
+
+  const removeReference = (index: number) => {
+    const newRefs = data.references.filter((_, i) => i !== index);
+    setData('references', newRefs);
+  };
+
+  const updateReference = (index: number, field: keyof Reference, value: string) => {
+    const newRefs = [...data.references];
+    newRefs[index] = { ...newRefs[index], [field]: value };
+    setData('references', newRefs);
+  };
+
+  // Handle rich text editor content change
+  const handleContentChange = (html: string) => {
+    setData('content', html);
+  };
 
   return (
     <>
@@ -155,76 +175,115 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                 </div>
               </div>
 
-            {/* Related Articles */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Artikel Terkait</label>
-              <select
-                multiple
-                value={data.related_article_ids.map(String)}
-                onChange={(e) => {
+              {/* Related Articles */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Artikel Terkait</label>
+                <select
+                  multiple
+                  value={data.related_article_ids.map(String)}
+                  onChange={(e) => {
                     const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value));
                     setData('related_article_ids', selected);
-                }}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none bg-white h-32"
-              >
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none bg-white h-32"
+                >
                   {articles && articles.map((article) => (
-                      <option key={article.id} value={article.id}>{article.title}</option>
+                    <option key={article.id} value={article.id}>{article.title}</option>
                   ))}
-              </select>
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-        {/* Image Upload */}
+
+        {/* Content - Rich Text Editor */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Cover</label>
-          {article.image && typeof article.image === 'string' && (
-            <div className="mb-2">
-              <img src={article.image} alt="Current" className="h-32 rounded object-cover" />
-              <p className="text-xs text-gray-500">Gambar saat ini. Upload baru untuk mengganti.</p>
-            </div>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setData('image', e.target.files ? e.target.files[0] : null)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Konten Artikel
+          </label>
+          <Editor
+            initialHtml={article.content}
+            onHtmlChange={handleContentChange}
           />
-          {errors.image && <div className="text-red-500 text-sm mt-1">{errors.image}</div>}
+          <p className="text-xs text-gray-500 mt-2">
+            Gunakan toolbar di atas untuk memformat teks. Konten saat ini akan ditampilkan dalam editor.
+          </p>
+          {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
         </div>
 
-          {/* Content */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Konten Artikel
+        {/* References */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Referensi Sumber
             </label>
-            <textarea
-              name="content"
-              value={data.content}
-              onChange={(e) => setData('content', e.target.value)}
-              placeholder="Tulis konten artikel Anda di sini..."
-              rows={16}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none text-gray-900"
-            ></textarea>
-            {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
+            <button
+              type="button"
+              onClick={addReference}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Referensi
+            </button>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4 pt-2">
-            <button 
-              onClick={() => {setDeleteModal(true);}}
-              className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-            >
-              Hapus
-            </button>
-            <button 
-              onClick={() => {setUpdateModal(true);}}
-              className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
-            >
-              Update
-            </button>
+          {data.references.length === 0 && (
+            <p className="text-sm text-gray-500 italic">Belum ada referensi. Klik tombol di atas untuk menambah.</p>
+          )}
+
+          <div className="space-y-3">
+            {data.references.map((ref, index) => (
+              <div key={index} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex-1 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Nama Sumber</label>
+                    <input
+                      type="text"
+                      value={ref.source_name}
+                      onChange={(e) => updateReference(index, 'source_name', e.target.value)}
+                      placeholder="Contoh: FAO, Jurnal Pertanian"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">URL</label>
+                    <input
+                      type="url"
+                      value={ref.url}
+                      onChange={(e) => updateReference(index, 'url', e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeReference(index)}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4 pt-2">
+          <button
+            onClick={() => { setDeleteModal(true); }}
+            className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+          >
+            Hapus
+          </button>
+          <button
+            onClick={() => { setUpdateModal(true); }}
+            className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+          >
+            Update
+          </button>
+        </div>
       </div>
 
       <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
@@ -233,7 +292,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
         console.log(`/admin/article/${article.id}`);
         destroy(`/admin/article/${article.id}`);
         setDeleteModal(false)
-      }} itemName={article.title}/>
+      }} itemName={article.title} />
 
       <UpdateConfirmationModal isOpen={updateModal} onClose={() => {
         setUpdateModal(false)

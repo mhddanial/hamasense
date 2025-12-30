@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Redirect guests (unauthenticated users) to login page
+        $middleware->redirectGuestsTo('/login');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'customer' => \App\Http\Middleware\CustomerMiddleware::class,

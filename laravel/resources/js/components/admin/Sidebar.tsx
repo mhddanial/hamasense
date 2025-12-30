@@ -4,8 +4,7 @@ import AppLogo from "../app-logo"
 import { NavMain } from "../nav-main"
 import { NavUser } from "../nav-user"
 import { SharedData, type NavItem } from "@/types"
-import { Bug, Home, Leaf, Newspaper, ShieldAlert } from "lucide-react"
-import { AppShell } from "../app-shell"
+import { Bug, Home, Leaf, Newspaper, Users, Worm } from "lucide-react"
 
 const mainNavItems: NavItem[] = [
     {
@@ -14,9 +13,9 @@ const mainNavItems: NavItem[] = [
         icon: Home
     },
     {
-        title: 'Kelola User',
-        href: '#',
-        icon: Home
+        title: 'Kelola Pengguna',
+        href: '/admin/users',
+        icon: Users
     },
     {
         title: 'Kelola Tanaman',
@@ -34,40 +33,40 @@ const mainNavItems: NavItem[] = [
         icon: Newspaper
     },
     {
-        title: 'Kelola Disease',
+        title: 'Kelola Penyakit',
         href: '/admin/disease',
-        icon: ShieldAlert
+        icon: Worm
     },
 ]
 
-export default function AdminSidebar({children}: {children: React.ReactNode}) {
+export default function AdminSidebar({ children }: { children: React.ReactNode }) {
     const isOpen = usePage<SharedData>().props.sidebarOpen;
     return (<>
 
-    <SidebarProvider defaultOpen={isOpen}>
-        <Sidebar collapsible="offcanvas" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size='lg' asChild>
-                            <Link href={'/admin/dashboard'}>
-                                <AppLogo/>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+        <SidebarProvider defaultOpen={isOpen}>
+            <Sidebar collapsible="offcanvas" variant="inset">
+                <SidebarHeader>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size='lg' asChild>
+                                <Link href={'/admin/dashboard'}>
+                                    <AppLogo />
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
+                <SidebarContent>
+                    <NavMain items={mainNavItems} />
+                </SidebarContent>
 
-            <SidebarFooter>
-                <NavUser />
-            </SidebarFooter>
+                <SidebarFooter>
+                    <NavUser />
+                </SidebarFooter>
 
-        </Sidebar>
-        {children}
-    </SidebarProvider>
+            </Sidebar>
+            {children}
+        </SidebarProvider>
     </>)
 }

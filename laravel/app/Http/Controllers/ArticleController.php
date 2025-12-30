@@ -15,16 +15,42 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         $keyword = $request->query('keyword');
-        $articles = Article::query()->with(['category', 'writer'])->when($keyword, function ($query, $keyword) {
-            $search_term = "%{$keyword}%";
-            return $query->where(function ($q) use ($search_term) {
-                $q->where('title', 'like', $search_term);
+        $sortBy = $request->query('sort', 'latest');
+
+        $articles = Article::query()
+            ->with(['category', 'writer'])
+            ->when($keyword, function ($query, $keyword) {
+                $search_term = "%{$keyword}%";
+                return $query->where(function ($q) use ($search_term) {
+                    $q->where('title', 'like', $search_term);
+                });
             });
-        })->latest()->paginate(12);
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $articles->oldest();
+                break;
+            case 'name_asc':
+                $articles->orderBy('title', 'asc');
+                break;
+            case 'name_desc':
+                $articles->orderBy('title', 'desc');
+                break;
+            default:
+                $articles->latest();
+                break;
+        }
+
+        $articles = $articles->paginate(10);
 
         return Inertia::render('admin/article/index', [
             'articles' => $articles,
-            'categories' => ArticleCategory::all()
+            'categories' => ArticleCategory::all(),
+            'filters' => [
+                'keyword' => $keyword,
+                'sort' => $sortBy
+            ]
         ]);
     }
 
@@ -34,7 +60,7 @@ class ArticleController extends Controller
         $categories = ArticleCategory::all();
 
         return Inertia::render('admin/article/create', [
-             'articles' => $articles, 
+            'articles' => $articles, 
             'categories' => $categories
         ]);
     }
@@ -49,8 +75,19 @@ class ArticleController extends Controller
                 'slug' => 'nullable|string|unique:articles,slug',
                 'content' => 'required|string',
                 'category_id' => 'required|int|exists:article_categories,id',
-                'image' => 'nullable|file|image|max:2048',
+                'img_path' => 'nullable|file|image|max:2048',
+                'references' => 'nullable|array',
+                'references.*.source_name' => 'nullable|string',
+                'references.*.url' => 'nullable|string',
             ]);
+
+            // Filter out empty references
+            if (!empty($validated['references'])) {
+                $validated['references'] = array_filter($validated['references'], function($ref) {
+                    return !empty($ref['source_name']) || !empty($ref['url']);
+                });
+                $validated['references'] = array_values($validated['references']); // Re-index
+            }
 
             if (empty($validated['slug'])) {
                 $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid(); 
@@ -71,7 +108,7 @@ class ArticleController extends Controller
 
             DB::commit();
 
-            return to_route('article.index')->with('success', 'Article created successfully');
+            return to_route('article.index')->with('success', 'Artikel berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -103,8 +140,18 @@ class ArticleController extends Controller
                 'category_id' => 'required|int|exists:article_categories,id',
                 'content' => 'required|string',
                 'slug' => 'nullable|string|unique:articles,slug,' . $article->id,
-                // 'status' => 'required|string|in:published,draft,scheduled',
+                'references' => 'nullable|array',
+                'references.*.source_name' => 'nullable|string',
+                'references.*.url' => 'nullable|string',
             ]);
+
+            // Filter out empty references
+            if (!empty($validated['references'])) {
+                $validated['references'] = array_filter($validated['references'], function($ref) {
+                    return !empty($ref['source_name']) || !empty($ref['url']);
+                });
+                $validated['references'] = array_values($validated['references']); // Re-index
+            }
 
             // Handle Image Upload
             if ($request->hasFile('image')) {
@@ -122,7 +169,7 @@ class ArticleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('article.index')->with('success', 'Article updated successfully'); // Redirect to index as standard
+            return redirect()->route('article.index')->with('success', 'Artikel berhasil diperbarui'); // Redirect to index as standard
 
         } catch(\Exception $e) {
             DB::rollBack();
@@ -138,7 +185,7 @@ class ArticleController extends Controller
             $article->delete();
 
             DB::commit();
-            return redirect()->route('article.index')->with('success', 'Article deleted successfully');
+            return redirect()->route('article.index')->with('success', 'Artikel berhasil dihapus');
         } catch(\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['message' => $e->getMessage()]);
