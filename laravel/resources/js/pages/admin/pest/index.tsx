@@ -32,7 +32,7 @@ export default function KelolaDataHama({pests} : Props) {
     , [success, error]);
 
     const [selectedItem, setSelectedItem] = useState({
-        'id': 0,
+        'identifier': '',
         'name': ''
     });
 
@@ -48,9 +48,9 @@ export default function KelolaDataHama({pests} : Props) {
                 {/* Table */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {pests.data.map((pest) => (
-                        <ItemHeaderDemo id={pest.id} name={pest.name} img_path={'pest'} filename={pest.img_path} scientific_name={pest.scientific_name} delete_onclick={() => {
+                        <ItemHeaderDemo id={pest.id} name={pest.name} img_path={'pest'} filename={pest.img_path} scientific_name={pest.scientific_name} slug={pest.slug} delete_onclick={() => {
                             setSelectedItem({
-                                'id': pest.id,
+                                'identifier': pest.id,
                                 'name': pest.name
                             });
                             setDeleteModal(true);
@@ -82,10 +82,10 @@ export default function KelolaDataHama({pests} : Props) {
 
     <DeleteConfirmationModal isOpen={deleteModal} onClose={() => {
       setDeleteModal(false)
-      setSelectedItem({'id': 0, 'name': ''});
+      setSelectedItem({'identifier': '', 'name': ''});
     }} onConfirm={() => {
-      console.log(`/admin/pest/${selectedItem.id}`)
-      router.delete(`/admin/pest/${selectedItem.id}`);
+      console.log(`/admin/pest/${selectedItem.identifier}`)
+      router.delete(`/admin/pest/${selectedItem.identifier}`);
       setDeleteModal(false)
 
     }} itemName={selectedItem.name}/>

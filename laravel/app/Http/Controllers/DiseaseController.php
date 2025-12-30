@@ -7,6 +7,7 @@ use App\Models\PlantType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class DiseaseController extends Controller
@@ -65,8 +66,14 @@ class DiseaseController extends Controller
                 'solution' => 'required|string',
                 'severity_level' => 'required|numeric',
                 'plant_type_id' => 'required|numeric',
-                'img_path' => 'image|nullable'
+                'img_path' => 'image|nullable',
+                // 'plant_type_id' => 'required|numeric',
+                'slug' => 'string|nullable'
             ]);
+
+            if (empty($field['slug'])) {
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
+            }
 
             if($request->hasFile('img_path')) {
                 $file = $request->file('img_path');
@@ -74,7 +81,6 @@ class DiseaseController extends Controller
                 
                 $file->storeAs('disease', $file_name, 'public');
                 $field['img_path'] = $file_name;
-
             }
 
             $new_pest = Disease::create($field);
@@ -113,8 +119,13 @@ class DiseaseController extends Controller
                 'solution' => 'required|string',
                 'severity_level' => 'required|numeric',
                 'plant_type_id' => 'required|numeric',
-                'new_img' => 'image|nullable'
+                'new_img' => 'image|nullable',
+                'slug' => 'string|nullable'
             ]);
+
+            if (empty($field['slug'])) {
+                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
+            }
 
             if($request->hasFile('new_img')){
                 Storage::disk('public')->delete('/disease/' . $disease->img_path);
@@ -142,7 +153,7 @@ class DiseaseController extends Controller
         DB::beginTransaction();
         
         try{
-            
+
             Storage::disk('public')->delete('/disease/' . $disease->img_path);
 
             $disease->delete();

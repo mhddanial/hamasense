@@ -30,7 +30,7 @@ export default function KelolaDataPenyakit({diseases} : Props) {
     , [success, error]);
 
     const [selectedItem, setSelectedItem] = useState({
-    'id': 0,
+    'identifier': '',
     'name': ''
     });
 
@@ -51,10 +51,10 @@ export default function KelolaDataPenyakit({diseases} : Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     {diseases.data.map((disease) => (
-                    <ItemHeaderDemo id={disease.id} name={disease.name} img_path={'disease'} filename={disease.img_path}
+                    <ItemHeaderDemo id={disease.id} name={disease.name} img_path={'disease'} filename={disease.img_path} slug={disease.slug}
                         scientific_name={'a'} delete_onclick={()=> {
                         setSelectedItem({
-                        'id': disease.id,
+                        'identifier': disease.slug,
                         'name': disease.name
                         });
                         setDeleteModal(true);
@@ -71,10 +71,10 @@ export default function KelolaDataPenyakit({diseases} : Props) {
         </div>
         <DeleteConfirmationModal isOpen={deleteModal} onClose={()=> {
             setDeleteModal(false)
-            setSelectedItem({'id': 0, 'name': ''});
+            setSelectedItem({'identifier': '', 'name': ''});
             }} onConfirm={() => {
-            console.log(`/admin/disease/${selectedItem.id}`)
-            router.delete(`/admin/disease/${selectedItem.id}`);
+            console.log(`/admin/disease/${selectedItem.identifier}`)
+            router.delete(`/admin/disease/${selectedItem.identifier}`);
             setDeleteModal(false)
 
             }} itemName={selectedItem.name}/>

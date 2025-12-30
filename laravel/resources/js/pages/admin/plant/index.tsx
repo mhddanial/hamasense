@@ -16,7 +16,7 @@ plants: Plant[];
 
 
 export default function KelolaTanaman({ plants } : Props) {
-
+console.log(plants)
      const [notifications, setNotifications] = useState<any[]>([]);
     
       const { flash } = usePage().props;
@@ -36,7 +36,7 @@ export default function KelolaTanaman({ plants } : Props) {
             setNotifications(prev => prev.filter(notif => notif.id !== id));
         };
 const [ selectedItem, setSelectedItem ] = useState({
-'id': 0,
+'identifier': '',
 'name': ''
 });
 
@@ -60,10 +60,10 @@ return (
             <ItemHeaderDemo models={plants} name='name' img_path='img_path' description='description' /> */}
 
             {plants.data.map((plant) => (<>
-                <ItemHeaderDemo id={plant.id} filename={plant.img_path} name={plant.name} img_path='plant'
+                <ItemHeaderDemo id={plant.id} filename={plant.img_path} name={plant.name} img_path='plant' slug={plant.slug}
                     scientific_name={plant.scientific_name} delete_onclick={()=> {
                     setSelectedItem({
-                    'id': plant.id,
+                    'identifier': plant.slug,
                     'name': plant.name
                     });
                     setDeleteModal(true);
@@ -100,9 +100,9 @@ return (
 
     <DeleteConfirmationModal isOpen={deleteModal} onClose={()=> {
         setDeleteModal(false)
-        setSelectedItem({'id': 0, 'name': ''});
+        setSelectedItem({'identifier': '', 'name': ''});
         }} onConfirm={() => {
-        router.delete(`/admin/plant/${selectedItem.id}`);
+        router.delete(`/admin/plant/${selectedItem.identifier}`);
         setDeleteModal(false)
 
         }} itemName={selectedItem.name}/>

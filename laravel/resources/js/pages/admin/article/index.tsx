@@ -32,7 +32,7 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
 
   // Article Operation State
   const [selectedItem, setSelectedItem] = useState({
-    'id': 0,
+    'identifier': 0,
     'name': ''
   });
 
@@ -97,17 +97,17 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
     // However, the current DeleteConfirmationModal is simple. We can reuse it by tracking what we are deleting.
     const [deleteType, setDeleteType] = useState<'article' | 'category'>('article');
 
-    const handleDeleteClick = (type: 'article' | 'category', id: number, name: string) => {
+    const handleDeleteClick = (type: 'article' | 'category', identifier: number|string, name: string) => {
         setDeleteType(type);
-        setSelectedItem({ id, name });
+        setSelectedItem({ identifier, name });
         setDeleteModal(true);
     };
 
     const handleConfirmDelete = () => {
         if (deleteType === 'article') {
-            router.delete(`/admin/article/${selectedItem.id}`);
+            router.delete(`/admin/article/${selectedItem.identifier}`);
         } else {
-            router.delete(`/admin/article-category/${selectedItem.id}`);
+            router.delete(`/admin/article-category/${selectedItem.identifier}`);
 
         }
         setDeleteModal(false);
@@ -221,14 +221,14 @@ const KelolaArtikel = ({ articles, categories }: Props) => {
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Link 
-                                                    href={`/admin/article/${article.id}`}
+                                                    href={`/admin/article/${article.slug}`}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                     title="Edit"
                                                 >
                                                     <SquarePen size={18} />
                                                 </Link>
                                                 <button
-                                                    onClick={() => handleDeleteClick('article', article.id, article.title)}
+                                                    onClick={() => handleDeleteClick('article', article.slug, article.title)}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Delete"
                                                 >
