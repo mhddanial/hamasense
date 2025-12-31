@@ -48,6 +48,7 @@ export interface Article extends ArticleInput, Id, Timestamps { }
 
 export type PlantInput = {
     name: string;
+    slug: string;
     scientific_name: string;
     detail: string;
     disease: Disease[];
@@ -61,6 +62,7 @@ export interface Plant extends PlantInput, Id, Timestamps { }
 export type DiseaseInput = {
     label: string;
     name: string;
+    slug: string;
     description?: string;
     severity_level: 'rendah' | 'sedang' | 'tinggi';
     plant_type_id: number;
