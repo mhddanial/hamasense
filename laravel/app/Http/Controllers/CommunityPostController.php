@@ -7,8 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\CommunityPost;
 use App\Models\CommunityLikes;
 use App\Models\CommunityComments;
+use App\Models\CommunityReport;
+use App\Models\CommunitySavedPost;
+use App\Models\CommunityCategory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
 
 class CommunityPostController extends Controller
 {
@@ -35,11 +39,15 @@ class CommunityPostController extends Controller
                     'likes' => $post->like_total,
                     'comments' => $post->comments_count,
                     'isLiked' => $post->isLikedBy($userId),
+                    'isBookmarked' => $post->isSavedBy($userId),
                 ];
             });
 
+        $categories = CommunityCategory::all(['slug', 'name']);
+
         return Inertia::render('community/index', [
-            'initialPosts' => $posts
+            'initialPosts' => $posts,
+            'categories' => $categories,
         ]);
     }
 
@@ -356,5 +364,135 @@ class CommunityPostController extends Controller
                 'error' => 'Gagal memuat komentar'
             ], 500);
         }
+    }
+
+    /**
+     * Report a community post.
+     */
+    public function report(Request $request, $postId)
+    {
+        try {
+            $post = CommunityPost::findOrFail($postId);
+            $userId = auth()->id();
+
+            // Check if already reported
+            if ($post->isReportedBy($userId)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah melaporkan postingan ini sebelumnya.'
+                ], 400);
+            }
+
+            $validated = $request->validate([
+                'reason' => 'required|in:spam,inappropriate,harassment,misinformation,other',
+                'description' => 'nullable|string|max:500',
+            ]);
+
+            CommunityReport::create([
+                'post_id' => $postId,
+                'user_id' => $userId,
+                'reason' => $validated['reason'],
+                'description' => $validated['description'] ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Laporan berhasil dikirim. Terima kasih atas laporan Anda.'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim laporan. Silakan coba lagi.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle save/bookmark a post.
+     */
+    public function toggleSave($postId)
+    {
+        try {
+            $post = CommunityPost::findOrFail($postId);
+            $userId = auth()->id();
+
+            $saved = CommunitySavedPost::where('post_id', $postId)
+                                        ->where('user_id', $userId)
+                                        ->first();
+
+            if ($saved) {
+                $saved->delete();
+                $isSaved = false;
+                $message = 'Postingan dihapus dari simpanan';
+            } else {
+                CommunitySavedPost::create([
+                    'post_id' => $postId,
+                    'user_id' => $userId,
+                ]);
+                $isSaved = true;
+                $message = 'Postingan berhasil disimpan!';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data' => [
+                    'postId' => (int) $postId,
+                    'isSaved' => $isSaved,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan postingan. Silakan coba lagi.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get user's saved posts.
+     */
+    public function savedPosts()
+    {
+        $userId = auth()->id();
+
+        $savedPostIds = CommunitySavedPost::where('user_id', $userId)
+            ->pluck('post_id');
+
+        $posts = CommunityPost::with('owned_by')
+            ->withCount('comments')
+            ->whereIn('id', $savedPostIds)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($post) use ($userId) {
+                return [
+                    'id' => $post->id,
+                    'author' => [
+                        'id' => $post->owned_by->id,
+                        'name' => $post->owned_by->name,
+                        'avatar' => $post->owned_by->avatar ?? 'https://api.dicebear.com/7.x/avataaars/svg?seed=' . $post->owned_by->name,
+                    ],
+                    'timestamp' => $post->created_at->diffForHumans(),
+                    'category' => $post->category,
+                    'content' => $post->content,
+                    'image' => $post->image_url,
+                    'likes' => $post->like_total,
+                    'comments' => $post->comments_count,
+                    'isLiked' => $post->isLikedBy($userId),
+                    'isBookmarked' => true,
+                ];
+            });
+
+        return Inertia::render('community/saved', [
+            'savedPosts' => $posts
+        ]);
     }
 }

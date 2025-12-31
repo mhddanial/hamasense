@@ -51,6 +51,11 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('/community/{post}/comments', [CommunityPostController::class, 'getComments'])->name('community.comments');
     Route::post('/community/{post}/comments', [CommunityPostController::class, 'storeComment'])->name('community.comment.store');
 
+    // Community Report & Save
+    Route::post('/community/{post}/report', [CommunityPostController::class, 'report'])->name('community.report');
+    Route::post('/community/{post}/save', [CommunityPostController::class, 'toggleSave'])->name('community.save');
+    Route::get('/community/saved', [CommunityPostController::class, 'savedPosts'])->name('community.saved');
+
     // Continuous Care
     Route::get('/continuous-care', function() {
         return Inertia::render('continuous_care/index');

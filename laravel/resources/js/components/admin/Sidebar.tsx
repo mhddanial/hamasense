@@ -4,7 +4,7 @@ import AppLogo from "../app-logo"
 import { NavMain } from "../nav-main"
 import { NavUser } from "../nav-user"
 import { SharedData, type NavItem } from "@/types"
-import { Bug, Home, Leaf, Newspaper, Users, Worm } from "lucide-react"
+import { Bug, Home, Leaf, Newspaper, Users, Worm, MessageSquare } from "lucide-react"
 
 const mainNavItems: NavItem[] = [
     {
@@ -36,6 +36,11 @@ const mainNavItems: NavItem[] = [
         title: 'Kelola Penyakit',
         href: '/admin/disease',
         icon: Worm
+    },
+    {
+        title: 'Kelola Komunitas',
+        href: '/admin/community',
+        icon: MessageSquare
     },
 ]
 

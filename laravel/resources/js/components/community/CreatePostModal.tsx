@@ -15,13 +15,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
+interface Category {
+  slug: string;
+  name: string;
+}
+
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (newPost: any) => void;
+  categories?: Category[];
 }
 
-export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalProps) {
+export default function CreatePostModal({ isOpen, onClose, onSuccess, categories = [] }: CreatePostModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newPost, setNewPost] = useState({
     category: '',
@@ -110,10 +116,9 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePo
                 required
               >
                 <option value="" disabled>Pilih kategori</option>
-                <option value="budidaya">Budidaya Sayuran</option>
-                <option value="tips">Tips &amp; Trik</option>
-                <option value="hama">Hama &amp; Penyakit</option>
-                <option value="pupuk">Pemupukan</option>
+                {categories.map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                ))}
               </select>
             </div>
 
