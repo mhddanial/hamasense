@@ -14,14 +14,6 @@ return new class extends Migration
         Schema::table('plant_types', function (Blueprint $table) {
             $table->string('slug')->nullable();
         });
-
-        // Schema::table('pests', function (Blueprint $table) {
-        //     $table->string('slug')->unique();
-        // });
-
-        Schema::table('diseases', function (Blueprint $table) {
-            $table->string('slug')->nullable();
-        });
     }
 
     /**

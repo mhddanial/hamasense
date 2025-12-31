@@ -18,8 +18,10 @@ class DatabaseSeeder extends Seeder
             ArticleCategorySeeder::class,
             
             // Tables with foreign key dependencies
-            DiseaseSeeder::class,      // Depends on PlantType
-            ArticleSeeder::class,       // Depends on User and ArticleCategory
+            DiseaseSeeder::class,     
+            ArticleSeeder::class,      
+            CommunityCategorySeeder::class,
+            PestSeeder::class,
         ]);
     }
 }

@@ -17,11 +17,18 @@ class ArticleSeeder extends Seeder
         if (file_exists($sqlPath)) {
             $sql = file_get_contents($sqlPath);
             
-            // Extract only INSERT statements
-            preg_match_all('/INSERT INTO.*?;/s', $sql, $matches);
+            // Split by semicolon at end of statement (followed by newline or end)
+            // This handles multi-line INSERT statements with special characters in data values
+            $statements = preg_split('/;\s*\n/', $sql);
             
-            foreach ($matches[0] as $insertStatement) {
-                DB::unprepared($insertStatement);
+            foreach ($statements as $statement) {
+                $statement = trim($statement);
+                // Find and execute INSERT statements (may not be at position 0 due to comments)
+                $insertPos = stripos($statement, 'INSERT INTO');
+                if ($insertPos !== false) {
+                    $insertStatement = substr($statement, $insertPos);
+                    DB::unprepared($insertStatement);
+                }
             }
             
             $this->command->info('Articles seeded from SQL file.');
