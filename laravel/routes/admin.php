@@ -15,9 +15,9 @@ use App\Http\Controllers\UserController;
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::resource('/plant', PlantTypeController::class)->parameters(['plant' => 'plant:slug']);
-    Route::resource('/article', ArticleController::class)->parameters(['article' => 'article:slug']);
-    Route::resource('/pest', PestController::class)->parameters(['pest' => 'pest:slug']);
+    Route::resource('/plant', PlantTypeController::class);
+    Route::resource('/article', ArticleController::class);
+    Route::resource('/pest', PestController::class);
     
     // User Management
     Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
@@ -26,5 +26,5 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
     
     Route::resource('/pest-category', PestCategoryController::class);
     Route::resource('/article-category', ArticleCategoryController::class);
-    Route::resource('/disease', DiseaseController::class)->parameters(['disease' => 'disease:slug']);
+    Route::resource('/disease', DiseaseController::class);
 });
