@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plant_types', function (Blueprint $table) {
-            $table->string('slug')->unique();
+            $table->string('slug')->nullable();
         });
 
-        Schema::table('pests', function (Blueprint $table) {
-            $table->string('slug')->unique();
-        });
+        // Schema::table('pests', function (Blueprint $table) {
+        //     $table->string('slug')->unique();
+        // });
 
         Schema::table('diseases', function (Blueprint $table) {
-            $table->string('slug')->unique();
+            $table->string('slug')->nullable();
         });
     }
 
@@ -33,9 +33,9 @@ return new class extends Migration
             $table->dropColumn('slug');
         });
 
-        Schema::table('pests', function (Blueprint $table) {
-            $table->dropColumn('slug');
-        });
+        // Schema::table('pests', function (Blueprint $table) {
+        //     $table->dropColumn('slug');
+        // });
 
         Schema::table('diseases', function (Blueprint $table) {
             $table->dropColumn('slug');

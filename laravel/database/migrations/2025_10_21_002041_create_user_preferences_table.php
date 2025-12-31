@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained(
                 table:'users',
                 column:'id'
-            );
+            )->onDelete('cascade')->onUpdate('cascade');;
             $table->string('default_location');
             $table->boolean('notification_enabled');
             $table->primary('user_id');

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pests', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug')->nullable()->unique();
             $table->string('scientific_name');
             $table->text('description')->nullable();
             $table->string('img_path')->nullable();

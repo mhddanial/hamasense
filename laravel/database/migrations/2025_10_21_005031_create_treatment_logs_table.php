@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('detection_id')->constrained(
                 table:'detection_histories',
                 column:'id'
-            );
+            )->onDelete('cascade')->onUpdate('cascade');;
             $table->text('outcome_note');
             $table->text('treatment_note');
             $table->string('action_taken');

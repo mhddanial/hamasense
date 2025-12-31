@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('article_relations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('article_id')->constrained()->onDelete('cascade');
-            $table->foreignId('related_article_id')->constrained('articles')->onDelete('cascade');
+            $table->foreignId('article_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('related_article_id')->constrained('articles')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
 
             $table->unique(['article_id', 'related_article_id']);

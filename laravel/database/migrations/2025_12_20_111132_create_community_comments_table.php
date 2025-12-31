@@ -16,17 +16,17 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained(
                 table: 'community_posts',
                 column: 'id'
-            )->onDelete('cascade');  // TAMBAH
+            )->onDelete('cascade')->onUpdate('cascade');  // TAMBAH
 
             $table->foreignId('user_id')->constrained(
                 table: 'users',
                 column: 'id'
-            )->onDelete('cascade');  // TAMBAH
+            )->onDelete('cascade')->onUpdate('cascade');  // TAMBAH
 
             $table->foreignId('parent_id')->nullable()->constrained(
                 table: 'community_comments',
                 column: 'id'
-            )->onDelete('cascade');  // TAMBAH
+            )->onDelete('cascade')->onUpdate('cascade');  // TAMBAH
             $table->text('content');
 
             $table->timestamps();

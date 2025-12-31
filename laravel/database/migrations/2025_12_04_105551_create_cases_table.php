@@ -39,7 +39,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign key
-            $table->foreign('detection_history_id')->references('id')->on('detection_histories');
+            $table->foreign('detection_history_id')->references('id')->on('detection_histories')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

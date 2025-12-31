@@ -15,11 +15,11 @@ return new class extends Migration
             $table->foreignId('pest_id')->constrained(
                 table:'pests',
                 column:'id'
-            );
+            )->onDelete('cascade')->onUpdate('cascade');;
             $table->foreignId('disease_id')->constrained(
                 table:'diseases',
                 column:'id'
-            );
+            )->onDelete('cascade')->onUpdate('cascade');;
             $table->primary(['pest_id', 'disease_id']);
         });
     }
