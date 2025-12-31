@@ -137,8 +137,8 @@ class PestController extends Controller
                 'description' => 'nullable|string',
                 'category' => 'required|string',
                 'risk_level' => 'required|in:rendah,sedang,tinggi',
-                'plants' => 'nullable|array',
-                'plants.*' => 'string',
+                // 'plants' => 'nullable|array',
+                // 'plants.*' => 'string',
                 'pencegahan' => 'nullable|array',
                 'pencegahan.*' => 'string',
                 'penanganan' => 'nullable|array',
@@ -160,7 +160,7 @@ class PestController extends Controller
             }
 
             $new_pest = Pest::create($field);
-            $new_pest->plant_type()->sync($field['plants']);
+            // $new_pest->plant_type()->sync($field['plants']);
 
             DB::commit();
 
@@ -235,8 +235,6 @@ class PestController extends Controller
         DB::beginTransaction();
         
         try{
-            $pest->plantTypes()->detach();
-            
             if ($pest->img_path) {
                 Storage::disk('public')->delete('pest/' . $pest->img_path);
             }

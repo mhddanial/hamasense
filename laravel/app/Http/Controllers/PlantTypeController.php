@@ -76,7 +76,6 @@ class PlantTypeController extends Controller
                 'pests*' => 'integer'
             ]);
 
-            
 
             if (empty($field['slug'])) {
                 $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
@@ -91,8 +90,11 @@ class PlantTypeController extends Controller
             }
     
             $plant_type = PlantType::create($field);
-    
-            $plant_type->pest()->sync($field['pests']);
+
+            if($request->has('pests')) {
+                $plant_type->pest()->sync($field['pests']);
+            }
+
             DB::commit();
 
             return redirect('admin/plant')->with('success', 'New Plant Type Added Successfully');
@@ -130,8 +132,9 @@ class PlantTypeController extends Controller
                 'pests*' => 'integer'
             ]);
 
-            // return $request->all();
-            $plant->pest()->sync($field['pests'] ?? []);
+            if($request->has('pests')) {
+                $plant->pest()->sync($field['pests']);
+            }
 
             if (empty($field['slug'])) {
                 $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
