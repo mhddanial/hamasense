@@ -158,9 +158,9 @@ const KelolaArtikel = ({ articles, categories, filters }: Props) => {
     // Unified Delete Handler
     const [deleteType, setDeleteType] = useState<'article' | 'category'>('article');
 
-    const handleDeleteClick = (type: 'article' | 'category', identifier: number|string, name: string) => {
+    const handleDeleteClick = (type: 'article' | 'category', id: number, name: string) => {
         setDeleteType(type);
-        setSelectedItem({ identifier, name });
+        setSelectedItem({ id, name });
         setDeleteModal(true);
     };
 

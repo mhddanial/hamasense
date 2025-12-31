@@ -19,7 +19,7 @@ import {
     RefreshCw,
     ArrowUpDown
 } from 'lucide-react';
-import { Filter, FolderOpen, SearchX } from 'lucide-react';
+import { Filter, FolderOpen } from 'lucide-react';
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 import { AdminNotificationToast } from '@/components/admin/InformationToast';
 import {

@@ -201,7 +201,7 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
         setDeleteModal(false)
 
       }} onConfirm={() => {
-        submit('delete', `/admin/plant/${plant.slug}`, {forceFormData: true, preserveScroll: true});
+        submit('delete', `/admin/plant/${plant.id}`, {forceFormData: true, preserveScroll: true});
         setDeleteModal(false);
   
       }} itemName={plant.name}/>
@@ -210,7 +210,7 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
         setUpdateModal(false);
       }} onConfirm={() => {
 
-          router.post('/admin/plant/' + plant.slug, {
+          router.post('/admin/plant/' + plant.id, {
             _method: 'patch',
             forceFormData: true,
             ...data,

@@ -8,7 +8,6 @@ import {
     Search,
     Trash2,
     Eye,
-    MoreHorizontal,
     AlertTriangle,
     Plus,
     ImageIcon,
@@ -27,14 +26,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
     AlertDialogAction,
