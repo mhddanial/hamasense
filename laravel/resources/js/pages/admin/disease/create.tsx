@@ -19,7 +19,7 @@ const SEVERITY_LEVELS = [
 
 export default function TambahkanPenyakit({ plants }: Props) {
 
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, processing } = useForm({
     label: '',
     name: '',
     description: '',
@@ -30,8 +30,39 @@ export default function TambahkanPenyakit({ plants }: Props) {
 
   const [uploadedImage, setUploadedImage] = useState('');
   const [ disableCreate, setDisableCreate ] = useState(false);
+  const [ errors, setErrors ] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!data.label.trim()) {
+      newErrors.label = 'Label penyakit wajib diisi';
+    }
+
+    if (!data.name.trim()) {
+      newErrors.name = 'Nama penyakit wajib diisi';
+    }
+
+    if (!data.description.trim()) {
+      newErrors.description = 'Deskripsi wajib diisi';
+    }
+
+    if (!data.plant_type_id) {
+      newErrors.plant_type_id = 'Tanaman terkait belum dipilih';
+    }
+
+    if (!data.severity_level.trim()) {
+      newErrors.severity_level = 'Tingkat keparahan belum dipilih';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const create = async () => {
+    if (!validate()) return;
+
     post('/admin/disease/', {
       forceFormData: true,
     });
@@ -119,7 +150,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       value={data.label}
                       onChange={(e) => setData('label', e.target.value)}
                       placeholder="late_blight"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.label ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.label && <div className="text-red-500 text-sm mt-1">{errors.label}</div>}
                   </div>
@@ -133,7 +164,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       value={data.name}
                       onChange={(e) => setData('name', e.target.value)}
                       placeholder="Busuk Daun"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                   </div>
@@ -145,7 +176,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       name="severity_level"
                       value={data.severity_level}
                       onChange={(e) => setData('severity_level', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.severity_level ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
                     >
                       <option value="">Pilih tingkat keparahan...</option>
                       {SEVERITY_LEVELS.map((level) => (
@@ -164,7 +195,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       name="plant_type_id"
                       value={data.plant_type_id}
                       onChange={(e) => setData('plant_type_id', +e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.plant_type_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
                     >
                       <option value="">Pilih jenis tanaman...</option>
                       {plants.map((plant) => (
@@ -185,7 +216,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       onChange={(e) => setData('description', e.target.value)}
                       placeholder="Deskripsi singkat tentang penyakit ini..."
                       rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
                     ></textarea>
                     {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                   </div>

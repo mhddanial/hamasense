@@ -25,14 +25,15 @@ export default function EditHama() {
 
   const [updateModal, setUpdateModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(pest.img_path ? '/storage/pest/' + pest.img_path : '');
+  const [ errors, setErrors ] = useState<Record<string, string>>({});
 
-  const { data, setData, processing, errors } = useForm<{
+  const { data, setData, processing } = useForm<{
     name: string;
     slug: string;
     scientific_name: string;
     description: string;
     category: string;
-    risk_level: 'rendah' | 'sedang' | 'tinggi';
+    risk_level: string;
     plant: string[];
     pencegahan: string[];
     penanganan: string[];
@@ -52,6 +53,30 @@ export default function EditHama() {
     new_img: null
   });
 
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!data.name.trim()) {
+      newErrors.name = 'Nama hama wajib diisi';
+    }
+
+    if (!data.scientific_name.trim()) {
+      newErrors.scientific_name = 'Nama latin wajib diisi';
+    }
+
+    if (!data.description.trim()) {
+      newErrors.description = 'Deskripsi hama wajib diisi';
+    }
+
+    if (!data.slug.trim()) {
+      newErrors.slug = 'Slug wajib diisi';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -65,6 +90,8 @@ export default function EditHama() {
   }
 
   const handleUpdate = () => {
+    if (!validate()) return;
+
     router.post(`/admin/pest/${pest.id}`, {
       _method: 'patch',
       ...data
@@ -186,7 +213,7 @@ export default function EditHama() {
                     value={data.slug}
                     onChange={(e) => setData('slug', e.target.value)}
                     placeholder="Kosongkan untuk auto-generate"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.slug ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   />
                   {errors.slug && <div className="text-red-500 text-sm mt-1">{errors.slug}</div>}
                 </div>
@@ -201,7 +228,7 @@ export default function EditHama() {
                       type="text"
                       value={data.name}
                       onChange={(e) => setData('name', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                   </div>
@@ -214,7 +241,7 @@ export default function EditHama() {
                       type="text"
                       value={data.scientific_name}
                       onChange={(e) => setData('scientific_name', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${ errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.scientific_name && <div className="text-red-500 text-sm mt-1">{errors.scientific_name}</div>}
                   </div>
@@ -229,7 +256,7 @@ export default function EditHama() {
                     <select
                       value={data.category}
                       onChange={(e) => setData('category', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     >
                       {CATEGORIES.map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -264,7 +291,7 @@ export default function EditHama() {
                     value={data.description}
                     onChange={(e) => setData('description', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   ></textarea>
                   {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                 </div>

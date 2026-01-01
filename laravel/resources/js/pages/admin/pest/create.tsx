@@ -12,7 +12,7 @@ const RISK_LEVELS = [
 
 export default function TambahHama({ categories }: { categories: Category[] }) {
 
-    const { data, setData, post, processing, errors } = useForm<{
+    const { data, setData, post, processing } = useForm<{
         name: string;
         slug: string;
         scientific_name: string;
@@ -36,7 +36,9 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
         img_path: null
     });
 
+
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [ errors, setErrors ] = useState<Record<string, string>>({});
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -50,7 +52,34 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
         window.history.back();
     };
 
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+
+        if (!data.name.trim()) {
+            newErrors.name = 'Nama hama wajib diisi';
+        }
+
+        if (!data.scientific_name.trim()) {
+            newErrors.scientific_name = 'Nama latin wajib diisi';
+        }
+
+        if (!data.description.trim()) {
+            newErrors.description = 'Deskripsi hama wajib diisi';
+        }
+
+        if (!data.category.trim()) {
+            newErrors.category = 'Wajib memilih kategori hama';
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+
     const create = async () => {
+        if (!validate()) return;
+
         post('/admin/pest/', {
             forceFormData: true,
         });
@@ -145,7 +174,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                                         <span className="font-medium">Pilih File</span>
                                         <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                                     </label>
-                                    {errors.img_path && <div className="text-red-500 text-sm mt-2">{errors.img_path}</div>}
+                                    {/* {errors.img_path && <div className="text-red-500 text-sm mt-2">{errors.img_path}</div>} */}
                                 </div>
                             </div>
                         </div>
@@ -164,7 +193,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                                                 value={data.name}
                                                 onChange={(e) => setData('name', e.target.value)}
                                                 placeholder="Ulat Grayak"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                             />
                                             {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                                         </div>
@@ -178,7 +207,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                                                 value={data.scientific_name}
                                                 onChange={(e) => setData('scientific_name', e.target.value)}
                                                 placeholder="Spodoptera litura"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
+                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${ errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                             />
                                             {errors.scientific_name && <div className="text-red-500 text-sm mt-1">{errors.scientific_name}</div>}
                                         </div>
@@ -193,7 +222,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                                             <select
                                                 value={data.category}
                                                 onChange={(e) => setData('category', e.target.value)}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                             >
                                                 <option value="" disabled>Pilih Kategori</option>
                                                 {categories.map((cat) => (
@@ -210,7 +239,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                                             <select
                                                 value={data.risk_level}
                                                 onChange={(e) => setData('risk_level', e.target.value as 'rendah' | 'sedang' | 'tinggi')}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white`}
                                             >
                                                 {RISK_LEVELS.map((level) => (
                                                     <option key={level.value} value={level.value}>{level.label}</option>
@@ -230,7 +259,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                                             onChange={(e) => setData('description', e.target.value)}
                                             placeholder="Deskripsi tentang hama ini..."
                                             rows={4}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                                            className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                         ></textarea>
                                         {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                                     </div>

@@ -24,6 +24,7 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
   const [ deleteModal, setDeleteModal ] = useState(false);
   const [ updateModal, setUpdateModal ] = useState(false);
   const [ uploadedImage, setUploadedImage ] = useState(plant.img_path ? '/storage/plant/' + plant.img_path : '');
+  const [ errors, setErrors ] = useState<Record<string, string>>({});
 
   const [ pestList, setPestList ] = useState(plant.pest.map((disease) => disease.id));
   console.log('pestList')
@@ -37,8 +38,6 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
     new_img: null,
   });
   
-  const [ diseasesList, SetDiseasesList ] = useState(diseases);
-  
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -46,6 +45,38 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
       setUploadedImage(URL.createObjectURL(file));
     }
   };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!data.name.trim()) {
+      newErrors.name = 'Nama tumbuhan wajib diisi';
+    }
+
+    if (!data.scientific_name.trim()) {
+      newErrors.scientific_name = 'Nama latin wajib diisi';
+    }
+
+    if (!data.detail.trim()) {
+      newErrors.detail = 'Detail tanaman wajib diisi';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    setUpdateModal(false);
+    if (!validate()) return;
+    router.post('/admin/plant/' + plant.id, {
+      _method: 'patch',
+      forceFormData: true,
+      ...data,
+      pests: pestList
+      // diseases: diseasesList.map((disease) => disease.id)
+    });
+  }
 
   return (
     <>
@@ -122,8 +153,11 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
                         name="name"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
-                        className="text-gray-900 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className={`text-gray-900 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                       />
+                      {errors.name && (
+                        <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -134,8 +168,12 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
                         name="scientific_name"
                         value={data.scientific_name}
                         onChange={(e) => setData('scientific_name', e.target.value)}
-                        className="text-gray-900 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
+                        className={`text-gray-900 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                       />
+                      {errors.scientific_name && (
+                        <p className="text-sm text-red-500 mt-1">{errors.scientific_name}</p>
+                      )}
+
                     </div>
                   </div>
                     <div className='col-span-2 '>
@@ -165,8 +203,11 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
                       value={data.detail}
                       onChange={(e) => setData('detail', e.target.value)}
                       rows={8}
-                      className="text-gray-900 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                      className={`text-gray-900 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${errors.detail ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     ></textarea>
+                      {errors.detail && (
+                        <p className="text-sm text-red-500 mt-1">{errors.detail}</p>
+                      )}
                   </div>
 
                   <div className="flex gap-4 pt-2">
@@ -209,15 +250,7 @@ export default function EditInformasiTanaman({ plant, diseases, pests } : Props)
       <UpdateConfirmationModal isOpen={updateModal} onClose={() => {
         setUpdateModal(false);
       }} onConfirm={() => {
-
-          router.post('/admin/plant/' + plant.id, {
-            _method: 'patch',
-            forceFormData: true,
-            ...data,
-            pests: pestList
-            // diseases: diseasesList.map((disease) => disease.id)
-          });
-          setUpdateModal(false);
+        handleSubmit();
       }} itemName={plant.name}/>
     </>
   );
