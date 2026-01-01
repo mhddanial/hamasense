@@ -57,4 +57,28 @@ class CommunityPost extends Model
     {
         return $this->likes()->where('user_id', $userId)->exists();
     }
+
+    // Relasi ke Reports
+    public function reports()
+    {
+        return $this->hasMany(CommunityReport::class, 'post_id');
+    }
+
+    // Relasi ke Saved Posts
+    public function savedBy()
+    {
+        return $this->hasMany(CommunitySavedPost::class, 'post_id');
+    }
+
+    // Cek apakah post disimpan oleh user
+    public function isSavedBy($userId)
+    {
+        return $this->savedBy()->where('user_id', $userId)->exists();
+    }
+
+    // Cek apakah post sudah dilaporkan oleh user
+    public function isReportedBy($userId)
+    {
+        return $this->reports()->where('user_id', $userId)->exists();
+    }
 }

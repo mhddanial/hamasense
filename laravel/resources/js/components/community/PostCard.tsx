@@ -71,6 +71,17 @@ export default function PostCard({
     return num.toString();
   };
 
+  // Category label mapping
+  const getCategoryLabel = (category: string): string => {
+    const labels: Record<string, string> = {
+      budidaya: 'Budidaya',
+      tips: 'Tips & Trik',
+      hama: 'Hama & Penyakit',
+      tanya: 'Tanya Jawab',
+    };
+    return labels[category.toLowerCase()] || category;
+  };
+
   const isOwnPost = currentUserId === post.author.id;
 
   return (
@@ -89,7 +100,7 @@ export default function PostCard({
               <div className="flex-1 space-y-0.5">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold group-hover:underline decoration-primary decoration-2 underline-offset-2">
-                      {post.author.name}
+                    {post.author.name}
                   </h3>
                   {post.author.role && (
                     <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal bg-muted text-muted-foreground">
@@ -102,7 +113,7 @@ export default function PostCard({
                   <span>{post.timestamp}</span>
                   <span className="text-border">•</span>
                   <Badge variant="outline" className="text-xs h-4 px-1 border-primary/20 text-primary bg-primary/5">
-                      {post.category}
+                    {getCategoryLabel(post.category)}
                   </Badge>
                 </div>
               </div>
@@ -128,15 +139,15 @@ export default function PostCard({
         <CardContent className="px-4 space-y-3">
           <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
             {isExpanded ? post.content : (
-               shouldTruncate ? `${post.content.slice(0, MAX_LENGTH)}...` : post.content
+              shouldTruncate ? `${post.content.slice(0, MAX_LENGTH)}...` : post.content
             )}
 
             {shouldTruncate && (
               <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="ml-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="ml-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center"
               >
-                  {isExpanded ? "Sembunyikan" : "Selengkapnya"}
+                {isExpanded ? "Sembunyikan" : "Selengkapnya"}
               </button>
             )}
           </div>
@@ -155,56 +166,44 @@ export default function PostCard({
 
         {/* Post Actions */}
         <div className="px-4 py-3 border-t bg-muted/5 flex items-center justify-between">
-            <div className="flex items-center gap-1 sm:gap-4">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onLike(post.id)}
-                className={`h-8 gap-1.5 px-2 hover:bg-red-50 hover:text-red-600 transition-colors ${
-                  post.isLiked ? 'text-red-500 bg-red-50/50' : 'text-muted-foreground'
-                }`}
-              >
-                <Heart
-                  className={`h-4 w-4 transition-transform ${post.isLiked ? 'scale-110 fill-current' : ''}`}
-                />
-                <span className="text-xs font-medium">{formatNumber(post.likes)}</span>
-              </Button>
-
-              {/* Comment Button - UBAH INI */}
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 gap-1.5 px-2 text-muted-foreground hover:bg-blue-50 hover:text-blue-600"
-                onClick={() => setIsCommentOpen(true)} // UBAH INI
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span className="text-xs font-medium">{formatNumber(post.comments)}</span>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 gap-1.5 px-2 text-muted-foreground hover:bg-green-50 hover:text-green-600"
-                onClick={() => onShare?.(post.id)}
-              >
-                <Share2 className="h-4 w-4" />
-                <span className="hidden sm:inline text-xs font-medium">Share</span>
-              </Button>
-            </div>
-
+          <div className="flex items-center gap-1 sm:gap-4">
             <Button
-              size="icon"
+              size="sm"
               variant="ghost"
-              onClick={() => onBookmark(post.id)}
-              className={`h-8 w-8 transition-colors ${
-                post.isBookmarked ? 'text-orange-500 bg-orange-50 hover:bg-orange-100' : 'text-muted-foreground hover:text-orange-500'
-              }`}
+              onClick={() => onLike(post.id)}
+              className={`h-8 gap-1.5 px-2 hover:bg-red-50 hover:text-red-600 transition-colors ${post.isLiked ? 'text-red-500 bg-red-50/50' : 'text-muted-foreground'
+                }`}
             >
-              <Bookmark
-                className={`h-4 w-4 ${post.isBookmarked ? 'fill-current' : ''}`}
+              <Heart
+                className={`h-4 w-4 transition-transform ${post.isLiked ? 'scale-110 fill-current' : ''}`}
               />
+              <span className="text-xs font-medium">{formatNumber(post.likes)}</span>
+            </Button>
+
+            {/* Comment Button */}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 gap-1.5 px-2 text-muted-foreground hover:bg-blue-50 hover:text-blue-600"
+              onClick={() => setIsCommentOpen(true)}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="text-xs font-medium">{formatNumber(post.comments)}</span>
             </Button>
           </div>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onBookmark(post.id)}
+            className={`h-8 w-8 transition-colors ${post.isBookmarked ? 'text-orange-500 bg-orange-50 hover:bg-orange-100' : 'text-muted-foreground hover:text-orange-500'
+              }`}
+          >
+            <Bookmark
+              className={`h-4 w-4 ${post.isBookmarked ? 'fill-current' : ''}`}
+            />
+          </Button>
+        </div>
       </Card>
 
       {/* TAMBAH INI - Comment Section Modal */}

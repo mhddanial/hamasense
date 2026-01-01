@@ -5,14 +5,14 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class ArticleCategorySeeder extends Seeder
+class PestSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $sqlPath = database_path('sql/article_categories.sql');
+        $sqlPath = database_path('sql/pests.sql');
         
         if (file_exists($sqlPath)) {
             $sql = file_get_contents($sqlPath);
@@ -31,7 +31,7 @@ class ArticleCategorySeeder extends Seeder
                 }
             }
             
-            $this->command->info('Article categories seeded from SQL file.');
+            $this->command->info('Pests seeded from SQL file.');
         } else {
             $this->command->error('SQL file not found: ' . $sqlPath);
         }
