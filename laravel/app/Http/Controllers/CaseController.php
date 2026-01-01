@@ -88,8 +88,16 @@ class CaseController extends Controller
         $dailyPhotosUsed = $todayLogs->whereNotNull('image_path')->count();
 
         $remainingPrompts = max(0, $MAX_DAILY_PROMPTS - $dailyPromptsUsed);
+
         // Pengguna hanya bisa mengunggah jika mereka memiliki kuota foto DAN kuota prompt (karena unggahan mengonsumsi 1 prompt)
         $canUploadPhoto = ($dailyPhotosUsed < $MAX_DAILY_PHOTOS) && ($remainingPrompts > 0);
+
+        // --- HEALTH CHECK POPUP LOGIC ---
+        // Tampilkan popup jika:
+        // 1. Sudah hari ke-2 atau lebih (daysSinceCreation >= 1)
+        // 2. Kondisi belum diset (null) atau masih 'sick' tapi perlu konfirmasi ulang (opsional, saat ini check null saja)
+        // 3. User belum menutup case (status != closed)
+        $showHealthCheckPopup = ($daysSinceCreation >= 1) && ($case->condition === null) && ($case->status !== 'closed');
 
         return Inertia::render('continuous_care/index', [
             'case' => $case,
@@ -102,8 +110,37 @@ class CaseController extends Controller
                 'daily_photos_used' => $dailyPhotosUsed,
                 'daily_photos_max' => $MAX_DAILY_PHOTOS,
                 'can_upload_photo' => $canUploadPhoto,
-            ]
+            ],
+            'showHealthCheckPopup' => $showHealthCheckPopup
         ]);
+    }
+
+    public function updateCondition(Request $request, $id)
+    {
+        $case = Cases::where('user_id', auth()->id())->findOrFail($id);
+        
+        $request->validate([
+            'condition' => 'required|in:Healthy,Sick',
+        ]);
+
+        $condition = $request->condition;
+        $case->update(['condition' => $condition]);
+
+        if ($condition === 'Healthy') {
+            CaseLog::create([
+                'case_id' => $case->id,
+                'message' => 'Laporan Pengguna: Tanaman sudah sehat.',
+                'type' => 'system'
+            ]);
+        } else {
+             CaseLog::create([
+                'case_id' => $case->id,
+                'message' => 'Laporan Pengguna: Tanaman masih sakit.',
+                'type' => 'system'
+            ]);
+        }
+
+        return back()->with('success', 'Status kondisi tanaman diperbarui.');
     }
 
     public function uploadFollowUp(Request $request, $caseId)

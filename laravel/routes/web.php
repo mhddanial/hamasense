@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::post('/cases/create-from-detection/{historyId}', [CaseController::class, 'createFormDetection'])->name('cases.createFormDetection');
     Route::get('/cases/{id}', [CaseController::class, 'show'])->name('cases.show');
     Route::post('/cases/{caseId}/follow-up', [CaseController::class, 'uploadFollowUp'])->name('cases.followUp');
+    Route::post('/cases/{caseId}/condition', [CaseController::class, 'updateCondition'])->name('cases.updateCondition');
     Route::post('/cases/{caseId}/close', [CaseController::class, 'close'])->name('cases.close');
 });
 

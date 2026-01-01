@@ -1,14 +1,10 @@
 import { route } from 'ziggy-js';
 import AppLayout from '@/layouts/app-layout';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import React, { useState, useRef, useEffect } from 'react';
-import {
-    Head,
-    Link,
-    useForm,
-    usePage
-} from '@inertiajs/react';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import {
     Card,
     CardTitle,
@@ -17,17 +13,21 @@ import {
     CardDescription
 } from '@/components/ui/card';
 import {
-    Send,
+    DialogTitle,
+    DialogHeader,
+    DialogContent,
+    DialogDescription,
+    Dialog,
+} from "@/components/ui/dialog"
+import {
     FileUp,
     Loader2,
     Droplets,
-    Calendar,
     ArrowLeft,
     AlertCircle,
     CheckCircle2,
     ThermometerSun
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 
 interface QuotaInfo {
@@ -41,10 +41,28 @@ interface QuotaInfo {
     can_upload_photo: boolean;
 }
 
-export default function ContinuousCareIndex({ case: caseData, quota }: { case: CaseData, quota: QuotaInfo }) {
+export default function ContinuousCareIndex({ case: caseData, quota, showHealthCheckPopup }: { case: CaseData, quota: QuotaInfo, showHealthCheckPopup: boolean }) {
     const { auth } = usePage().props as any;
     const [preview, setPreview] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isHealthCheckOpen, setIsHealthCheckOpen] = useState(false);
+
+    useEffect(() => {
+        if (showHealthCheckPopup) {
+            // Delay sedikit biar smooth load animasi
+            const timer = setTimeout(() => setIsHealthCheckOpen(true), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [showHealthCheckPopup]);
+
+    // Handler untuk update status kondisi
+    const handleUpdateCondition = (condition: 'Healthy' | 'Sick') => {
+        router.post(route('cases.updateCondition', caseData.id), {
+            condition: condition
+        }, {
+            onSuccess: () => setIsHealthCheckOpen(false)
+        });
+    }
 
     const { data, setData, post, processing, errors, reset } = useForm({
         image: null as File | null,
@@ -426,6 +444,34 @@ export default function ContinuousCareIndex({ case: caseData, quota }: { case: C
 
                 </div>
             </div>
+            {/* --- HEALTH CHECK DIALOG --- */}
+            <Dialog open={isHealthCheckOpen} onOpenChange={setIsHealthCheckOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-xl">Apakah tanaman anda sudah sehat?</DialogTitle>
+                        <DialogDescription className="text-center">
+                            Silakan pilih jawaban Anda:
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center justify-center gap-4 py-4">
+                         <Button 
+                            variant="default" 
+                            className="bg-green-600 hover:bg-green-700 w-full"
+                            onClick={() => handleUpdateCondition('Healthy')}
+                        >
+                            Ya, Sudah Sehat
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => handleUpdateCondition('Sick')}
+                        >
+                            Belum, Masih Sakit
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
         </AppLayout>
     );
 }

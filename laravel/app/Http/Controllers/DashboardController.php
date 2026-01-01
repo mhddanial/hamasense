@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Auth;
 use Stevebauman\Location\Facades\Location;
-use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
+
+use App\Models\DetectionHistory;
+use App\Models\Article;
+use App\Models\Cases;
 
 class DashboardController extends Controller
 {
@@ -20,6 +24,7 @@ class DashboardController extends Controller
         if (Auth::user()?->role === 'admin') {
             return redirect('/admin/dashboard');
         }
+
         // 1. Cek apakah data cuaca sudah ada di session user?
         if ($request->session()->has('weather_data')) {
             $weatherData = $request->session()->get('weather_data');
@@ -33,9 +38,53 @@ class DashboardController extends Controller
             }
         }
 
+        // --- FETCH REAL DATA FOR DASHBOARD ---
+        $userId = Auth::id();
+
+        // 1. Detection Stats
+        // Asumsi: Label 'Healthy' atau 'Sehat' = Sehat. Lainnya = Sakit.
+        // Asumsi: Kita hitung dari DetectionHistory
+        $totalDetections = DetectionHistory::where('user_id', $userId)->count();
+        $healthyDetections = Cases::where('user_id', $userId)
+            ->where('condition', 'Healthy')
+            ->count();
+        $sickDetections = $totalDetections - $healthyDetections;
+
+        // 2. Articles (Recommendation)
+        // Ambil 2 artikel terbaru, idealnya yang relevan. Untuk sekarang ambil terbaru saja.
+        $articles = Article::with('category')
+            ->latest()
+            ->take(2)
+            ->get()
+            ->map(function ($article) {
+                return [
+                    'title' => $article->title,
+                    'desc' => \Illuminate\Support\Str::limit(strip_tags($article->content), 80),
+                    'label' => $article->category->name ?? 'Info',
+                    'slug' => $article->slug,
+                    // Jika butuh image thumbnail
+                    'image' => $article->image
+                ];
+            });
+
+        // 3. Care Status
+        // Hitung kasus aktif
+        $activeCasesCount = Cases::where('user_id', $userId)
+            ->where('status', '!=', 'closed')
+            ->count();
+
         return Inertia::render('dashboard', [
             'user' => Auth::user(),
-            'weather' => $weatherData, 
+            'weather' => $weatherData,
+            'stats' => [
+                'total' => $totalDetections,
+                'sick' => $sickDetections,
+                'healthy' => $healthyDetections
+            ],
+            'articles' => $articles,
+            'care_status' => [
+                'active_count' => $activeCasesCount
+            ],
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),

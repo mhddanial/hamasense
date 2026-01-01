@@ -25,6 +25,7 @@ class Cases extends Model
         'confidence',
         'entropy',
         'ai_summary',
+        'condition',
     ];
 
     public function detectionHistory()
@@ -51,4 +52,5 @@ class Cases extends Model
     {
         return $this->hasMany(CaseFollowUp::class, 'case_id');
     }
-};
+
+}
