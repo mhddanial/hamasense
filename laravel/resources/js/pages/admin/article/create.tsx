@@ -17,7 +17,7 @@ interface Props extends PageProps {
 
 
 export default function BuatArtikel({ categories }: Props) {
-    const { data, setData, post, processing, errors } = useForm<{
+    const { data, setData, post, processing } = useForm<{
         title: string;
         category_id: number;
         content: string;
@@ -31,13 +31,11 @@ export default function BuatArtikel({ categories }: Props) {
         references: [],
     });
 
-    const [uploadedImage, setUploadedImage] = useState('');
+    const [ uploadedImage, setUploadedImage ] = useState('');
+    const [ errors, setErrors ] = useState<Record<string, string>>({});
 
     const handleSubmit = () => {
-        if (!data.title || !data.content || !data.category_id) {
-            alert('Mohon lengkapi semua field!');
-            return;
-        }
+        if (!validate()) return;
 
         post('/admin/article', {
             forceFormData: true,
@@ -73,6 +71,26 @@ export default function BuatArtikel({ categories }: Props) {
             setData('image', file);
             setUploadedImage(URL.createObjectURL(file));
         }
+    };
+
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+
+        if (!data.title.trim()) {
+            newErrors.title = 'Judul artikel wajib diisi';
+        }
+
+        if (!data.content.trim()) {
+            newErrors.content = 'Konten artikel wajib diisi';
+        }
+
+        if (!data.category_id) {
+            newErrors.category_id = 'Kategori belum dipilih';
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
     };
 
     const addReference = () => {
@@ -166,7 +184,7 @@ export default function BuatArtikel({ categories }: Props) {
                                     value={data.title}
                                     onChange={(e) => setData('title', e.target.value)}
                                     placeholder="Masukkan judul artikel..."
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                 />
                                 {errors.title && <div className="text-red-500 text-sm mt-1">{errors.title}</div>}
                             </div>
@@ -180,7 +198,7 @@ export default function BuatArtikel({ categories }: Props) {
                                     name="category"
                                     value={data.category_id}
                                     onChange={(e) => setData('category_id', + e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                 >
                                     <option value="">Pilih kategori...</option>
                                     {categories.map((cat, index) => (
@@ -189,6 +207,7 @@ export default function BuatArtikel({ categories }: Props) {
                                         </option>
                                     ))}
                                 </select>
+                                {errors.category_id && <div className="text-red-500 text-sm mt-1">{errors.category_id}</div>}
                             </div>
                         </div>
 
@@ -197,7 +216,11 @@ export default function BuatArtikel({ categories }: Props) {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Konten Artikel
                             </label>
-                            <Editor onHtmlChange={handleContentChange} />
+                            <div 
+                                className={`w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                            >
+                                <Editor onHtmlChange={handleContentChange} />
+                            </div>
                             {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
                         </div>
 

@@ -12,7 +12,8 @@ export default function TambahkanTanaman() {
   const [ uploadedImage, setUploadedImage] = useState('');
   const [ buttonDisable, setButtonDisable ] = useState(false);
   const [ pestList, setPestList ] = useState([]);
-  
+  const [ errors, setErrors ] = useState<Record<string, string>>({});
+
   const { data, setData, post } = useForm({
       name: '',
       scientific_name: '',
@@ -23,8 +24,32 @@ export default function TambahkanTanaman() {
 
   const { pests } = usePage().props;
 
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!data.name.trim()) {
+      newErrors.name = 'Nama tumbuhan wajib diisi';
+    }
+
+    if (!data.scientific_name.trim()) {
+      newErrors.scientific_name = 'Nama latin wajib diisi';
+    }
+
+    if (!data.detail.trim()) {
+      newErrors.detail = 'Detail tanaman wajib diisi';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+
   const handleSubmit = async () => {
-    setButtonDisable(true);
+    
+    if (!validate()) return;
+
+    setButtonDisable(true);    
     post('/admin/plant/');
   }
 
@@ -118,8 +143,11 @@ export default function TambahkanTanaman() {
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value) }
                         placeholder="Tomat"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                       />
+                      {errors.name && (
+                        <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -131,13 +159,16 @@ export default function TambahkanTanaman() {
                         value={data.scientific_name}
                         onChange={(e) => setData('scientific_name', e.target.value)}
                         placeholder="Solanum lycopersicum"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic"
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                       />
+                      {errors.scientific_name && (
+                        <p className="text-sm text-red-500 mt-1">{errors.scientific_name}</p>
+                      )}
                     </div>
                   </div>
                   <div className='col-span-2 '>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tanaman yang Diserang
+                        Hama yang menyerang
                       </label>
                       
                         <div className='w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500'>
@@ -164,8 +195,11 @@ export default function TambahkanTanaman() {
                       onChange={(e) => setData('detail', e.target.value)}
                       placeholder="Tomat (Solanum lycopersicum) adalah buah yang sering digunakan sebagai sayuran dalam masakan. Tanaman ini berasal dari Amerika Selatan dan termasuk keluarga Solanaceae."
                       rows={8}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${errors.detail ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     ></textarea>
+                      {errors.detail && (
+                        <p className="text-sm text-red-500 mt-1">{errors.detail}</p>
+                      )}
                   </div>
 
                   <div className="flex gap-4 pt-2">

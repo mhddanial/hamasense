@@ -20,7 +20,7 @@ class CustomerMiddleware
         }
 
         if (auth()->user()->role !== 'customer') {
-            abort(403);
+            return to_route('admin.dashboard');
         }
 
         return $next($request);

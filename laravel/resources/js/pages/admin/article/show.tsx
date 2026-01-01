@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { PageProps } from '@inertiajs/core';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Paperclip, Upload, Plus, Trash2 } from 'lucide-react';
 import { Category, Article } from '@/types/admin';
 import { router, useForm } from '@inertiajs/react';
@@ -29,8 +27,9 @@ export default function EditArtikel({ article, categories, articles }: Props) {
   );
   const [updateModal, setUpdateModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [ errors, setErrors ] = useState<Record<string, string>>({}); 
 
-  const { data, setData, delete: destroy, errors } = useForm({
+  const { data, setData, delete: destroy } = useForm({
     'image': article.image as string | File | null,
     'title': article.title,
     'category_id': article.category_id,
@@ -53,6 +52,35 @@ export default function EditArtikel({ article, categories, articles }: Props) {
     setData(name as any, value);
   };
 
+  const isContentEmpty = (content: string) => {
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    return div.textContent?.trim().length === 0;
+  }   
+
+  const validate = () => {
+        const newErrors: Record<string, string> = {};
+
+        if (!data.title.trim()) {
+          console.log(1)
+            newErrors.title = 'Judul artikel wajib diisi';
+        }
+
+        if (isContentEmpty(data.content)) {
+          newErrors.content = 'Konten artikel wajib diisi';
+        }
+
+        if (!data.category_id) {
+            newErrors.category_id = 'Kategori belum dipilih';
+          console.log(3)
+
+          }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
   const addReference = () => {
     setData('references', [...data.references, { source_name: '', url: '' }]);
   };
@@ -72,6 +100,17 @@ export default function EditArtikel({ article, categories, articles }: Props) {
   const handleContentChange = (html: string) => {
     setData('content', html);
   };
+
+  const handleSubmit = () => {
+    if(!validate()) return;
+    
+    router.post(`/admin/article/${article.id}`, {
+      _method: 'patch',
+      ...data
+    }, {
+      forceFormData: true,
+    });
+  }
 
   return (
     <>
@@ -96,7 +135,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                       alt="Preview"
                       className="w-full h-40 object-cover rounded-lg mb-4"
                     />
-                    <button type='button'
+                  <button type='button'
                       onClick={(e) => {
                         e.preventDefault();
                         setData('image', null);
@@ -148,7 +187,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                     value={data.title}
                     onChange={(e) => setData('title', e.target.value)}
                     placeholder="Masukkan judul artikel..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${ errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   />
                   {errors.title && <div className="text-red-500 text-sm mt-1">{errors.title}</div>}
                 </div>
@@ -162,7 +201,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                     name="category"
                     value={data.category_id}
                     onChange={(e) => setData('category_id', +e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-900"
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-900 ${ errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   >
                     <option value="">Pilih kategori...</option>
                     {categories.map((cat, index) => (
@@ -202,10 +241,14 @@ export default function EditArtikel({ article, categories, articles }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Konten Artikel
           </label>
-          <Editor
-            initialHtml={article.content}
-            onHtmlChange={handleContentChange}
-          />
+          <div
+            className={`w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.content ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+          >
+            <Editor
+              initialHtml={article.content}
+              onHtmlChange={handleContentChange}
+            />
+          </div>
           <p className="text-xs text-gray-500 mt-2">
             Gunakan toolbar di atas untuk memformat teks. Konten saat ini akan ditampilkan dalam editor.
           </p>
@@ -297,14 +340,8 @@ export default function EditArtikel({ article, categories, articles }: Props) {
       <UpdateConfirmationModal isOpen={updateModal} onClose={() => {
         setUpdateModal(false)
       }} onConfirm={() => {
-        console.log(`/admin/article/${article.id}`);
-        router.post(`/admin/article/${article.id}`, {
-          _method: 'patch',
-          ...data
-        }, {
-          forceFormData: true,
-        });
-        setUpdateModal(false)
+        handleSubmit();
+        setUpdateModal(false);
       }} itemName={article.title} />
     </>
   );

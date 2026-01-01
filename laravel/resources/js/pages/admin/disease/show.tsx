@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { Upload, Paperclip } from 'lucide-react';
-import { button, router, useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 
 import { PageProps } from '@inertiajs/core';
 import { Disease, Plant } from '@/types/admin';
-import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
-import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
-import { ExampleCombobox } from '@/components/admin/Combobox';
 
 interface Props extends PageProps {
   plants: Plant[];
@@ -22,7 +19,7 @@ const SEVERITY_LEVELS = [
 
 export default function EditPenyakit({ plants, disease }: Props) {
 
-  const { data, setData, processing, errors } = useForm({
+  const { data, setData, processing } = useForm({
     label: disease.label || '',
     name: disease.name,
     description: disease.description || '',
@@ -31,6 +28,36 @@ export default function EditPenyakit({ plants, disease }: Props) {
     new_img: null as File | null,
     plant_type_id: disease.plant_type_id
   });
+
+    const [ errors, setErrors ] = useState<Record<string, string>>({});
+  
+    const validate = () => {
+      const newErrors: Record<string, string> = {};
+  
+      if (!data.label.trim()) {
+        newErrors.label = 'Label penyakit wajib diisi';
+      }
+  
+      if (!data.name.trim()) {
+        newErrors.name = 'Nama penyakit wajib diisi';
+      }
+  
+      if (!data.description.trim()) {
+        newErrors.description = 'Deskripsi wajib diisi';
+      }
+  
+      if (!data.plant_type_id) {
+        newErrors.plant_type_id = 'Tanaman terkait belum dipilih';
+      }
+  
+      if (!data.severity_level.trim()) {
+        newErrors.severity_level = 'Tingkat keparahan belum dipilih';
+      }
+  
+      setErrors(newErrors);
+  
+      return Object.keys(newErrors).length === 0;
+    };
 
   const [uploadedImage, setUploadedImage] = useState(
     disease.img_path ? `/storage/disease/${disease.img_path}` : ''
@@ -45,6 +72,8 @@ export default function EditPenyakit({ plants, disease }: Props) {
   };
 
   const handleUpdate = () => {
+    if(!validate()) return;
+
     router.post(`/admin/disease/${disease.id}`, {
       _method: 'patch',
       ...data
@@ -126,7 +155,7 @@ export default function EditPenyakit({ plants, disease }: Props) {
                       value={data.label}
                       onChange={(e) => setData('label', e.target.value)}
                       placeholder="late_blight"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.label ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.label && <div className="text-red-500 text-sm mt-1">{errors.label}</div>}
                   </div>
@@ -140,7 +169,7 @@ export default function EditPenyakit({ plants, disease }: Props) {
                       value={data.name}
                       onChange={(e) => setData('name', e.target.value)}
                       placeholder="Busuk Daun"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                   </div>
@@ -152,7 +181,7 @@ export default function EditPenyakit({ plants, disease }: Props) {
                       name="severity_level"
                       value={data.severity_level}
                       onChange={(e) => setData('severity_level', e.target.value as 'rendah' | 'sedang' | 'tinggi')}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.severity_level ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
                     >
                       <option value="">Pilih tingkat keparahan...</option>
                       {SEVERITY_LEVELS.map((level) => (
@@ -171,7 +200,7 @@ export default function EditPenyakit({ plants, disease }: Props) {
                       name="plant_type_id"
                       value={data.plant_type_id}
                       onChange={(e) => setData('plant_type_id', +e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.plant_type_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
                     >
                       <option value="">Pilih jenis tanaman...</option>
                       {plants.map((plant) => (
@@ -192,7 +221,7 @@ export default function EditPenyakit({ plants, disease }: Props) {
                       onChange={(e) => setData('description', e.target.value)}
                       placeholder="Deskripsi singkat tentang penyakit ini..."
                       rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
                     ></textarea>
                     {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                   </div>
