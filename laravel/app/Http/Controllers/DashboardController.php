@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
+use App\Models\DetectionHistory;
+use App\Models\Cases;
+use App\Models\Article;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 use Stevebauman\Location\Facades\Location;
-
-use App\Models\DetectionHistory;
-use App\Models\Article;
-use App\Models\Cases;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -24,6 +24,9 @@ class DashboardController extends Controller
         if (Auth::user()?->role === 'admin') {
             return redirect('/admin/dashboard');
         }
+
+        $userId = Auth::id();
+        $thirtyDaysAgo = Carbon::now()->subDays(30);
 
         // 1. Cek apakah data cuaca sudah ada di session user?
         if ($request->session()->has('weather_data')) {
@@ -38,53 +41,81 @@ class DashboardController extends Controller
             }
         }
 
-        // --- FETCH REAL DATA FOR DASHBOARD ---
-        $userId = Auth::id();
-
-        // 1. Detection Stats
-        // Asumsi: Label 'Healthy' atau 'Sehat' = Sehat. Lainnya = Sakit.
-        // Asumsi: Kita hitung dari DetectionHistory
-        $totalDetections = DetectionHistory::where('user_id', $userId)->count();
-        $healthyDetections = Cases::where('user_id', $userId)
-            ->where('condition', 'Healthy')
+        // --- DETECTION STATISTICS (30 hari terakhir) ---
+        $totalDetections = DetectionHistory::where('user_id', $userId)
+            ->where('created_at', '>=', $thirtyDaysAgo)
             ->count();
-        $sickDetections = $totalDetections - $healthyDetections;
 
-        // 2. Articles (Recommendation)
-        // Ambil 2 artikel terbaru, idealnya yang relevan. Untuk sekarang ambil terbaru saja.
-        $articles = Article::with('category')
-            ->latest()
-            ->take(2)
+        $healthyDetections = DetectionHistory::where('user_id', $userId)
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->where('label', 'LIKE', '%healthy%')
+            ->count();
+
+        $diseasedDetections = $totalDetections - $healthyDetections;
+
+        // --- RECENT DETECTIONS (5 terbaru user) ---
+        $recentDetections = DetectionHistory::where('user_id', $userId)
+            ->orderByDesc('created_at')
+            ->limit(5)
             ->get()
-            ->map(function ($article) {
+            ->map(function ($detection) {
                 return [
-                    'title' => $article->title,
-                    'desc' => \Illuminate\Support\Str::limit(strip_tags($article->content), 80),
-                    'label' => $article->category->name ?? 'Info',
-                    'slug' => $article->slug,
-                    // Jika butuh image thumbnail
-                    'image' => $article->image
+                    'id' => $detection->id,
+                    'label' => $detection->label ?? 'Unknown',
+                    'confidence' => $detection->confidence ? round($detection->confidence * 100, 1) : null,
+                    'image_path' => $detection->image_path,
+                    'created_at' => $detection->created_at->diffForHumans(),
                 ];
             });
 
-        // 3. Care Status
-        // Hitung kasus aktif
-        $activeCasesCount = Cases::where('user_id', $userId)
-            ->where('status', '!=', 'closed')
-            ->count();
+        // --- ACTIVE CASES (Case yang masih dalam proses) ---
+        $activeCases = Cases::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'in_progress', 'monitoring'])
+            ->orderByDesc('created_at')
+            ->limit(3)
+            ->get()
+            ->map(function ($case) {
+                return [
+                    'id' => $case->id,
+                    'plant_name' => $case->plant_name ?? 'Unknown Plant',
+                    'pest_name' => $case->pest_name ?? $case->label ?? 'Unknown',
+                    'status' => $case->status,
+                    'created_at' => $case->created_at->diffForHumans(),
+                ];
+            });
+
+        // --- ARTICLE RECOMMENDATIONS (2 artikel terbaru) ---
+        // Note: Show latest articles, prioritizing published ones, but also include unpublished
+        $articles = Article::with('category:id,name')
+            ->orderByDesc('published_at')
+            ->orderByDesc('created_at')
+            ->limit(2)
+            ->get()
+            ->map(function ($article) {
+                // Generate slug with ID at the end (same format as HomeController)
+                $slug = \Illuminate\Support\Str::slug($article->title) . '-' . $article->id;
+                
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'slug' => $slug,
+                    'summary' => $article->summary,
+                    'category' => $article->category?->name ?? 'Umum',
+                    'image' => $article->image,
+                ];
+            });
 
         return Inertia::render('dashboard', [
             'user' => Auth::user(),
             'weather' => $weatherData,
             'stats' => [
-                'total' => $totalDetections,
-                'sick' => $sickDetections,
-                'healthy' => $healthyDetections
+                'totalDetections' => $totalDetections,
+                'healthyDetections' => $healthyDetections,
+                'diseasedDetections' => $diseasedDetections,
             ],
+            'recentDetections' => $recentDetections,
+            'activeCases' => $activeCases,
             'articles' => $articles,
-            'care_status' => [
-                'active_count' => $activeCasesCount
-            ],
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
@@ -231,3 +262,6 @@ class DashboardController extends Controller
         ];
     }
 }
+
+
+
