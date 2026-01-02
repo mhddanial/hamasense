@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use App\Models\DetectionHistory;
+use App\Models\Disease;
 
 class DetectController extends Controller
 {
@@ -46,7 +47,9 @@ class DetectController extends Controller
                 return Inertia::render('detect/result', [
                     'error' => 'Hasil prediksi tidak valid atau rusak.',
                     'image_url' => null,
-                    'result' => null
+                    'result' => null,
+                    'disease' => null,
+                    'plant_type' => null,
                 ]);
             }
 
@@ -57,6 +60,19 @@ class DetectController extends Controller
             $abstainReasons    = $result['abstain_reasons'] ?? [];
             $geminiInfo        = $result['info'] ?? null;
 
+            // Lookup disease by predicted_label to get Indonesian name and plant type
+            $disease = null;
+            $plantType = null;
+            if ($predictedLabel) {
+                $disease = Disease::with('plant_type')
+                    ->where('label', $predictedLabel)
+                    ->first();
+                
+                if ($disease) {
+                    $plantType = $disease->plant_type;
+                }
+            }
+
             if ($shouldAbstain || $predictedLabel === null || $confidence === null) {
                 return Inertia::render('detect/result', [
                     'error' => 'Gambar tidak dapat dikenali dengan cukup akurat.',
@@ -64,6 +80,8 @@ class DetectController extends Controller
                     'entropy' => $entropy,
                     'confidence' => $confidence,
                     'result' => null,
+                    'disease' => null,
+                    'plant_type' => null,
                     'image_url' => $this->encodeImage($image),
                     'image_path' => $path,
                 ]);
@@ -75,6 +93,16 @@ class DetectController extends Controller
                     'entropy'      => $entropy,
                     'info'         => $geminiInfo,
                 ],
+                'disease' => $disease ? [
+                    'id' => $disease->id,
+                    'name' => $disease->name,
+                    'description' => $disease->description,
+                    'severity_level' => $disease->severity_level,
+                ] : null,
+                'plant_type' => $plantType ? [
+                    'id' => $plantType->id,
+                    'name' => $plantType->name,
+                ] : null,
                 'error' => null,
                 'abstain_reasons' => $abstainReasons,
                 'image_url' => $this->encodeImage($image),

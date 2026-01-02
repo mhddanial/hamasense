@@ -47,15 +47,29 @@ interface FastApiResult {
   info: APIAdvice | null;
 }
 
+interface DiseaseData {
+  id: number;
+  name: string;
+  description: string | null;
+  severity_level: 'rendah' | 'sedang' | 'tinggi';
+}
+
+interface PlantTypeData {
+  id: number;
+  name: string;
+}
+
 interface Props {
   result: FastApiResult | null;
+  disease: DiseaseData | null;
+  plant_type: PlantTypeData | null;
   error: string | null;
   abstain_reasons?: string[];
   image_url: string | null;
   image_path: string | null;
 }
 
-export default function ResultPage({ result, error, abstain_reasons, image_url, image_path }: Props) {
+export default function ResultPage({ result, disease, plant_type, error, abstain_reasons, image_url, image_path }: Props) {
   // Flash message handling is now in AppSidebarLayout
 
 
@@ -261,13 +275,44 @@ export default function ResultPage({ result, error, abstain_reasons, image_url, 
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div>
                     <CardDescription>Terdeteksi sebagai</CardDescription>
-                    {/* Menggunakan label dari JSON (info.label) */}
+                    {/* Menggunakan name dari database, fallback ke label dari API */}
                     <CardTitle className="text-3xl font-bold text-emerald-950 dark:text-emerald-50 mt-1">
-                      {label}
+                      {disease?.name || label}
                     </CardTitle>
-                    {/* Description dari JSON */}
+                    {/* Plant type and severity badges in consistent layout */}
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      {plant_type && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Nama Tanaman:</span>
+                          <Badge
+                            variant="secondary"
+                            className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          >
+                            {plant_type.name}
+                          </Badge>
+                        </div>
+                      )}
+                      {disease?.severity_level && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Tingkat Keparahan:</span>
+                          <Badge
+                            variant="outline"
+                            className={`px-3 py-1 ${disease.severity_level === 'tinggi'
+                              ? 'border-red-200 bg-red-50 text-red-700'
+                              : disease.severity_level === 'sedang'
+                                ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
+                                : 'border-green-200 bg-green-50 text-green-700'
+                              }`}
+                          >
+                            {disease.severity_level === 'tinggi' ? 'Tinggi' :
+                              disease.severity_level === 'sedang' ? 'Sedang' : 'Rendah'}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                    {/* Description dari FastAPI */}
                     {advice.description && (
-                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                      <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                         {advice.description}
                       </p>
                     )}
