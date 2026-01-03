@@ -2,24 +2,30 @@ import React, { useState } from 'react';
 import { Upload, Paperclip } from 'lucide-react';
 import { useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 import { DataTableDemo } from '@/components/admin/Table';
 import { BadgeDemo } from '@/components/admin/Badge';
 import { Pest } from '@/types/admin';
 
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Admin', href: '/admin' },
+  { title: 'Kelola Tanaman', href: '/admin/plant' },
+  { title: 'Tambah Tanaman', href: '#' },
+];
 
 export default function TambahkanTanaman() {
 
-  const [ uploadedImage, setUploadedImage] = useState('');
-  const [ buttonDisable, setButtonDisable ] = useState(false);
-  const [ pestList, setPestList ] = useState([]);
-  const [ errors, setErrors ] = useState<Record<string, string>>({});
+  const [uploadedImage, setUploadedImage] = useState('');
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const [pestList, setPestList] = useState([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data, setData, post } = useForm({
-      name: '',
-      scientific_name: '',
-      detail: '',
-      img_path: null,
-      pests: pestList
+    name: '',
+    scientific_name: '',
+    detail: '',
+    img_path: null,
+    pests: pestList
   });
 
   const { pests } = usePage().props;
@@ -46,10 +52,10 @@ export default function TambahkanTanaman() {
 
 
   const handleSubmit = async () => {
-    
+
     if (!validate()) return;
 
-    setButtonDisable(true);    
+    setButtonDisable(true);
     post('/admin/plant/');
   }
 
@@ -74,7 +80,7 @@ export default function TambahkanTanaman() {
   };
 
   return (
-  <>
+    <AdminLayout breadcrumbs={breadcrumbs}>
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
 
@@ -89,12 +95,12 @@ export default function TambahkanTanaman() {
               <div>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-full flex flex-col justify-center">
                   <h3 className="text-lg font-semibold mb-6">Upload Foto</h3>
-                  
+
                   {uploadedImage ? (
                     <div className="mb-4">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Preview" 
+                      <img
+                        src={uploadedImage}
+                        alt="Preview"
                         className="w-full h-80 object-cover rounded-lg mb-4"
                       />
                       <button
@@ -115,7 +121,7 @@ export default function TambahkanTanaman() {
                       </p>
                     </div>
                   )}
-                  
+
                   <label className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors mx-auto">
                     <Paperclip className="w-5 h-5" />
                     <span className="font-medium">Pilih File</span>
@@ -141,7 +147,7 @@ export default function TambahkanTanaman() {
                         type="text"
                         name="name"
                         value={data.name}
-                        onChange={(e) => setData('name', e.target.value) }
+                        onChange={(e) => setData('name', e.target.value)}
                         placeholder="Tomat"
                         className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                       />
@@ -167,24 +173,24 @@ export default function TambahkanTanaman() {
                     </div>
                   </div>
                   <div className='col-span-2 '>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Hama yang menyerang
-                      </label>
-                      
-                        <div className='w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500'>
-                          <DataTableDemo allDatas={pests} checkedDatas={data.pests} onChange={(value: number) => {
-                              const checkedPest: number[] = data.pests;
-                              if (!data.pests.includes(value)) {
-                                setData('pests', [...checkedPest, value]);
-                                return;
-                              }else {
-                                setData('pests', [...checkedPest.filter((id) => value !== id)]);
-                                return;
-                              }
-                          }} name={'plants'}/>
-                          <BadgeDemo checkedItems={data.pests} allItems={pests} onClick={(id: number) => { setPestList((pest) => pest.filter((pest: Pest) => pest.id !== id))}}/>
-                        </div>
-                      </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Hama yang menyerang
+                    </label>
+
+                    <div className='w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500'>
+                      <DataTableDemo allDatas={pests} checkedDatas={data.pests} onChange={(value: number) => {
+                        const checkedPest: number[] = data.pests;
+                        if (!data.pests.includes(value)) {
+                          setData('pests', [...checkedPest, value]);
+                          return;
+                        } else {
+                          setData('pests', [...checkedPest.filter((id) => value !== id)]);
+                          return;
+                        }
+                      }} name={'plants'} />
+                      <BadgeDemo checkedItems={data.pests} allItems={pests} onClick={(id: number) => { setPestList((pest) => pest.filter((pest: Pest) => pest.id !== id)) }} />
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Detail
@@ -197,23 +203,23 @@ export default function TambahkanTanaman() {
                       rows={8}
                       className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${errors.detail ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     ></textarea>
-                      {errors.detail && (
-                        <p className="text-sm text-red-500 mt-1">{errors.detail}</p>
-                      )}
+                    {errors.detail && (
+                      <p className="text-sm text-red-500 mt-1">{errors.detail}</p>
+                    )}
                   </div>
 
                   <div className="flex gap-4 pt-2">
-                    <button 
+                    <button
                       onClick={handleCancel}
                       className="px-8 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                     >
                       Batal
                     </button>
-                    <button 
+                    <button
                       disabled={buttonDisable}
                       onClick={handleSubmit}
                       type='button'
-                      className={`px-8 py-3 ${ buttonDisable ? 'bg-gray-300 text-gray-900' : 'bg-teal-600 text-white hover:bg-teal-700' }   rounded-lg  transition-colors font-medium`}
+                      className={`px-8 py-3 ${buttonDisable ? 'bg-gray-300 text-gray-900' : 'bg-teal-600 text-white hover:bg-teal-700'}   rounded-lg  transition-colors font-medium`}
                     >
                       Tambahkan
                     </button>
@@ -224,12 +230,6 @@ export default function TambahkanTanaman() {
           </div>
         </div>
       </div>
-</>
+    </AdminLayout>
   );
 }
-
-TambahkanTanaman.layout = (page: React.ReactElement) => (
-  <AdminLayout page_title='plant'>
-    {page}
-  </AdminLayout>
-)

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,6 +86,12 @@ interface Props {
 export default function CommunityAdminShow({ post }: Props) {
     const [isDeleting, setIsDeleting] = useState(false);
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Admin', href: '/admin' },
+        { title: 'Kelola Komunitas', href: '/admin/community' },
+        { title: 'Detail Post', href: '#' },
+    ];
+
     const handleDeletePost = () => {
         setIsDeleting(true);
         router.delete(route('admin.community.destroy', post.id), {
@@ -130,7 +137,7 @@ export default function CommunityAdminShow({ post }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Detail Postingan" />
 
             <div className="p-6 space-y-6">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PageProps } from '@inertiajs/core';
 import { Paperclip, Upload, Plus, Trash2 } from 'lucide-react';
 import { Category, Article } from '@/types/admin';
+import { type BreadcrumbItem } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
@@ -27,7 +28,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
   );
   const [updateModal, setUpdateModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  const [ errors, setErrors ] = useState<Record<string, string>>({}); 
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data, setData, delete: destroy } = useForm({
     'image': article.image as string | File | null,
@@ -56,30 +57,30 @@ export default function EditArtikel({ article, categories, articles }: Props) {
     const div = document.createElement('div');
     div.innerHTML = content;
     return div.textContent?.trim().length === 0;
-  }   
+  }
 
   const validate = () => {
-        const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {};
 
-        if (!data.title.trim()) {
-          console.log(1)
-            newErrors.title = 'Judul artikel wajib diisi';
-        }
+    if (!data.title.trim()) {
+      console.log(1)
+      newErrors.title = 'Judul artikel wajib diisi';
+    }
 
-        if (isContentEmpty(data.content)) {
-          newErrors.content = 'Konten artikel wajib diisi';
-        }
+    if (isContentEmpty(data.content)) {
+      newErrors.content = 'Konten artikel wajib diisi';
+    }
 
-        if (!data.category_id) {
-            newErrors.category_id = 'Kategori belum dipilih';
-          console.log(3)
+    if (!data.category_id) {
+      newErrors.category_id = 'Kategori belum dipilih';
+      console.log(3)
 
-          }
+    }
 
-        setErrors(newErrors);
+    setErrors(newErrors);
 
-        return Object.keys(newErrors).length === 0;
-    };
+    return Object.keys(newErrors).length === 0;
+  };
 
   const addReference = () => {
     setData('references', [...data.references, { source_name: '', url: '' }]);
@@ -102,8 +103,8 @@ export default function EditArtikel({ article, categories, articles }: Props) {
   };
 
   const handleSubmit = () => {
-    if(!validate()) return;
-    
+    if (!validate()) return;
+
     router.post(`/admin/article/${article.id}`, {
       _method: 'patch',
       ...data
@@ -113,7 +114,11 @@ export default function EditArtikel({ article, categories, articles }: Props) {
   }
 
   return (
-    <>
+    <AdminLayout breadcrumbs={[
+      { title: 'Admin', href: '/admin' },
+      { title: 'Kelola Artikel', href: '/admin/article' },
+      { title: `Edit: ${article.title.substring(0, 30)}${article.title.length > 30 ? '...' : ''}`, href: '#' },
+    ]}>
       {/* Isi konten yang harus diinput oleh admin */}
       <div className="min-h-screen space-y-6 p-8 font-sans bg-gray-50">
 
@@ -135,7 +140,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                       alt="Preview"
                       className="w-full h-40 object-cover rounded-lg mb-4"
                     />
-                  <button type='button'
+                    <button type='button'
                       onClick={(e) => {
                         e.preventDefault();
                         setData('image', null);
@@ -187,7 +192,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                     value={data.title}
                     onChange={(e) => setData('title', e.target.value)}
                     placeholder="Masukkan judul artikel..."
-                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${ errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 ${errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   />
                   {errors.title && <div className="text-red-500 text-sm mt-1">{errors.title}</div>}
                 </div>
@@ -201,7 +206,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
                     name="category"
                     value={data.category_id}
                     onChange={(e) => setData('category_id', +e.target.value)}
-                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-900 ${ errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-900 ${errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   >
                     <option value="">Pilih kategori...</option>
                     {categories.map((cat, index) => (
@@ -242,7 +247,7 @@ export default function EditArtikel({ article, categories, articles }: Props) {
             Konten Artikel
           </label>
           <div
-            className={`w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.content ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+            className={`w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.content ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
           >
             <Editor
               initialHtml={article.content}
@@ -343,12 +348,6 @@ export default function EditArtikel({ article, categories, articles }: Props) {
         handleSubmit();
         setUpdateModal(false);
       }} itemName={article.title} />
-    </>
+    </AdminLayout>
   );
 }
-
-EditArtikel.layout = (page: React.ReactElement) => (
-  <AdminLayout>
-    {page}
-  </AdminLayout>
-);

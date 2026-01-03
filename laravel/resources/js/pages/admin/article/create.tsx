@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { Category } from '@/types/admin';
+import { type BreadcrumbItem } from '@/types';
 import { PageProps } from '@inertiajs/core';
 import { Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
 import { FolderOpen, Paperclip, Upload, Plus, Trash2 } from 'lucide-react';
 import { Editor } from '@/components/blocks/editor-00/editor';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Admin', href: '/admin' },
+    { title: 'Kelola Artikel', href: '/admin/article' },
+    { title: 'Buat Artikel', href: '#' },
+];
 
 type Reference = {
     source_name: string;
@@ -31,8 +38,8 @@ export default function BuatArtikel({ categories }: Props) {
         references: [],
     });
 
-    const [ uploadedImage, setUploadedImage ] = useState('');
-    const [ errors, setErrors ] = useState<Record<string, string>>({});
+    const [uploadedImage, setUploadedImage] = useState('');
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = () => {
         if (!validate()) return;
@@ -114,7 +121,7 @@ export default function BuatArtikel({ categories }: Props) {
     };
 
     return (
-        <>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             {/* Main Content */}
             <div className="flex-1 overflow-auto text-gray-900">
 
@@ -184,7 +191,7 @@ export default function BuatArtikel({ categories }: Props) {
                                     value={data.title}
                                     onChange={(e) => setData('title', e.target.value)}
                                     placeholder="Masukkan judul artikel..."
-                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                 />
                                 {errors.title && <div className="text-red-500 text-sm mt-1">{errors.title}</div>}
                             </div>
@@ -198,7 +205,7 @@ export default function BuatArtikel({ categories }: Props) {
                                     name="category"
                                     value={data.category_id}
                                     onChange={(e) => setData('category_id', + e.target.value)}
-                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                                 >
                                     <option value="">Pilih kategori...</option>
                                     {categories.map((cat, index) => (
@@ -216,8 +223,8 @@ export default function BuatArtikel({ categories }: Props) {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Konten Artikel
                             </label>
-                            <div 
-                                className={`w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                            <div
+                                className={`w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.category_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                             >
                                 <Editor onHtmlChange={handleContentChange} />
                             </div>
@@ -300,12 +307,6 @@ export default function BuatArtikel({ categories }: Props) {
                     </div>
                 </div>
             </div>
-        </>
+        </AdminLayout>
     );
 }
-
-BuatArtikel.layout = (page: React.ReactElement) => (
-    <AdminLayout>
-        {page}
-    </AdminLayout>
-);

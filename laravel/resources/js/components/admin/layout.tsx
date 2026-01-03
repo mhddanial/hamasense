@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { Toaster } from 'sonner';
 import AdminSidebar from './Sidebar';
 import { AppShell } from '../app-shell';
@@ -12,6 +11,7 @@ export default function AdminLayout(
     children,
     breadcrumbs = [],
   }: React.PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+
   return (
     <>
       <Toaster richColors={false} position="top-right" />

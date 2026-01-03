@@ -11,6 +11,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +66,10 @@ interface DashboardProps {
 
 // Colors for pie chart
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Admin', href: '/admin' },
+];
 
 export default function HamaSenseDashboard({
   detectionTrend = [],
@@ -134,7 +139,7 @@ export default function HamaSenseDashboard({
 
 
   return (
-    <AdminLayout>
+    <AdminLayout breadcrumbs={breadcrumbs}>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Upload, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 
 import { DeleteConfirmationModal } from '@/components/admin/DeleteConfirmModal';
 import { UpdateConfirmationModal } from '@/components/admin/UpdateConfirmModal';
@@ -25,7 +26,7 @@ export default function EditHama() {
 
   const [updateModal, setUpdateModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(pest.img_path ? '/storage/pest/' + pest.img_path : '');
-  const [ errors, setErrors ] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data, setData, processing } = useForm<{
     name: string;
@@ -145,7 +146,11 @@ export default function EditHama() {
   };
 
   return (
-    <>
+    <AdminLayout breadcrumbs={[
+      { title: 'Admin', href: '/admin' },
+      { title: 'Kelola Hama', href: '/admin/pest' },
+      { title: `Edit: ${pest.name}`, href: '#' },
+    ]}>
       <div className="flex-1 min-h-screen p-8 text-gray-900">
         <div className="p-8 bg-white max-w-7xl rounded-lg shadow-sm">
           <h1 className="text-2xl font-bold mb-8 text-gray-900">Edit Informasi Hama</h1>
@@ -213,7 +218,7 @@ export default function EditHama() {
                     value={data.slug}
                     onChange={(e) => setData('slug', e.target.value)}
                     placeholder="Kosongkan untuk auto-generate"
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.slug ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.slug ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   />
                   {errors.slug && <div className="text-red-500 text-sm mt-1">{errors.slug}</div>}
                 </div>
@@ -228,7 +233,7 @@ export default function EditHama() {
                       type="text"
                       value={data.name}
                       onChange={(e) => setData('name', e.target.value)}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                   </div>
@@ -241,7 +246,7 @@ export default function EditHama() {
                       type="text"
                       value={data.scientific_name}
                       onChange={(e) => setData('scientific_name', e.target.value)}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${ errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.scientific_name && <div className="text-red-500 text-sm mt-1">{errors.scientific_name}</div>}
                   </div>
@@ -256,7 +261,7 @@ export default function EditHama() {
                     <select
                       value={data.category}
                       onChange={(e) => setData('category', e.target.value)}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     >
                       {CATEGORIES.map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -291,7 +296,7 @@ export default function EditHama() {
                     value={data.description}
                     onChange={(e) => setData('description', e.target.value)}
                     rows={4}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                   ></textarea>
                   {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                 </div>
@@ -447,12 +452,6 @@ export default function EditHama() {
         }}
         itemName={pest.name}
       />
-    </>
+    </AdminLayout>
   );
 }
-
-EditHama.layout = (page: React.ReactElement) => (
-  <AdminLayout>
-    {page}
-  </AdminLayout>
-)

@@ -91,13 +91,7 @@ class DiseaseController extends Controller
                 'severity_level' => 'required|in:rendah,sedang,tinggi',
                 'plant_type_id' => 'required|numeric',
                 'img_path' => 'image|nullable',
-                // 'plant_type_id' => 'required|numeric',
-                'slug' => 'string|nullable'
             ]);
-
-            if (empty($field['slug'])) {
-                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
-            }
 
             if($request->hasFile('img_path')) {
                 $file = $request->file('img_path');
@@ -115,7 +109,7 @@ class DiseaseController extends Controller
             //     'message' => $new_pest
             // ]);
 
-            return redirect('admin/disease')->with('success', 'New Disease Added Successfully!');
+            return redirect('admin/disease')->with('success', 'Penyakit baru berhasil ditambahkan!');
 
         } catch(\Exception $e) {
             DB::rollBack();
@@ -124,7 +118,7 @@ class DiseaseController extends Controller
             //     'e'=> $e->getMessage()
             // ]);
 
-            return redirect('admin/disease')->with('error', 'Error when adding new Disease data: '. $e->getMessage());
+            return redirect('admin/disease')->with('error', 'Gagal menambahkan data penyakit: '. $e->getMessage());
 
         }
     }
@@ -143,12 +137,7 @@ class DiseaseController extends Controller
                 'severity_level' => 'required|in:rendah,sedang,tinggi',
                 'plant_type_id' => 'required|numeric',
                 'new_img' => 'image|nullable',
-                'slug' => 'string|nullable'
             ]);
-
-            if (empty($field['slug'])) {
-                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
-            }
 
             if($request->hasFile('new_img')){
                 Storage::disk('public')->delete('/disease/' . $disease->img_path);
@@ -162,12 +151,12 @@ class DiseaseController extends Controller
             $disease->update($field);
             DB::commit();
 
-            return redirect('admin/disease')->with('success', 'Disease Updated Successfully!');
+            return redirect('admin/disease')->with('success', 'Penyakit berhasil diperbarui!');
 
         }catch(\Exception $e) {
             DB::rollBack();
 
-            return redirect('admin/disease')->with('error', 'Error when updating disease: ' . $e->getMessage());
+            return redirect('admin/disease')->with('error', 'Gagal memperbarui data penyakit: ' . $e->getMessage());
         }
     }
 
@@ -182,11 +171,11 @@ class DiseaseController extends Controller
             $disease->delete();
             DB::commit();
 
-            return redirect('admin/disease')->with('success', 'Disease Deleted Successfully!');
+            return redirect('admin/disease')->with('success', 'Penyakit berhasil dihapus!');
         }catch(\Exception $e) {
             DB::rollBack();
 
-            return redirect('admin/disease')->with('error', 'Error when deleting disease: ' . $e->getMessage());
+            return redirect('admin/disease')->with('error', 'Gagal menghapus data penyakit: ' . $e->getMessage());
         }
     }
 }

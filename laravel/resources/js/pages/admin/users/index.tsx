@@ -62,6 +62,12 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Admin', href: '/admin' },
+    { title: 'Kelola Pengguna', href: '/admin/users' },
+];
 
 // Types
 interface User {
@@ -217,259 +223,255 @@ export default function KelolaUsers({ users, filters }: Props) {
     const usersData = users?.data || [];
 
     return (
-        <div className="flex-1 min-h-screen p-6 bg-gray-50/50">
-            <Head title="Kelola Pengguna" />
+        <AdminLayout breadcrumbs={breadcrumbs}>
+            <div className="flex-1 min-h-screen p-6 bg-gray-50/50">
+                <Head title="Kelola Pengguna" />
 
-            {/* Header */}
-            <Card className="mb-6 border-0 shadow-sm">
-                <CardHeader className="pb-3">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div>
-                            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                                <Users className="w-6 h-6 text-primary" />
-                                Kelola Pengguna
-                            </CardTitle>
-                            <CardDescription className="mt-1">
-                                Kelola semua pengguna yang terdaftar dalam sistem
-                            </CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-sm">
-                                Total: {users.total} pengguna
-                            </Badge>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {/* Search and Filters */}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                <Input
-                                    type="text"
-                                    placeholder="Cari berdasarkan nama atau email..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10"
-                                />
+                {/* Header */}
+                <Card className="mb-6 border-0 shadow-sm">
+                    <CardHeader className="pb-3">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                    <Users className="w-6 h-6 text-primary" />
+                                    Kelola Pengguna
+                                </CardTitle>
+                                <CardDescription className="mt-1">
+                                    Kelola semua pengguna yang terdaftar dalam sistem
+                                </CardDescription>
                             </div>
-                            <Button type="submit" variant="default" disabled={isLoading}>
-                                Cari
-                            </Button>
-                        </form>
-                        <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
-                            <SelectTrigger className="w-full sm:w-[160px]">
-                                <Shield className="w-4 h-4 mr-2" />
-                                <SelectValue placeholder="Role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Semua Role</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="customer">Customer</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={sortBy} onValueChange={handleSortChange}>
-                            <SelectTrigger className="w-full sm:w-[180px]">
-                                <ArrowUpDown className="w-4 h-4 mr-2" />
-                                <SelectValue placeholder="Urutkan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="latest">Terbaru</SelectItem>
-                                <SelectItem value="oldest">Terlama</SelectItem>
-                                <SelectItem value="name_asc">Nama A-Z</SelectItem>
-                                <SelectItem value="name_desc">Nama Z-A</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {hasActiveFilters && (
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleResetFilters}
-                                disabled={isLoading}
-                                title="Reset filter"
-                            >
-                                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                            </Button>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                            <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-sm">
+                                    Total: {users.total} pengguna
+                                </Badge>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {/* Search and Filters */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <form onSubmit={handleSearch} className="flex gap-2 w-full md:max-w-md">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Cari berdasarkan nama atau email..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                                <Button type="submit" variant="default" disabled={isLoading}>
+                                    Cari
+                                </Button>
+                            </form>
+                            <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
+                                <SelectTrigger className="w-full sm:w-[160px]">
+                                    <Shield className="w-4 h-4 mr-2" />
+                                    <SelectValue placeholder="Role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Semua Role</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                    <SelectItem value="customer">Customer</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={sortBy} onValueChange={handleSortChange}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <ArrowUpDown className="w-4 h-4 mr-2" />
+                                    <SelectValue placeholder="Urutkan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="latest">Terbaru</SelectItem>
+                                    <SelectItem value="oldest">Terlama</SelectItem>
+                                    <SelectItem value="name_asc">Nama A-Z</SelectItem>
+                                    <SelectItem value="name_desc">Nama Z-A</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {hasActiveFilters && (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={handleResetFilters}
+                                    disabled={isLoading}
+                                    title="Reset filter"
+                                >
+                                    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                </Button>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
 
-            {/* Users Table */}
-            <Card className="border-0 shadow-sm px-4">
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-gray-50/80">
-                                <TableHead className="w-16">No</TableHead>
-                                <TableHead>Nama</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Bergabung</TableHead>
-                                <TableHead className="text-right w-20">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {usersData.length > 0 ? (
-                                usersData.map((user, index) => (
-                                    <TableRow key={user.id} className="hover:bg-gray-50/50">
-                                        <TableCell className="font-medium text-gray-500">
-                                            {(users.current_page - 1) * users.per_page + index + 1}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                                                    <AvatarImage src={user.avatar_url} alt={user.name} />
-                                                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                                        {getInitials(user.name)}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium text-gray-900">{user.name}</p>
-                                                    {user.google_id && (
-                                                        <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                            <img src="https://www.google.com/favicon.ico" alt="" className="w-3 h-3" />
-                                                            Google Account
-                                                        </span>
-                                                    )}
+                {/* Users Table */}
+                <Card className="border-0 shadow-sm px-4">
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50/80">
+                                    <TableHead className="w-16">No</TableHead>
+                                    <TableHead>Nama</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Bergabung</TableHead>
+                                    <TableHead className="text-right w-20">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {usersData.length > 0 ? (
+                                    usersData.map((user, index) => (
+                                        <TableRow key={user.id} className="hover:bg-gray-50/50">
+                                            <TableCell className="font-medium text-gray-500">
+                                                {(users.current_page - 1) * users.per_page + index + 1}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                                                        <AvatarImage src={user.avatar_url} alt={user.name} />
+                                                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                                            {getInitials(user.name)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">{user.name}</p>
+                                                        {user.google_id && (
+                                                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                                                                <img src="https://www.google.com/favicon.ico" alt="" className="w-3 h-3" />
+                                                                Google Account
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="flex items-center gap-2 text-gray-600">
+                                                    <Mail className="w-4 h-4 text-gray-400" />
+                                                    {user.email}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                {getRoleBadge(user.role)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {user.email_verified_at ? (
+                                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0">
+                                                        Terverifikasi
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-0">
+                                                        Belum Verifikasi
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="flex items-center gap-2 text-gray-600 text-sm">
+                                                    <Calendar className="w-4 h-4 text-gray-400" />
+                                                    {new Date(user.created_at).toLocaleDateString('id-ID', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48">
+                                                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleRoleChange(user, user.role === 'admin' ? 'customer' : 'admin')}
+                                                            className="cursor-pointer"
+                                                        >
+                                                            <Shield className="w-4 h-4 mr-2" />
+                                                            {user.role === 'admin' ? 'Jadikan Customer' : 'Jadikan Admin'}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleDeleteClick(user)}
+                                                            className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                                                        >
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Hapus Pengguna
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-32 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <Users className="w-10 h-10 mb-2 opacity-30" />
+                                                <p className="font-medium">Tidak ada pengguna ditemukan</p>
+                                                <p className="text-sm">Coba ubah kata kunci pencarian</p>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <span className="flex items-center gap-2 text-gray-600">
-                                                <Mail className="w-4 h-4 text-gray-400" />
-                                                {user.email}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getRoleBadge(user.role)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {user.email_verified_at ? (
-                                                <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0">
-                                                    Terverifikasi
-                                                </Badge>
-                                            ) : (
-                                                <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-0">
-                                                    Belum Verifikasi
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="flex items-center gap-2 text-gray-600 text-sm">
-                                                <Calendar className="w-4 h-4 text-gray-400" />
-                                                {new Date(user.created_at).toLocaleDateString('id-ID', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleRoleChange(user, user.role === 'admin' ? 'customer' : 'admin')}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <Shield className="w-4 h-4 mr-2" />
-                                                        {user.role === 'admin' ? 'Jadikan Customer' : 'Jadikan Admin'}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteClick(user)}
-                                                        className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                        Hapus Pengguna
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-32 text-center">
-                                        <div className="flex flex-col items-center justify-center text-gray-500">
-                                            <Users className="w-10 h-10 mb-2 opacity-30" />
-                                            <p className="font-medium">Tidak ada pengguna ditemukan</p>
-                                            <p className="text-sm">Coba ubah kata kunci pencarian</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                )}
+                            </TableBody>
+                        </Table>
 
-                    {/* Pagination */}
-                    {users.last_page > 1 && (
-                        <div className="px-6 py-4 border-t bg-gray-50/30">
-                            <div className="flex justify-center gap-1">
-                                {users.links.map((link, i) => (
-                                    link.url ? (
-                                        <Link
-                                            key={i}
-                                            href={link.url}
-                                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${link.active
-                                                ? 'bg-primary text-white shadow-sm'
-                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                                }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ) : (
-                                        <span
-                                            key={i}
-                                            className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    )
-                                ))}
+                        {/* Pagination */}
+                        {users.last_page > 1 && (
+                            <div className="px-6 py-4 border-t bg-gray-50/30">
+                                <div className="flex justify-center gap-1">
+                                    {users.links.map((link, i) => (
+                                        link.url ? (
+                                            <Link
+                                                key={i}
+                                                href={link.url}
+                                                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${link.active
+                                                    ? 'bg-primary text-white shadow-sm'
+                                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                                    }`}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ) : (
+                                            <span
+                                                key={i}
+                                                className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        )
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        )}
+                    </CardContent>
+                </Card>
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-red-500" />
-                            Konfirmasi Hapus
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Apakah Anda yakin ingin menghapus pengguna <strong>{selectedUser?.name}</strong>?
-                            Tindakan ini tidak dapat dibatalkan.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleConfirmDelete}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            Hapus
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
+                {/* Delete Confirmation Dialog */}
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="w-5 h-5 text-red-500" />
+                                Konfirmasi Hapus
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Apakah Anda yakin ingin menghapus pengguna <strong>{selectedUser?.name}</strong>?
+                                Tindakan ini tidak dapat dibatalkan.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleConfirmDelete}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                Hapus
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        </AdminLayout>
     );
 }
-
-KelolaUsers.layout = (page: React.ReactElement) => (
-    <AdminLayout>
-        {page}
-    </AdminLayout>
-);

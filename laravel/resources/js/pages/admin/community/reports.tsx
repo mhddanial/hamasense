@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 import { route } from 'ziggy-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,12 @@ interface Props {
 }
 
 export default function CommunityReports({ reports, filters }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Admin', href: '/admin' },
+        { title: 'Kelola Komunitas', href: '/admin/community' },
+        { title: 'Laporan', href: '#' },
+    ];
+
     const handleStatusChange = (status: string) => {
         router.get(route('admin.community.reports'), { status }, { preserveState: true });
     };
@@ -151,7 +158,7 @@ export default function CommunityReports({ reports, filters }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Laporan Komunitas" />
 
             <div className="p-6 space-y-6">

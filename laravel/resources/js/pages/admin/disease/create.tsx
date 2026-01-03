@@ -2,10 +2,17 @@ import React, { useState } from 'react';
 import { Upload, Paperclip } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 
 import { PageProps } from '@inertiajs/core';
 import { Plant } from '@/types/admin';
 import { ExampleCombobox } from '@/components/admin/Combobox';
+
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Admin', href: '/admin' },
+  { title: 'Kelola Penyakit', href: '/admin/disease' },
+  { title: 'Tambah Penyakit', href: '#' },
+];
 
 interface Props extends PageProps {
   plants: Plant[]
@@ -29,8 +36,8 @@ export default function TambahkanPenyakit({ plants }: Props) {
   });
 
   const [uploadedImage, setUploadedImage] = useState('');
-  const [ disableCreate, setDisableCreate ] = useState(false);
-  const [ errors, setErrors ] = useState<Record<string, string>>({});
+  const [disableCreate, setDisableCreate] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -77,7 +84,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
   };
 
   return (
-    <>
+    <AdminLayout breadcrumbs={breadcrumbs}>
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
 
@@ -150,7 +157,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       value={data.label}
                       onChange={(e) => setData('label', e.target.value)}
                       placeholder="late_blight"
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.label ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.label ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.label && <div className="text-red-500 text-sm mt-1">{errors.label}</div>}
                   </div>
@@ -164,7 +171,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       value={data.name}
                       onChange={(e) => setData('name', e.target.value)}
                       placeholder="Busuk Daun"
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     />
                     {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                   </div>
@@ -176,7 +183,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       name="severity_level"
                       value={data.severity_level}
                       onChange={(e) => setData('severity_level', e.target.value)}
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.severity_level ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.severity_level ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     >
                       <option value="">Pilih tingkat keparahan...</option>
                       {SEVERITY_LEVELS.map((level) => (
@@ -195,7 +202,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       name="plant_type_id"
                       value={data.plant_type_id}
                       onChange={(e) => setData('plant_type_id', +e.target.value)}
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.plant_type_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.plant_type_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     >
                       <option value="">Pilih jenis tanaman...</option>
                       {plants.map((plant) => (
@@ -216,7 +223,7 @@ export default function TambahkanPenyakit({ plants }: Props) {
                       onChange={(e) => setData('description', e.target.value)}
                       placeholder="Deskripsi singkat tentang penyakit ini..."
                       rows={6}
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`} 
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
                     ></textarea>
                     {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                   </div>
@@ -244,12 +251,6 @@ export default function TambahkanPenyakit({ plants }: Props) {
           </div>
         </div>
       </div>
-    </>
+    </AdminLayout>
   );
 }
-
-TambahkanPenyakit.layout = (page: React.ReactElement) => (
-  <AdminLayout>
-    {page}
-  </AdminLayout>
-)

@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Upload, Paperclip, Plus, Trash2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/layout';
+import { type BreadcrumbItem } from '@/types';
 import { Category } from '@/types/admin';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Admin', href: '/admin' },
+    { title: 'Kelola Hama', href: '/admin/pest' },
+    { title: 'Tambah Hama', href: '#' },
+];
 
 const RISK_LEVELS = [
     { value: 'rendah', label: 'Rendah' },
@@ -38,7 +45,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
 
 
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-    const [ errors, setErrors ] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -130,7 +137,7 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
     };
 
     return (
-        <>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <div className="flex-1 overflow-auto text-gray-900">
                 <div className="p-8">
                     <div className="bg-white rounded-lg shadow-sm p-8 max-w-7xl">
@@ -179,236 +186,230 @@ export default function TambahHama({ categories }: { categories: Category[] }) {
                             </div>
                         </div>
 
-                            {/* Right Column - Form */}
-                            <div>
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* Nama Hama */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Nama Hama
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={data.name}
-                                                onChange={(e) => setData('name', e.target.value)}
-                                                placeholder="Ulat Grayak"
-                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 ${ errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
-                                            />
-                                            {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
-                                        </div>
-                                        {/* Nama Latin */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Nama Latin
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={data.scientific_name}
-                                                onChange={(e) => setData('scientific_name', e.target.value)}
-                                                placeholder="Spodoptera litura"
-                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${ errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
-                                            />
-                                            {errors.scientific_name && <div className="text-red-500 text-sm mt-1">{errors.scientific_name}</div>}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* Kategori */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Kategori
-                                            </label>
-                                            <select
-                                                value={data.category}
-                                                onChange={(e) => setData('category', e.target.value)}
-                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${ errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
-                                            >
-                                                <option value="" disabled>Pilih Kategori</option>
-                                                {categories.map((cat) => (
-                                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                                                ))}
-                                            </select>
-                                            {errors.category && <div className="text-red-500 text-sm mt-1">{errors.category}</div>}
-                                        </div>
-                                        {/* Tingkat Risiko */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Tingkat Risiko
-                                            </label>
-                                            <select
-                                                value={data.risk_level}
-                                                onChange={(e) => setData('risk_level', e.target.value as 'rendah' | 'sedang' | 'tinggi')}
-                                                className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white`}
-                                            >
-                                                {RISK_LEVELS.map((level) => (
-                                                    <option key={level.value} value={level.value}>{level.label}</option>
-                                                ))}
-                                            </select>
-                                            {errors.risk_level && <div className="text-red-500 text-sm mt-1">{errors.risk_level}</div>}
-                                        </div>
-                                    </div>
-
-                                    {/* Description */}
+                        {/* Right Column - Form */}
+                        <div>
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* Nama Hama */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Deskripsi
+                                            Nama Hama
                                         </label>
-                                        <textarea
-                                            value={data.description}
-                                            onChange={(e) => setData('description', e.target.value)}
-                                            placeholder="Deskripsi tentang hama ini..."
-                                            rows={4}
-                                            className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${ errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
-                                        ></textarea>
-                                        {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
+                                        <input
+                                            type="text"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            placeholder="Ulat Grayak"
+                                            className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                                        />
+                                        {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
                                     </div>
-
-                                    {/* Tanaman Inang */}
+                                    {/* Nama Latin */}
                                     <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Tanaman Inang
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={addPlant}
-                                                className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                                            >
-                                                <Plus className="w-4 h-4" /> Tambah
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {data.plant.map((item, index) => (
-                                                <div key={index} className="flex gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={item}
-                                                        onChange={(e) => updatePlant(index, e.target.value)}
-                                                        placeholder={`Nama tanaman ${index + 1}`}
-                                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removePlant(index)}
-                                                        className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            {data.plant.length === 0 && (
-                                                <p className="text-sm text-gray-400 italic">Belum ada tanaman inang</p>
-                                            )}
-                                        </div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Nama Latin
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.scientific_name}
+                                            onChange={(e) => setData('scientific_name', e.target.value)}
+                                            placeholder="Spodoptera litura"
+                                            className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 italic ${errors.scientific_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                                        />
+                                        {errors.scientific_name && <div className="text-red-500 text-sm mt-1">{errors.scientific_name}</div>}
                                     </div>
+                                </div>
 
-                                    {/* Pencegahan */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* Kategori */}
                                     <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Langkah Pencegahan
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={addPencegahan}
-                                                className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors"
-                                            >
-                                                <Plus className="w-4 h-4" /> Tambah
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {data.pencegahan.map((item, index) => (
-                                                <div key={index} className="flex gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={item}
-                                                        onChange={(e) => updatePencegahan(index, e.target.value)}
-                                                        placeholder={`Langkah pencegahan ${index + 1}`}
-                                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removePencegahan(index)}
-                                                        className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Kategori
+                                        </label>
+                                        <select
+                                            value={data.category}
+                                            onChange={(e) => setData('category', e.target.value)}
+                                            className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white ${errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                                        >
+                                            <option value="" disabled>Pilih Kategori</option>
+                                            {categories.map((cat) => (
+                                                <option key={cat.id} value={cat.name}>{cat.name}</option>
                                             ))}
-                                            {data.pencegahan.length === 0 && (
-                                                <p className="text-sm text-gray-400 italic">Belum ada langkah pencegahan</p>
-                                            )}
-                                        </div>
+                                        </select>
+                                        {errors.category && <div className="text-red-500 text-sm mt-1">{errors.category}</div>}
                                     </div>
-
-                                    {/* Penanganan */}
+                                    {/* Tingkat Risiko */}
                                     <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Langkah Penanganan
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={addPenanganan}
-                                                className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
-                                            >
-                                                <Plus className="w-4 h-4" /> Tambah
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {data.penanganan.map((item, index) => (
-                                                <div key={index} className="flex gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={item}
-                                                        onChange={(e) => updatePenanganan(index, e.target.value)}
-                                                        placeholder={`Langkah penanganan ${index + 1}`}
-                                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removePenanganan(index)}
-                                                        className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Tingkat Risiko
+                                        </label>
+                                        <select
+                                            value={data.risk_level}
+                                            onChange={(e) => setData('risk_level', e.target.value as 'rendah' | 'sedang' | 'tinggi')}
+                                            className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white`}
+                                        >
+                                            {RISK_LEVELS.map((level) => (
+                                                <option key={level.value} value={level.value}>{level.label}</option>
                                             ))}
-                                            {data.penanganan.length === 0 && (
-                                                <p className="text-sm text-gray-400 italic">Belum ada langkah penanganan</p>
-                                            )}
-                                        </div>
+                                        </select>
+                                        {errors.risk_level && <div className="text-red-500 text-sm mt-1">{errors.risk_level}</div>}
                                     </div>
+                                </div>
 
-                                    <div className="flex gap-4 pt-4">
+                                {/* Description */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Deskripsi
+                                    </label>
+                                    <textarea
+                                        value={data.description}
+                                        onChange={(e) => setData('description', e.target.value)}
+                                        placeholder="Deskripsi tentang hama ini..."
+                                        rows={4}
+                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'}`}
+                                    ></textarea>
+                                    {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
+                                </div>
+
+                                {/* Tanaman Inang */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Tanaman Inang
+                                        </label>
                                         <button
                                             type="button"
-                                            onClick={handleCancel}
-                                            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                            onClick={addPlant}
+                                            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
                                         >
-                                            Batal
-                                        </button>
-                                        <button
-                                            onClick={create}
-                                            type='button'
-                                            disabled={processing}
-                                            className={`px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        >
-                                            {processing ? 'Menyimpan...' : 'Tambahkan'}
+                                            <Plus className="w-4 h-4" /> Tambah
                                         </button>
                                     </div>
+                                    <div className="space-y-2">
+                                        {data.plant.map((item, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={item}
+                                                    onChange={(e) => updatePlant(index, e.target.value)}
+                                                    placeholder={`Nama tanaman ${index + 1}`}
+                                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePlant(index)}
+                                                    className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {data.plant.length === 0 && (
+                                            <p className="text-sm text-gray-400 italic">Belum ada tanaman inang</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Pencegahan */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Langkah Pencegahan
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addPencegahan}
+                                            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors"
+                                        >
+                                            <Plus className="w-4 h-4" /> Tambah
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {data.pencegahan.map((item, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={item}
+                                                    onChange={(e) => updatePencegahan(index, e.target.value)}
+                                                    placeholder={`Langkah pencegahan ${index + 1}`}
+                                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePencegahan(index)}
+                                                    className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {data.pencegahan.length === 0 && (
+                                            <p className="text-sm text-gray-400 italic">Belum ada langkah pencegahan</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Penanganan */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Langkah Penanganan
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addPenanganan}
+                                            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                                        >
+                                            <Plus className="w-4 h-4" /> Tambah
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {data.penanganan.map((item, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={item}
+                                                    onChange={(e) => updatePenanganan(index, e.target.value)}
+                                                    placeholder={`Langkah penanganan ${index + 1}`}
+                                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePenanganan(index)}
+                                                    className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {data.penanganan.length === 0 && (
+                                            <p className="text-sm text-gray-400 italic">Belum ada langkah penanganan</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCancel}
+                                        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        onClick={create}
+                                        type='button'
+                                        disabled={processing}
+                                        className={`px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {processing ? 'Menyimpan...' : 'Tambahkan'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-        </>
+            </div>
+        </AdminLayout>
     );
 };
-
-TambahHama.layout = (page: React.ReactElement) => (
-    <AdminLayout>
-        {page}
-    </AdminLayout>
-)
