@@ -27,6 +27,8 @@ interface HistoryItem {
     id: number;
     image_path: string;
     label: string | null;
+    disease_name: string | null;
+    plant_type_name: string | null;
     confidence: number | null;
     created_at: string;
 }
@@ -54,7 +56,7 @@ export default function DetectionHistory({ history, filters }: Props) {
 
     // Client-side filtering logic
     const filtered = history.data.filter((item) =>
-        (item.label || "").toLowerCase().includes(search.toLowerCase())
+        (item.disease_name || item.label || "").toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -151,7 +153,7 @@ export default function DetectionHistory({ history, filters }: Props) {
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between items-start">
                                                         <h3 className="font-semibold text-lg tracking-tight group-hover:text-primary transition-colors">
-                                                            {item.label ?? "Tidak diketahui"}
+                                                            {item.disease_name || item.label || "Tidak diketahui"}
                                                         </h3>
                                                         <Badge variant={item.confidence && item.confidence > 0.8 ? "default" : "secondary"}>
                                                             {Math.round((item.confidence ?? 0) * 100)}% Akurat
@@ -254,7 +256,7 @@ export default function DetectionHistory({ history, filters }: Props) {
                                             </div>
                                             <div className="p-4 flex-1 z-10 pointer-events-none">
                                                 <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
-                                                    {item.label ?? "Tidak diketahui"}
+                                                    {item.disease_name || item.label || "Tidak diketahui"}
                                                 </h3>
                                                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                                     <Calendar className="h-3 w-3" />

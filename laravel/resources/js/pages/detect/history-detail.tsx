@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -44,6 +45,18 @@ interface Info {
   notes: string | null;
 }
 
+interface DiseaseData {
+  id: number;
+  name: string;
+  description: string | null;
+  severity_level: 'rendah' | 'sedang' | 'tinggi';
+}
+
+interface PlantTypeData {
+  id: number;
+  name: string;
+}
+
 interface Props {
   item: {
     id: number;
@@ -54,9 +67,11 @@ interface Props {
     info: Info;
     created_at: string;
   };
+  disease: DiseaseData | null;
+  plant_type: PlantTypeData | null;
 }
 
-export default function HistoryDetail({ item }: Props) {
+export default function HistoryDetail({ item, disease, plant_type }: Props) {
   const advice = item.info.data;
   const confidencePercent = Math.round((item.confidence ?? 0) * 100);
 
@@ -174,15 +189,58 @@ export default function HistoryDetail({ item }: Props) {
             {/* Main Result Card */}
             <Card className="border-l-4 border-l-emerald-500 shadow-md">
               <CardHeader>
-                <CardDescription>Teridentifikasi sebagai</CardDescription>
-
-                <CardTitle className="text-3xl font-bold mt-1">
-                  {item.label}
-                </CardTitle>
-
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  {advice.description}
-                </p>
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div>
+                    <CardDescription>Teridentifikasi sebagai</CardDescription>
+                    {/* Menggunakan name dari database, fallback ke label */}
+                    <CardTitle className="text-3xl font-bold text-emerald-950 dark:text-emerald-50 mt-1">
+                      {disease?.name || item.label}
+                    </CardTitle>
+                    {/* Plant type and severity badges in consistent layout */}
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      {plant_type && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Nama Tanaman:</span>
+                          <Badge
+                            variant="secondary"
+                            className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          >
+                            {plant_type.name}
+                          </Badge>
+                        </div>
+                      )}
+                      {disease?.severity_level && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Tingkat Keparahan:</span>
+                          <Badge
+                            variant="outline"
+                            className={`px-3 py-1 ${disease.severity_level === 'tinggi'
+                              ? 'border-red-200 bg-red-50 text-red-700'
+                              : disease.severity_level === 'sedang'
+                                ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
+                                : 'border-green-200 bg-green-50 text-green-700'
+                              }`}
+                          >
+                            {disease.severity_level === 'tinggi' ? 'Tinggi' :
+                              disease.severity_level === 'sedang' ? 'Sedang' : 'Rendah'}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                    {/* Description dari FastAPI */}
+                    {advice.description && (
+                      <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                        {advice.description}
+                      </p>
+                    )}
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="px-3 py-1 h-fit text-sm border-emerald-200 bg-emerald-50 text-emerald-700"
+                  >
+                    Confidence: {confidencePercent}%
+                  </Badge>
+                </div>
               </CardHeader>
 
               <CardContent className="space-y-4">

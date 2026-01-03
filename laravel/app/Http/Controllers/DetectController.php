@@ -88,7 +88,7 @@ class DetectController extends Controller
             }
             return Inertia::render('detect/result', [
                 'result' => [
-                    'label'        => $predictedLabel,
+                    'predicted_label' => $predictedLabel,
                     'confidence'   => $confidence,
                     'entropy'      => $entropy,
                     'info'         => $geminiInfo,
@@ -158,6 +158,23 @@ class DetectController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
+        // Get all unique labels from history
+        $labels = $history->pluck('label')->filter()->unique()->values()->toArray();
+        
+        // Lookup all diseases by labels in one query
+        $diseases = Disease::with('plant_type')
+            ->whereIn('label', $labels)
+            ->get()
+            ->keyBy('label');
+
+        // Transform history data to include disease name
+        $history->getCollection()->transform(function ($item) use ($diseases) {
+            $disease = $diseases->get($item->label);
+            $item->disease_name = $disease ? $disease->name : null;
+            $item->plant_type_name = ($disease && $disease->plant_type) ? $disease->plant_type->name : null;
+            return $item;
+        });
+
         return Inertia::render('detect/history', [
             'history' => $history,
         ]);
@@ -167,6 +184,20 @@ class DetectController extends Controller
     {
         $history = DetectionHistory::where('user_id', auth()->id())
                 ->findOrFail($id);
+
+        // Lookup disease by label to get Indonesian name and plant type
+        $disease = null;
+        $plantType = null;
+        if ($history->label) {
+            $disease = Disease::with('plant_type')
+                ->where('label', $history->label)
+                ->first();
+            
+            if ($disease) {
+                $plantType = $disease->plant_type;
+            }
+        }
+
         return Inertia::render('detect/history-detail', [
             'item' => [
                 'id'            => $history->id,
@@ -177,6 +208,16 @@ class DetectController extends Controller
                 'info'          => json_decode($history->info, true),
                 'created_at'    => $history->created_at->toDateTimeString(),
             ],
+            'disease' => $disease ? [
+                'id' => $disease->id,
+                'name' => $disease->name,
+                'description' => $disease->description,
+                'severity_level' => $disease->severity_level,
+            ] : null,
+            'plant_type' => $plantType ? [
+                'id' => $plantType->id,
+                'name' => $plantType->name,
+            ] : null,
         ]);
     }
 

@@ -190,7 +190,7 @@ export default function ResultPage({ result, disease, plant_type, error, abstain
     router.post(
       route("detect.save"),
       {
-        label: result?.info?.label || null,
+        label: result?.predicted_label || null,
         confidence: result?.confidence || null,
         entropy: result?.entropy || null,
         info: result?.info ? JSON.stringify(result.info) : null,
