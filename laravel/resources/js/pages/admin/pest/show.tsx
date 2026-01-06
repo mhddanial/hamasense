@@ -172,6 +172,7 @@ export default function EditHama() {
                       type="button"
                       onClick={() => {
                         setData('new_img', null);
+                        setData('old_img', '__DELETE__'); // Signal backend to delete image
                         setUploadedImage('');
                       }}
                       className="text-sm text-red-500 hover:text-red-700"

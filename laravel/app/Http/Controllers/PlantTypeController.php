@@ -57,103 +57,119 @@ class PlantTypeController extends Controller
     public function create()
     {
         return Inertia::render('admin/plant/create', [
-            'pests' => Pest::all()
+            'pests' => Pest::select('id', 'name', 'slug')->get()
         ]);
     }
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'scientific_name' => 'required|string|max:255',
+            'detail' => 'required|string',
+            'img_path' => 'nullable|image|max:2048',
+            'slug' => 'nullable|string|max:255|unique:plant_types,slug',
+            'pests' => 'nullable|array',
+            'pests.*' => 'integer|exists:pests,id'
+        ]);
+
         DB::beginTransaction();
 
         try {
-            $field = $request->validate([
-                'name' => 'required|string',
-                'scientific_name' => 'required|string',
-                'detail' => 'required|string',
-                'img_path' => 'required|image',
-                'slug' => 'string|nullable',
-                'pests' => 'array',
-                'pests*' => 'integer'
+            // Auto-generate slug if not provided
+            if (empty($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
+            }
+
+            // Handle image upload
+            if ($request->hasFile('img_path')) {
+                $file = $request->file('img_path');
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('plant', $fileName, 'public');
+                $validated['img_path'] = $fileName;
+            }
+
+            $plantType = PlantType::create([
+                'name' => $validated['name'],
+                'scientific_name' => $validated['scientific_name'],
+                'detail' => $validated['detail'],
+                'slug' => $validated['slug'],
+                'img_path' => $validated['img_path'] ?? null,
             ]);
 
-
-            if (empty($field['slug'])) {
-                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
-            }
-
-            if($request->hasFile('img_path')) {
-                $file = $request->file('img_path');
-                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
-
-                $file->storeAs('plant', $file_name, 'public');
-                $field['img_path'] = $file_name;
-            }
-    
-            $plant_type = PlantType::create($field);
-
-            if($request->has('pests')) {
-                $plant_type->pest()->sync($field['pests']);
+            // Sync pest relationships if provided
+            if (!empty($validated['pests'])) {
+                $plantType->pest()->sync($validated['pests']);
             }
 
             DB::commit();
 
-            return redirect('admin/plant')->with('success', 'New Plant Type Added Successfully');
-        }catch (\Exception $e) {
+            return redirect('admin/plant')->with('success', 'Jenis tanaman berhasil ditambahkan!');
+        } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect('admin/plant')->with('error', 'Error when create new plant: ' . $e->getMessage());
+            return redirect('admin/plant')->with('error', 'Gagal menambahkan jenis tanaman: ' . $e->getMessage());
         }
     }
 
     public function show(Request $request, PlantType $plant)
     {
         return Inertia::render('admin/plant/show', [
-            'plant' => $plant->load('pest'),
-            'pests' => Pest::all(),
-            'diseases' => Disease::all()
+            'plant' => $plant->load('pest:id,name,slug'),
+            'pests' => Pest::select('id', 'name', 'slug')->get(),
+            'diseases' => Disease::select('id', 'name', 'label')->get()
         ]);
     }
 
     public function update(Request $request, PlantType $plant)
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'scientific_name' => 'required|string|max:255',
+            'detail' => 'required|string',
+            'new_img' => 'nullable|image|max:2048',
+            'slug' => 'nullable|string|max:255|unique:plant_types,slug,' . $plant->id,
+            'pests' => 'nullable|array',
+            'pests.*' => 'integer|exists:pests,id'
+        ]);
 
         DB::beginTransaction();
-        $redirect_url = '/admin/plant/' . $plant->slug;
 
         try {
-            $field = $request->validate([
-                'name' => 'required|string',
-                'detail' => 'required|string',
-                'scientific_name' => 'required|string',
-                'new_img' => 'image|nullable',
-                'old_img' => 'string|nullable',
-                'slug' => 'string|nullable',
-                'pests' => 'array',
-                'pests*' => 'integer'
+            // Auto-generate slug if not provided
+            if (empty($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
+            }
+
+            // Handle new image upload
+            if ($request->hasFile('new_img')) {
+                // Delete old image if exists
+                if ($plant->img_path) {
+                    Storage::disk('public')->delete('plant/' . $plant->img_path);
+                }
+                $file = $request->file('new_img');
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('plant', $fileName, 'public');
+                $validated['img_path'] = $fileName;
+            }
+
+            $plant->update([
+                'name' => $validated['name'],
+                'scientific_name' => $validated['scientific_name'],
+                'detail' => $validated['detail'],
+                'slug' => $validated['slug'],
+                'img_path' => $validated['img_path'] ?? $plant->img_path,
             ]);
 
-            if($request->has('pests')) {
-                $plant->pest()->sync($field['pests']);
+            // Sync pest relationships
+            if (isset($validated['pests'])) {
+                $plant->pest()->sync($validated['pests']);
             }
 
-            if (empty($field['slug'])) {
-                $field['slug'] = Str::slug($field['name']) . '-' . uniqid(); 
-            }
-                // jika kondisi ada new_img ada foto maka upload foto baru
-            if($request->hasFile('new_img')){
-                Storage::disk('public')->delete('/plant/' . $plant->img_path);
-                $file = $request->file('new_img');
-                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('plant', $file_name, 'public');
-                $field['img_path'] = $file_name;
-            }
-
-            $plant->update($field);
-            
             DB::commit();
 
-            return redirect('/admin/plant')->with('success', 'Berhasil mengubah data Tanaman');
-        }catch(\Exception $e) {
+            return redirect('/admin/plant')->with('success', 'Berhasil mengubah data tanaman!');
+        } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect('/admin/plant')->with('error', 'Gagal mengubah data tanaman: ' . $e->getMessage());
@@ -163,20 +179,22 @@ class PlantTypeController extends Controller
     public function destroy(Request $request, PlantType $plant)
     {
         DB::beginTransaction();
-        
-        try{
-            $img_path = $plant->img_path;
-            Storage::disk('public')->delete('/plant/' . $img_path);
+
+        try {
+            // Delete image if exists
+            if ($plant->img_path) {
+                Storage::disk('public')->delete('plant/' . $plant->img_path);
+            }
 
             $plant->delete();
 
             DB::commit();
-            return redirect('/admin/plant')->with('success', 'Berhasil menghapus data tanaman');
-        } catch(\Exception $e) {
-            DB::rollback();
-            return redirect('/admin/plant')->with('success', 'Gagal menghapus data tanaman: ' . $e->getMessage());
 
+            return redirect('/admin/plant')->with('success', 'Berhasil menghapus data tanaman!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect('/admin/plant')->with('error', 'Gagal menghapus data tanaman: ' . $e->getMessage());
         }
-        
     }
 }

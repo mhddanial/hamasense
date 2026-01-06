@@ -199,12 +199,24 @@ class PestController extends Controller
                 $field['slug'] = Str::slug($field['name']) . '-' . uniqid();
             }
             
-            if($request->hasFile('new_img')){
-                Storage::disk('public')->delete('/pest/' . $pest->img_path);
+            // Handle image upload/deletion
+            $imgPath = $pest->img_path; // Default: keep existing
+            
+            if ($request->hasFile('new_img')) {
+                // New image uploaded: delete old and store new
+                if ($pest->img_path) {
+                    Storage::disk('public')->delete('pest/' . $pest->img_path);
+                }
                 $file = $request->file('new_img');
-                $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('pest', $file_name, 'public');
-                $field['img_path'] = $file_name;
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('pest', $fileName, 'public');
+                $imgPath = $fileName;
+            } elseif (!$request->has('old_img') || $request->input('old_img') === null) {
+                // User clicked "Hapus gambar" - delete existing image
+                if ($pest->img_path) {
+                    Storage::disk('public')->delete('pest/' . $pest->img_path);
+                }
+                $imgPath = null;
             }
 
             $pest->update([
@@ -217,7 +229,7 @@ class PestController extends Controller
                 'plant' => $field['plant'] ?? null,
                 'pencegahan' => $field['pencegahan'] ?? null,
                 'penanganan' => $field['penanganan'] ?? null,
-                'img_path' => $field['img_path'] ?? $pest->img_path,
+                'img_path' => $imgPath,
             ]);
 
             DB::commit();
