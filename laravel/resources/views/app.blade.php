@@ -51,7 +51,7 @@
         <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
 
         {{-- Microsoft Tiles --}}
-        <meta name="msapplication-TileColor" content="#16a34a">
+        <meta name="msapplication-TileColor" content="#266055">
         <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
         <meta name="msapplication-config" content="/favicon/browserconfig.xml">
 
@@ -59,7 +59,7 @@
         <link rel="manifest" href="/favicon/manifest.json">
 
         {{-- Theme Color --}}
-        <meta name="theme-color" content="#16a34a">
+        <meta name="theme-color" content="#266055">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />

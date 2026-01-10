@@ -1,7 +1,132 @@
+'use client';
+
 import HomeLayout from '@/layouts/home-layout';
 import type { AboutPageProps } from '@/types/home';
 import { Hero } from '@/components/home/hero';
+import { motion, type Variants } from 'framer-motion';
 import { Users, Target, BookOpen, Sparkles, Droplets, Leaf, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+
+// ---------------------
+// Animation Variants
+// ---------------------
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+        },
+    },
+}
+
+const fadeUpVariants: Variants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const fadeInVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            duration: 0.5,
+            ease: 'easeOut' as const,
+        },
+    },
+}
+
+const scaleUpVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const slideLeftVariants: Variants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const slideRightVariants: Variants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const statVariants: Variants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: {
+            duration: 0.5,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 40, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: {
+            duration: 0.5,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const timelineVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.2,
+            delayChildren: 0.2,
+        },
+    },
+}
+
+const timelineItemVariants: Variants = {
+    hidden: { opacity: 0, x: -30 },
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: {
+            duration: 0.5,
+            ease: 'easeOut' as const,
+        },
+    },
+}
 
 type TeamMember = {
     name: string;
@@ -22,25 +147,25 @@ export default function About(props: AboutPageProps) {
             name: 'Muhammad Danial',
             role: 'AI Engineer',
             nim: 'NIM: 3312401042',
-            image: '/images/team_danial.jpg',
+            image: '/images/team_danial.png',
         },
         {
             name: 'Bastian Henriko Limbong',
             role: 'Backend Developer',
             nim: 'NIM: 3312401092',
-            image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
+            image: '/images/team_bastian.png',
         },
         {
             name: 'Wahyudi',
             role: 'UI/UX Designer',
             nim: 'NIM: 3312401014',
-            image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
+            image: '/images/team_wahyudi.png',
         },
         {
             name: 'Steven Marcell Samosir',
             role: 'Frontend Developer',
             nim: 'NIM: 3312401003',
-            image: 'https://if.polibatam.ac.id/assets/backupold/img/dosen/fajri.JPG',
+            image: '/images/team_steven.png',
         },
     ];
 
@@ -106,11 +231,18 @@ export default function About(props: AboutPageProps) {
             {/* Stats Banner */}
             <section className="relative -mt-16 z-10 px-4 md:px-6">
                 <div className="mx-auto max-w-6xl">
-                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+                    <motion.div
+                        className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
                         {stats.map((stat, index) => (
-                            <div
+                            <motion.div
                                 key={index}
-                                className="group relative overflow-hidden rounded-2xl bg-white p-4 shadow-lg shadow-primary/5 ring-1 ring-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 md:p-6"
+                                className="group relative overflow-hidden rounded-2xl bg-white p-4 shadow-lg shadow-primary/5 ring-1 ring-gray-100 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 md:p-6"
+                                variants={statVariants}
+                                whileHover={{ y: -5, scale: 1.02 }}
                             >
                                 <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br from-primary/10 to-emerald-500/10 blur-2xl transition-all duration-500 group-hover:scale-150" />
                                 <p className="relative text-2xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent md:text-3xl">
@@ -122,9 +254,9 @@ export default function About(props: AboutPageProps) {
                                 <p className="relative text-xs text-gray-500">
                                     {stat.sublabel}
                                 </p>
-                            </div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
@@ -133,11 +265,20 @@ export default function About(props: AboutPageProps) {
                 <div className="relative mx-auto max-w-7xl px-4 md:px-6">
                     <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
                         {/* Left Content */}
-                        <div className="order-2 lg:order-1">
-                            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
+                        <motion.div
+                            className="order-2 lg:order-1"
+                            variants={slideLeftVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                        >
+                            <motion.div
+                                className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6"
+                                variants={fadeInVariants}
+                            >
                                 <Leaf className="h-4 w-4" />
                                 Solusi Smart Farming
-                            </div>
+                            </motion.div>
 
                             <h2 className="text-3xl font-bold leading-tight text-gray-900 sm:text-4xl lg:text-5xl">
                                 Tentang{' '}
@@ -165,8 +306,18 @@ export default function About(props: AboutPageProps) {
                             </p>
 
                             {/* Feature Cards */}
-                            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:shadow-lg hover:ring-primary/20">
+                            <motion.div
+                                className="mt-8 grid gap-4 sm:grid-cols-2"
+                                variants={containerVariants}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.3 }}
+                            >
+                                <motion.div
+                                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:shadow-lg hover:ring-primary/20"
+                                    variants={cardVariants}
+                                    whileHover={{ y: -5 }}
+                                >
                                     <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-primary/10 blur-xl transition-all duration-300 group-hover:scale-150" />
                                     <div className="relative">
                                         <div className="mb-3 inline-flex rounded-xl bg-primary/10 p-2.5">
@@ -179,9 +330,13 @@ export default function About(props: AboutPageProps) {
                                             Antarmuka sederhana untuk pemula, mendukung mode cepat saat merawat kebun.
                                         </p>
                                     </div>
-                                </div>
+                                </motion.div>
 
-                                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:shadow-lg hover:ring-primary/20">
+                                <motion.div
+                                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:shadow-lg hover:ring-primary/20"
+                                    variants={cardVariants}
+                                    whileHover={{ y: -5 }}
+                                >
                                     <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-emerald-500/10 blur-xl transition-all duration-300 group-hover:scale-150" />
                                     <div className="relative">
                                         <div className="mb-3 inline-flex rounded-xl bg-emerald-500/10 p-2.5">
@@ -194,26 +349,40 @@ export default function About(props: AboutPageProps) {
                                             Dataset mencakup hama daun tomat, cabai pot, dan selada hidroponik.
                                         </p>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+                                </motion.div>
+                            </motion.div>
+                        </motion.div>
 
                         {/* Right Visual */}
-                        <div className="order-1 flex items-center justify-center lg:order-2">
+                        <motion.div
+                            className="order-1 flex items-center justify-center lg:order-2"
+                            variants={slideRightVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                        >
                             <div className="relative w-full max-w-md">
                                 {/* Glow effect */}
                                 <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-primary via-emerald-500 to-cyan-500 opacity-30 blur-2xl" />
 
                                 {/* Main card */}
-                                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-primary/95 to-emerald-600 p-8 text-white shadow-2xl md:p-10">
+                                <motion.div
+                                    className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-primary/95 to-emerald-600 p-8 text-white shadow-2xl md:p-10"
+                                    whileHover={{ scale: 1.02, rotateY: 5 }}
+                                    transition={{ duration: 0.4 }}
+                                >
                                     {/* Decorative circles */}
                                     <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
                                     <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
 
                                     <div className="relative flex flex-col items-center text-center">
-                                        <div className="mb-6 rounded-2xl bg-white/15 p-4 backdrop-blur-sm">
+                                        <motion.div
+                                            className="mb-6 rounded-2xl bg-white/15 p-4 backdrop-blur-sm"
+                                            animate={{ rotate: [0, 5, -5, 0] }}
+                                            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                                        >
                                             <Sparkles className="h-12 w-12 md:h-16 md:w-16" />
-                                        </div>
+                                        </motion.div>
 
                                         <p className="text-sm font-medium uppercase tracking-widest text-white/70">
                                             Akurasi Model
@@ -227,19 +396,25 @@ export default function About(props: AboutPageProps) {
 
                                         {/* Mini stats */}
                                         <div className="mt-8 grid w-full grid-cols-2 gap-3">
-                                            <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm transition-all hover:bg-white/15">
+                                            <motion.div
+                                                className="rounded-xl bg-white/10 p-4 backdrop-blur-sm transition-all hover:bg-white/15"
+                                                whileHover={{ scale: 1.05 }}
+                                            >
                                                 <p className="text-2xl font-bold">{'<'} 3s</p>
                                                 <p className="mt-1 text-xs text-white/70">Real-time Detection</p>
-                                            </div>
-                                            <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm transition-all hover:bg-white/15">
+                                            </motion.div>
+                                            <motion.div
+                                                className="rounded-xl bg-white/10 p-4 backdrop-blur-sm transition-all hover:bg-white/15"
+                                                whileHover={{ scale: 1.05 }}
+                                            >
                                                 <p className="text-2xl font-bold">10+</p>
                                                 <p className="mt-1 text-xs text-white/70">Jenis Hama</p>
-                                            </div>
+                                            </motion.div>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
@@ -248,7 +423,13 @@ export default function About(props: AboutPageProps) {
             <section className="relative bg-gradient-to-b from-gray-50/50 to-white py-16 md:py-24">
                 <div className="mx-auto max-w-7xl px-4 md:px-6">
                     {/* Section Header */}
-                    <div className="mx-auto max-w-3xl text-center mb-12 md:mb-16">
+                    <motion.div
+                        className="mx-auto max-w-3xl text-center mb-12 md:mb-16"
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.5 }}
+                    >
                         <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 mb-4">
                             <Target className="h-4 w-4" />
                             Misi & Nilai
@@ -263,24 +444,36 @@ export default function About(props: AboutPageProps) {
                             Hamasense membantu warga kota membangun kebun produktif di ruang
                             sempit dengan teknologi deteksi hama berbasis AI.
                         </p>
-                    </div>
+                    </motion.div>
 
                     {/* Values Grid */}
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <motion.div
+                        className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+                        variants={containerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.2 }}
+                    >
                         {values.map((value, index) => {
                             const Icon = value.icon;
                             return (
-                                <div
+                                <motion.div
                                     key={index}
-                                    className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:ring-primary/20"
+                                    className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition-all duration-500 hover:shadow-xl hover:ring-primary/20"
+                                    variants={cardVariants}
+                                    whileHover={{ y: -8, scale: 1.02 }}
                                 >
                                     {/* Hover gradient overlay */}
                                     <div className={`absolute inset-0 bg-gradient-to-br ${value.color} opacity-0 transition-opacity duration-500 group-hover:opacity-5`} />
 
                                     {/* Icon with gradient bg */}
-                                    <div className={`mb-5 inline-flex rounded-xl bg-gradient-to-br ${value.color} p-3.5 text-white shadow-lg shadow-primary/20`}>
+                                    <motion.div
+                                        className={`mb-5 inline-flex rounded-xl bg-gradient-to-br ${value.color} p-3.5 text-white shadow-lg shadow-primary/20`}
+                                        whileHover={{ rotate: 10, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
                                         <Icon className="h-6 w-6" />
-                                    </div>
+                                    </motion.div>
 
                                     <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
                                         {value.title}
@@ -291,37 +484,52 @@ export default function About(props: AboutPageProps) {
 
                                     {/* Bottom accent line */}
                                     <div className={`absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r ${value.color} transition-all duration-500 group-hover:w-full`} />
-                                </div>
+                                </motion.div>
                             );
                         })}
-                    </div>
+                    </motion.div>
 
                     {/* Quick Stats */}
-                    <div className="mt-16 rounded-3xl bg-gradient-to-br from-primary/5 via-white to-emerald-500/5 p-8 ring-1 ring-primary/10 md:p-10">
+                    <motion.div
+                        className="mt-16 rounded-3xl bg-gradient-to-br from-primary/5 via-white to-emerald-500/5 p-8 ring-1 ring-primary/10 md:p-10"
+                        variants={scaleUpVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.3 }}
+                    >
                         <div className="grid gap-6 md:grid-cols-3 md:gap-8 text-center">
-                            <div className="relative">
+                            <motion.div
+                                className="relative"
+                                whileHover={{ scale: 1.05 }}
+                            >
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
                                 </div>
                                 <p className="relative text-4xl font-bold text-primary md:text-5xl">95%+</p>
                                 <p className="relative mt-2 text-sm font-medium text-gray-600">Kebun Aktif Terbantu</p>
-                            </div>
-                            <div className="relative">
+                            </motion.div>
+                            <motion.div
+                                className="relative"
+                                whileHover={{ scale: 1.05 }}
+                            >
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="h-20 w-20 rounded-full bg-cyan-500/10 blur-2xl" />
                                 </div>
                                 <p className="relative text-4xl font-bold text-cyan-600 md:text-5xl">-30%</p>
                                 <p className="relative mt-2 text-sm font-medium text-gray-600">Konsumsi Air Lebih Efisien</p>
-                            </div>
-                            <div className="relative">
+                            </motion.div>
+                            <motion.div
+                                className="relative"
+                                whileHover={{ scale: 1.05 }}
+                            >
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="h-20 w-20 rounded-full bg-emerald-500/10 blur-2xl" />
                                 </div>
                                 <p className="relative text-4xl font-bold text-emerald-600 md:text-5xl">3 Area</p>
                                 <p className="relative mt-2 text-sm font-medium text-gray-600">Balkon, Rooftop, Komunal</p>
-                            </div>
+                            </motion.div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
@@ -334,7 +542,13 @@ export default function About(props: AboutPageProps) {
 
                 <div className="relative mx-auto max-w-7xl px-4 md:px-6">
                     {/* Section Header */}
-                    <div className="mx-auto max-w-3xl text-center mb-12 md:mb-16">
+                    <motion.div
+                        className="mx-auto max-w-3xl text-center mb-12 md:mb-16"
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.5 }}
+                    >
                         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4">
                             <ArrowRight className="h-4 w-4" />
                             Roadmap
@@ -348,34 +562,52 @@ export default function About(props: AboutPageProps) {
                         <p className="mt-4 text-base text-gray-600 md:text-lg">
                             Dari ide awal hingga versi beta, Hamasense dikembangkan melalui proses riset dan validasi.
                         </p>
-                    </div>
+                    </motion.div>
 
                     {/* Timeline Cards */}
                     <div className="relative">
                         {/* Timeline Line */}
-                        <div className="absolute left-4 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-emerald-500 to-gray-200 md:left-1/2 md:-translate-x-px" />
+                        <motion.div
+                            className="absolute left-4 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-emerald-500 to-gray-200 md:left-1/2 md:-translate-x-px origin-top"
+                            initial={{ scaleY: 0 }}
+                            whileInView={{ scaleY: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1.5, ease: 'easeOut' }}
+                        />
 
-                        <div className="space-y-8 md:space-y-12">
+                        <motion.div
+                            className="space-y-8 md:space-y-12"
+                            variants={timelineVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.1 }}
+                        >
                             {milestones.map((milestone, index) => {
                                 const Icon = milestone.icon;
                                 const isCompleted = milestone.status === 'completed';
                                 const isCurrent = milestone.status === 'current';
 
                                 return (
-                                    <div
+                                    <motion.div
                                         key={index}
                                         className={`relative flex flex-col gap-4 pl-12 md:flex-row md:pl-0 ${index % 2 === 0
                                             ? 'md:pr-[calc(50%+2rem)]'
                                             : 'md:pl-[calc(50%+2rem)]'
                                             }`}
+                                        variants={timelineItemVariants}
                                     >
                                         {/* Timeline Node */}
-                                        <div className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white md:left-1/2 md:-translate-x-1/2 ${isCompleted
-                                            ? 'bg-gradient-to-br from-primary to-emerald-500 text-white'
-                                            : isCurrent
-                                                ? 'bg-white ring-primary/30 animate-pulse'
-                                                : 'bg-gray-100'
-                                            }`}>
+                                        <motion.div
+                                            className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white md:left-1/2 md:-translate-x-1/2 ${isCompleted
+                                                ? 'bg-gradient-to-br from-primary to-emerald-500 text-white'
+                                                : isCurrent
+                                                    ? 'bg-white ring-primary/30'
+                                                    : 'bg-gray-100'
+                                                }`}
+                                            whileHover={{ scale: 1.2 }}
+                                            animate={isCurrent ? { scale: [1, 1.1, 1] } : {}}
+                                            transition={isCurrent ? { duration: 2, repeat: Infinity } : {}}
+                                        >
                                             {isCompleted ? (
                                                 <CheckCircle2 className="h-4 w-4" />
                                             ) : isCurrent ? (
@@ -383,11 +615,14 @@ export default function About(props: AboutPageProps) {
                                             ) : (
                                                 <span className="h-2 w-2 rounded-full bg-gray-300" />
                                             )}
-                                        </div>
+                                        </motion.div>
 
                                         {/* Card */}
-                                        <div className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg md:p-6 ${isCompleted ? 'ring-primary/20' : isCurrent ? 'ring-primary/40 shadow-lg shadow-primary/10' : 'ring-gray-100'
-                                            }`}>
+                                        <motion.div
+                                            className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm ring-1 transition-all duration-300 hover:shadow-lg md:p-6 ${isCompleted ? 'ring-primary/20' : isCurrent ? 'ring-primary/40 shadow-lg shadow-primary/10' : 'ring-gray-100'
+                                                }`}
+                                            whileHover={{ y: -5, scale: 1.02 }}
+                                        >
                                             {/* Status Badge */}
                                             <div className={`absolute right-4 top-4 rounded-full px-2.5 py-0.5 text-xs font-medium ${isCompleted
                                                 ? 'bg-primary/10 text-primary'
@@ -411,11 +646,11 @@ export default function About(props: AboutPageProps) {
                                             <p className="mt-2 text-base font-medium text-gray-900 md:text-lg pr-16">
                                                 {milestone.event}
                                             </p>
-                                        </div>
-                                    </div>
+                                        </motion.div>
+                                    </motion.div>
                                 );
                             })}
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
@@ -430,7 +665,13 @@ export default function About(props: AboutPageProps) {
 
                 <div className="relative mx-auto max-w-7xl px-4 md:px-6">
                     {/* Section Header */}
-                    <div className="mx-auto max-w-3xl text-center mb-12 md:mb-16">
+                    <motion.div
+                        className="mx-auto max-w-3xl text-center mb-12 md:mb-16"
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.5 }}
+                    >
                         <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-4 py-1.5 text-sm font-medium text-violet-600 mb-4">
                             <Users className="h-4 w-4" />
                             Tim Kami
@@ -445,30 +686,52 @@ export default function About(props: AboutPageProps) {
                             Tim multidisiplin yang menyeimbangkan teknologi AI dengan praktik
                             urban farming untuk masyarakat kota.
                         </p>
-                    </div>
+                    </motion.div>
 
                     {/* Mobile: Stack cards */}
-                    <div className="flex flex-col gap-4 lg:hidden">
+                    <motion.div
+                        className="flex flex-col gap-4 lg:hidden"
+                        variants={containerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.1 }}
+                    >
                         {teamMembers.map((member, index) => (
-                            <TeamCard key={member.nim} member={member} highlight={index === 0} />
+                            <motion.div key={member.nim || index} variants={cardVariants}>
+                                <TeamCard member={member} highlight={index === 0} />
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
 
                     {/* Desktop: Lead centered + grid */}
                     <div className="hidden lg:block">
                         {/* Project Lead - centered and featured */}
-                        <div className="mb-10 flex justify-center">
+                        <motion.div
+                            className="mb-10 flex justify-center"
+                            variants={scaleUpVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                        >
                             <div className="w-full max-w-md">
                                 <TeamCard member={lead} highlight />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Other team members - 4 columns */}
-                        <div className="grid grid-cols-4 gap-5">
-                            {others.map((member) => (
-                                <TeamCard key={member.nim} member={member} />
+                        <motion.div
+                            className="grid grid-cols-4 gap-5"
+                            variants={containerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.2 }}
+                        >
+                            {others.map((member, index) => (
+                                <motion.div key={member.nim || index} variants={cardVariants}>
+                                    <TeamCard member={member} />
+                                </motion.div>
                             ))}
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
@@ -483,15 +746,19 @@ type TeamCardProps = {
 
 function TeamCard({ member, highlight }: TeamCardProps) {
     return (
-        <article
-            className={`group relative overflow-hidden rounded-3xl bg-gray-900 text-white shadow-lg transition-all duration-500 ease-out focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-white hover:-translate-y-2 hover:shadow-2xl ${highlight ? 'h-[26rem]' : 'h-72'
+        <motion.article
+            className={`group relative overflow-hidden rounded-3xl bg-gray-900 text-white shadow-lg transition-all duration-500 ease-out focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-white ${highlight ? 'h-[26rem]' : 'h-72'
                 }`}
+            whileHover={{ y: -8, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
         >
             {/* Background image */}
-            <img
+            <motion.img
                 src={member.image}
                 alt={member.name}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                className="absolute inset-0 h-full w-full object-cover"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.7 }}
             />
 
             {/* Overlay with gradient */}
@@ -504,12 +771,17 @@ function TeamCard({ member, highlight }: TeamCardProps) {
             <div className="relative flex h-full flex-col justify-between p-5 sm:p-6">
                 {/* Badge untuk project lead */}
                 {highlight && (
-                    <div className="self-start">
+                    <motion.div
+                        className="self-start"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary/90 to-emerald-500/90 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/70 shadow-lg backdrop-blur">
                             <Sparkles className="h-3.5 w-3.5" />
                             Project Lead
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 <div className="mt-auto">
@@ -524,6 +796,6 @@ function TeamCard({ member, highlight }: TeamCardProps) {
                     </div>
                 </div>
             </div>
-        </article>
+        </motion.article>
     );
 }

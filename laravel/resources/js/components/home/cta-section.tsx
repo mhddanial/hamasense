@@ -1,4 +1,66 @@
+'use client'
+
+import { motion, type Variants } from 'framer-motion'
 import { route } from 'ziggy-js';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15,
+            delayChildren: 0.2,
+        },
+    },
+}
+
+const titleVariants: Variants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.7,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const textVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
+        },
+    },
+}
+
+const buttonContainerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.4,
+        },
+    },
+}
+
+const buttonVariants: Variants = {
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: {
+            duration: 0.4,
+            ease: 'easeOut' as const,
+        },
+    },
+}
 
 export function CtaSection() {
     return (
@@ -19,30 +81,51 @@ export function CtaSection() {
             </div>
 
             {/* CONTENT */}
-            <div className="relative mx-auto max-w-4xl px-6 text-center text-white">
-                <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
+            <motion.div
+                className="relative mx-auto max-w-4xl px-6 text-center text-white"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+            >
+                <motion.h2
+                    className="mb-4 text-3xl font-bold sm:text-4xl"
+                    variants={titleVariants}
+                >
                     Ingin Tahu Lebih Lanjut?
-                </h2>
-                <p className="mt-4 text-base text-white/90 md:text-lg">
+                </motion.h2>
+                <motion.p
+                    className="mt-4 text-base text-white/90 md:text-lg"
+                    variants={textVariants}
+                >
                     Hamasense terus berkembang untuk mendukung ekosistem kebun kota.
                     Terbuka untuk kolaborasi dengan komunitas, UMKM pangan segar, dan
                     pengelola ruang hijau urban.
-                </p>
-                <div className="mt-8 flex flex-wrap justify-center gap-4">
-                    <a
+                </motion.p>
+                <motion.div
+                    className="mt-8 flex flex-wrap justify-center gap-4"
+                    variants={buttonContainerVariants}
+                >
+                    <motion.a
                         href="#"
                         className="rounded-full bg-white px-7 py-3 text-sm font-semibold text-primary transition-colors hover:bg-gray-100"
+                        variants={buttonVariants}
+                        whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+                        whileTap={{ scale: 0.95 }}
                     >
                         Hubungi Kami
-                    </a>
-                    <a
+                    </motion.a>
+                    <motion.a
                         href={route('detect.index')}
                         className="rounded-full border border-white/80 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-primary"
+                        variants={buttonVariants}
+                        whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+                        whileTap={{ scale: 0.95 }}
                     >
                         Coba Sekarang
-                    </a>
-                </div>
-            </div>
+                    </motion.a>
+                </motion.div>
+            </motion.div>
 
             {/* BOTTOM SHAPE */}
             <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none rotate-180">
