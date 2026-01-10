@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
-use Stevebauman\Location\Facades\Location;
+
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -28,18 +28,8 @@ class DashboardController extends Controller
         $userId = Auth::id();
         $thirtyDaysAgo = Carbon::now()->subDays(30);
 
-        // 1. Cek apakah data cuaca sudah ada di session user?
-        if ($request->session()->has('weather_data')) {
-            $weatherData = $request->session()->get('weather_data');
-        } else {
-            // 2. Jika tidak ada di session, ambil data baru dari API
-            $weatherData = $this->fetchWeatherByUserIP($request);
-            
-            // Simpan ke session (berlaku selama user login/browsing)
-            if ($weatherData) {
-                $request->session()->put('weather_data', $weatherData);
-            }
-        }
+        // Ambil data cuaca dari session (diisi via GPS dari frontend)
+        $weatherData = $request->session()->get('weather_data', null);
 
         // --- DETECTION STATISTICS (30 hari terakhir) ---
         $totalDetections = DetectionHistory::where('user_id', $userId)
@@ -142,71 +132,39 @@ class DashboardController extends Controller
             'lon' => 'required|numeric',
         ]);
 
-        $apiKey = config('services.openweather.key'); // Pastikan pakai config
+        $lat = (float) $request->lat;
+        $lon = (float) $request->lon;
+        $apiKey = config('services.openweather.key');
         
-        // Fetch langsung pakai koordinat dari React
+        // Fetch weather data from OpenWeatherMap
         $response = Http::timeout(5)->get("https://api.openweathermap.org/data/2.5/weather", [
-            'lat' => $request->lat,
-            'lon' => $request->lon,
+            'lat' => $lat,
+            'lon' => $lon,
             'appid' => $apiKey,
             'units' => 'metric',
             'lang' => 'id'
         ]);
 
         if ($response->successful()) {
-            // Proses data & Update Session
             $data = $response->json();
             
-            // Nama kota dari GPS biasanya lebih akurat (nama kecamatan/desa)
-            $cityName = $data['name']; 
+            // Fetch detailed location from Nominatim
+            $nominatimData = $this->fetchLocationFromNominatim($lat, $lon);
             
-            $weatherData = $this->analyzePestRisk($data, $cityName);
+            // Build detailed location name (suburb, city_district, city) or fallback to OWM name
+            $locationName = $this->buildLocationDisplayName($nominatimData, $data['name'] ?? 'Lokasi Terdeteksi');
+            
+            $weatherData = $this->analyzePestRisk($data, $locationName);
             
             // Update Session dengan data baru yang presisi
             $request->session()->put('weather_data', $weatherData);
             
-            return back()->with('success', "Lokasi diperbarui ke: $cityName");
+            return back()->with('success', "Lokasi berhasil diperbarui");
         }
 
         return back()->with('error', 'Gagal memperbarui cuaca dari GPS.');
     }
 
-    /**
-     * Private: Logika inti pengambilan data lokasi dan cuaca.
-     */
-    private function fetchWeatherByUserIP(Request $request)
-    {
-    $ip = $request->ip();
-        if (in_array($ip, ['127.0.0.1', '::1'])) $ip = '114.125.35.77';
-
-        $position = Location::get($ip);
-        $lat = $position ? $position->latitude : 1.083333;
-        $lon = $position ? $position->longitude : 104.033333;
-        $cityName = $position ? $position->cityName : 'Lokasi Terdeteksi';
-
-        $apiKey = config('services.openweather.key');
-
-        try {
-            $response = Http::timeout(10)->get("https://api.openweathermap.org/data/2.5/weather", [
-                'lat' => $lat,
-                'lon' => $lon,
-                'appid' => $apiKey,
-                'units' => 'metric',
-                'lang' => 'id'
-            ]);
-
-            // Jika GAGAL, tampilkan error API-nya di layar
-            if ($response->failed()) {
-                dd("API Error:", $response->json(), "URL:", "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey");
-            }
-            
-            return $this->analyzePestRisk($response->json(), $cityName);
-
-        } catch (\Exception $e) {
-            dd("Koneksi Error:", $e->getMessage());
-        }
-        return null; 
-    }
 
     /**
      * Private: Menganalisis risiko hama berdasarkan parameter cuaca.
@@ -253,13 +211,63 @@ class DashboardController extends Controller
             'humidity' => $humidity,
             'wind_speed' => round($windSpeed, 1),
             'description' => ucfirst($data['weather'][0]['description']),
-            'city' => $data['name'] ?: $fallbackCityName, // Gunakan nama dari API jika ada
+            'city' => $fallbackCityName, // Now uses Nominatim detailed location
             'icon_url' => "https://openweathermap.org/img/wn/{$data['weather'][0]['icon']}@2x.png",
             'risk_level' => $riskLevel,    // 'low', 'medium', 'high'
             'risk_message' => $riskMessage,
             'recommendation' => $recommendation,
             'last_updated' => now()->format('H:i'),
         ];
+    }
+
+    /**
+     * Private: Fetch reverse geocoding data from Nominatim API.
+     */
+    private function fetchLocationFromNominatim(float $lat, float $lon): array
+    {
+        try {
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'User-Agent' => 'HamaSense/1.0 (hamasense-app)'
+                ])
+                ->get("https://nominatim.openstreetmap.org/reverse", [
+                    'format' => 'jsonv2',
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'zoom' => 18,
+                    'addressdetails' => 1
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $address = $data['address'] ?? [];
+                
+                return [
+                    'suburb' => 'Kel. ' . ($address['suburb'] ?? $address['neighbourhood'] ?? null),
+                    'city_district' => 'Kec. ' . ($address['city_district'] ?? $address['county'] ?? null),
+                    'city' => $address['city'] ?? $address['town'] ?? $address['village'] ?? null,
+                    'display_name' => $data['display_name'] ?? null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::warning("Nominatim API error: " . $e->getMessage());
+        }
+        
+        return ['suburb' => null, 'city_district' => null, 'city' => null, 'display_name' => null];
+    }
+
+    /**
+     * Private: Build a formatted location display name from Nominatim data.
+     */
+    private function buildLocationDisplayName(array $nominatim, string $fallback): string
+    {
+        $parts = array_filter([
+            $nominatim['suburb'],
+            $nominatim['city_district'],
+            $nominatim['city'],
+        ]);
+        
+        return !empty($parts) ? implode(', ', $parts) : $fallback;
     }
 }
 

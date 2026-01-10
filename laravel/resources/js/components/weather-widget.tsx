@@ -47,14 +47,9 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                // --- DEBUGGING START ---
-                // Menampilkan data mentah dari GPS Browser untuk verifikasi
-                const { latitude, longitude, accuracy } = position.coords;
-                console.log("📍 GPS Raw Data:", position);
-                alert(`✅ GPS Berhasil Didapat!\n\nLatitude: ${latitude}\nLongitude: ${longitude}\nAkurasi: +/- ${Math.round(accuracy)} meter\n\nData ini akan dikirim ke server untuk cuaca presisi.`);
-                // --- DEBUGGING END ---
+                const { latitude, longitude } = position.coords;
 
-                // SUKSES: Kirim Lat/Lon presisi ke Backend
+                // Kirim Lat/Lon presisi ke Backend
                 router.post(route('weather.update-location'), {
                     lat: latitude,
                     lon: longitude

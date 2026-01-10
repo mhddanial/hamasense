@@ -1,10 +1,8 @@
-import { useEffect } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { dashboard } from "@/routes";
 import { type BreadcrumbItem } from "@/types";
-import { Head, usePage, Link } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import { Camera, Clock8, Bug, ChevronRight, FileText, AlertTriangle, CheckCircle2, Activity, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
 
 import {
     Card,
@@ -124,17 +122,6 @@ export default function Dashboard({
     activeCases = [],
     articles = []
 }: DashboardProps) {
-    const { flash } = usePage().props as any;
-
-    useEffect(() => {
-        if (flash?.success) {
-            toast.success(flash.success);
-        }
-        if (flash?.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />

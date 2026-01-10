@@ -117,8 +117,8 @@ export default function DetectPage() {
       return;
     }
 
-    // Validate file size (max 2MB = 2048KB)
-    const maxSizeKB = 2048;
+    // Validate file size (max 5MB = 5120KB)
+    const maxSizeKB = 5120;
     const fileSizeKB = selectedFile.size / 1024;
     if (fileSizeKB > maxSizeKB) {
       alert(`Ukuran file terlalu besar (${(fileSizeKB / 1024).toFixed(2)} MB). Maksimal ${maxSizeKB / 1024} MB.`);
