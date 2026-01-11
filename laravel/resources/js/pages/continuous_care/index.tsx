@@ -41,7 +41,16 @@ interface QuotaInfo {
     can_upload_photo: boolean;
 }
 
-export default function ContinuousCareIndex({ case: caseData, quota, showHealthCheckPopup }: { case: CaseData, quota: QuotaInfo, showHealthCheckPopup: boolean }) {
+interface WeatherData {
+    temp: number;
+    humidity: number;
+    risk_level: string;
+    risk_message: string;
+    recommendation: string;
+    city: string;
+}
+
+export default function ContinuousCareIndex({ case: caseData, quota, showHealthCheckPopup, weather }: { case: CaseData, quota: QuotaInfo, showHealthCheckPopup: boolean, weather?: WeatherData }) {
     const { auth } = usePage().props as any;
     const [preview, setPreview] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -388,15 +397,15 @@ export default function ContinuousCareIndex({ case: caseData, quota, showHealthC
                     
                     {/* Status Info Card */}
                     <Card className="border-none shadow-sm rounded-2xl bg-white">
-                        <CardHeader className="pb-2">
+                        {/* <CardHeader className="pb-2">
                             <CardTitle className="text-base font-bold">Informasi Status</CardTitle>
                             <CardDescription>Detail penanganan hama</CardDescription>
-                        </CardHeader>
+                        </CardHeader> */}
                         <CardContent className="space-y-4">
                             <div>
                                 <h4 className="font-semibold text-sm mb-1">Tindakan Terakhir</h4>
                                 <p className="text-xs text-gray-500 mb-2">Hari ke-{getDaysSince(new Date().toISOString())} ({new Date().toLocaleDateString()})</p>
-                                <ul className="space-y-1">
+                                {/* <ul className="space-y-1">
                                     {caseData.logs && caseData.logs.length > 0 ? (
                                         <li className="flex items-center gap-2 text-sm text-gray-700">
                                             <CheckCircle2 className="w-4 h-4 text-green-500"/> 
@@ -405,19 +414,7 @@ export default function ContinuousCareIndex({ case: caseData, quota, showHealthC
                                     ) : (
                                         <li className="text-sm text-gray-400 italic">Belum ada tindakan lanjut</li>
                                     )}
-                                </ul>
-                            </div>
-                            
-                            <div>
-                                <div className="flex justify-between text-sm font-semibold mb-1">
-                                    <span>Kondisi</span>
-                                    <span className={`font-bold ${quota.is_trial_expired ? 'text-red-500' : 'text-green-600'}`}>
-                                        {quota.is_trial_expired ? 'Masa Percobaan Habis' : 'Terpantau'}
-                                    </span>
-                                </div>
-                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                    <div className={`h-full w-[75%] rounded-full ${quota.is_trial_expired ? 'bg-red-500' : 'bg-green-600'}`}></div>
-                                </div>
+                                </ul> */}
                             </div>
                         </CardContent>
                     </Card>
@@ -428,17 +425,31 @@ export default function ContinuousCareIndex({ case: caseData, quota, showHealthC
                             <CardTitle className="text-base font-bold">Tips Hari ini</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <p className="text-sm text-gray-600 leading-relaxed">
-                                Berdasarkan data cuaca hari ini, penyiraman lebih awal sangat disarankan untuk menjaga kelembapan tanah tanpa memicu jamur.
-                            </p>
-                            <div className="flex gap-2 text-xs text-gray-500">
-                                <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded">
-                                    <ThermometerSun className="w-3 h-3"/> 32°C
+                            {weather ? (
+                                <>
+                                    <p className="text-sm text-gray-600 leading-relaxed">
+                                        {weather.recommendation}
+                                    </p>
+                                    <div className="flex gap-2 text-xs text-gray-500">
+                                        <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded">
+                                            <ThermometerSun className="w-3 h-3"/> {weather.temp}°C
+                                        </div>
+                                        <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded">
+                                            <Droplets className="w-3 h-3"/> {weather.humidity}%
+                                        </div>
+                                         <div className="flex items-center gap-1 bg-gray-50 text-gray-600 px-2 py-1 rounded truncate max-w-[120px]">
+                                            {weather.city}
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-4">
+                                     <p className="text-sm text-gray-400 mb-2">Data cuaca belum tersedia.</p>
+                                     <Link href={route('dashboard')} className="text-xs text-green-600 hover:underline">
+                                        Update lokasi di Dashboard
+                                     </Link>
                                 </div>
-                                <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded">
-                                    <Droplets className="w-3 h-3"/> 65%
-                                </div>
-                            </div>
+                            )}
                         </CardContent>
                     </Card>
 

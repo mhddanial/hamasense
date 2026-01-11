@@ -99,6 +99,9 @@ class CaseController extends Controller
         // 3. User belum menutup case (status != closed)
         $showHealthCheckPopup = ($daysSinceCreation >= 1) && ($case->condition === null) && ($case->status !== 'closed');
 
+        // Ambil data cuaca dari session Dashboard
+        $weatherData = request()->session()->get('weather_data', null);
+
         return Inertia::render('continuous_care/index', [
             'case' => $case,
             'quota' => [
@@ -111,7 +114,8 @@ class CaseController extends Controller
                 'daily_photos_max' => $MAX_DAILY_PHOTOS,
                 'can_upload_photo' => $canUploadPhoto,
             ],
-            'showHealthCheckPopup' => $showHealthCheckPopup
+            'showHealthCheckPopup' => $showHealthCheckPopup,
+            'weather' => $weatherData
         ]);
     }
 

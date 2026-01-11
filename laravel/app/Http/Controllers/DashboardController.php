@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\DetectionHistory;
 use App\Models\Cases;
 use App\Models\Article;
+
+use Inertia\Inertia;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
@@ -12,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
