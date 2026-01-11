@@ -92,12 +92,25 @@ export default function WeatherWidget({ weather }: { weather: WeatherData | null
                 <CardContent className="flex flex-col items-center justify-center py-10 text-center">
                     <CloudRain className="h-12 w-12 text-slate-300 mb-3" />
                     <p className="text-sm font-medium text-slate-500">Data cuaca tidak tersedia.</p>
-                    <div className="flex gap-2 mt-4">
+                    <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                        Izinkan akses lokasi untuk menampilkan informasi cuaca dan risiko hama di area Anda.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                        <Button
+                            variant="default"
+                            size="sm"
+                            onClick={getPreciseLocation}
+                            disabled={gettingLocation || isLoading}
+                            className="bg-primary hover:bg-primary/80 hover:cursor-pointer text-white gap-2"
+                        >
+                            <Navigation className={cn("h-3.5 w-3.5", gettingLocation && "animate-pulse")} />
+                            {gettingLocation ? "Mencari lokasi..." : "Izinkan Lokasi"}
+                        </Button>
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleRefresh}
-                            disabled={isLoading}
+                            disabled={isLoading || gettingLocation}
                             className="bg-white hover:bg-slate-50 text-slate-700 border-slate-300 gap-2"
                         >
                             <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />

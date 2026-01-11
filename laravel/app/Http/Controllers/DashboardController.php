@@ -26,10 +26,19 @@ class DashboardController extends Controller
         }
 
         $userId = Auth::id();
+        $user = Auth::user();
         $thirtyDaysAgo = Carbon::now()->subDays(30);
 
-        // Ambil data cuaca dari session (diisi via GPS dari frontend)
+        // Get weather data from session first
         $weatherData = $request->session()->get('weather_data', null);
+        
+        // If no weather in session but user has saved location, auto-fetch weather
+        if (!$weatherData && $user->location_lat && $user->location_lon) {
+            $weatherData = $this->fetchWeatherForUser($user->location_lat, $user->location_lon);
+            if ($weatherData) {
+                $request->session()->put('weather_data', $weatherData);
+            }
+        }
 
         // --- DETECTION STATISTICS (30 hari terakhir) ---
         $totalDetections = DetectionHistory::where('user_id', $userId)
@@ -134,35 +143,58 @@ class DashboardController extends Controller
 
         $lat = (float) $request->lat;
         $lon = (float) $request->lon;
-        $apiKey = config('services.openweather.key');
+        $user = Auth::user();
         
-        // Fetch weather data from OpenWeatherMap
-        $response = Http::timeout(5)->get("https://api.openweathermap.org/data/2.5/weather", [
-            'lat' => $lat,
-            'lon' => $lon,
-            'appid' => $apiKey,
-            'units' => 'metric',
-            'lang' => 'id'
+        // Save location to user's database record for persistence across sessions
+        $user->update([
+            'location_lat' => $lat,
+            'location_lon' => $lon,
         ]);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            
-            // Fetch detailed location from Nominatim
-            $nominatimData = $this->fetchLocationFromNominatim($lat, $lon);
-            
-            // Build detailed location name (suburb, city_district, city) or fallback to OWM name
-            $locationName = $this->buildLocationDisplayName($nominatimData, $data['name'] ?? 'Lokasi Terdeteksi');
-            
-            $weatherData = $this->analyzePestRisk($data, $locationName);
-            
-            // Update Session dengan data baru yang presisi
+        
+        $weatherData = $this->fetchWeatherForUser($lat, $lon);
+        
+        if ($weatherData) {
+            // Update Session with fresh weather data
             $request->session()->put('weather_data', $weatherData);
-            
-            return back()->with('success', "Lokasi berhasil diperbarui");
+            return back()->with('success', "Lokasi berhasil disimpan");
         }
 
         return back()->with('error', 'Gagal memperbarui cuaca dari GPS.');
+    }
+
+    /**
+     * Private: Fetch weather data for given coordinates.
+     */
+    private function fetchWeatherForUser(float $lat, float $lon): ?array
+    {
+        $apiKey = config('services.openweather.key');
+        
+        try {
+            // Fetch weather data from OpenWeatherMap
+            $response = Http::timeout(5)->get("https://api.openweathermap.org/data/2.5/weather", [
+                'lat' => $lat,
+                'lon' => $lon,
+                'appid' => $apiKey,
+                'units' => 'metric',
+                'lang' => 'id'
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                // Fetch detailed location from Nominatim
+                $nominatimData = $this->fetchLocationFromNominatim($lat, $lon);
+                
+                // Build detailed location name
+                $locationName = $this->buildLocationDisplayName($nominatimData, $data['name'] ?? 'Lokasi Terdeteksi');
+                
+                return $this->analyzePestRisk($data, $locationName);
+            }
+        } catch (\Exception $e) {
+            Log::warning("Failed to fetch weather: " . $e->getMessage());
+        }
+        
+        return null;
     }
 
 

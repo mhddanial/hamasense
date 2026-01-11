@@ -311,9 +311,29 @@ export default function DetectPage() {
       filename: "sample_moko.jpg",
     },
     {
-      label: "Green Mite",
+      label: "Serangan Tungau Singkong",
       url: "/images/cassava_green_mite.jpg",
       filename: "sample_green_mite.jpg",
+    },
+    {
+      label: "Bercak Bakteri Cabai",
+      url: "/images/pepper_bell_bacterial_spot_0090.jpg",
+      filename: "sample_bacterial_spot.jpg",
+    },
+    {
+      label: "Busuk Awal Tomat",
+      url: "/images/tomato_early_blight_0081.JPG",
+      filename: "sample_early_blight.jpg",
+    },
+    {
+      label: "Hawar Daun Jagung",
+      url: "/images/maize_leaf_blight_0031.jpg",
+      filename: "sample_maize_leaf_blight.jpg",
+    },
+    {
+      label: "Bercak Bakteri Selada",
+      url: "/images/lettuce_bacterial.png",
+      filename: "sample_lettuce_bacterial.png",
     },
     {
       label: "Gambar Ngawur",

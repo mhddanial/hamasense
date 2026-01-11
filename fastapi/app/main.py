@@ -11,6 +11,7 @@ from urllib.request import urlretrieve
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 # --- IMPORT GEMINI SERVICE ---
 from .gemini_service import get_gemini_advice, AdviceResponse
@@ -23,14 +24,6 @@ load_dotenv()
 # =====================================================
 MODEL_PATH = os.getenv("MODEL_PATH", "best_model_finetuned.keras")
 CLASS_JSON_PATH = os.getenv("CLASS_JSON_PATH", "class_indices.json")
-
-
-
-
-
-
-
-
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
 
 # Threshold Config
@@ -49,15 +42,7 @@ else:
 # =====================================================
 # LOAD MODEL & UTIL
 # =====================================================
-# (Bagian ini sama persis seperti sebelumnya)
 import json
-
-
-
-
-
-
-
 
 def is_url(path_or_url: str) -> bool:
     try:
@@ -134,8 +119,8 @@ class PredictionResponse(BaseModel):
 # =====================================================
 def run_cnn_inference(image_path: str) -> InferenceResult:
     img = image.load_img(image_path, target_size=IMG_SIZE)
-    img_array = np.expand_dims(image.img_to_array(img), 0) / 255.0
-
+    # Normalize & Preprocess
+    img_array = np.expand_dims(preprocess_input(image.img_to_array(img)), 0)
     predictions = model.predict(img_array)
     score = predictions[0]
 
@@ -143,7 +128,7 @@ def run_cnn_inference(image_path: str) -> InferenceResult:
     top1, top2 = sorted_idx[:2]
     p1 = float(score[top1])
 
-    # Hitung entropy & abstain logic (disederhanakan untuk brevity)
+    # Hitung entropy & abstain logic
     Hnorm = normalized_entropy(score)
 
     # Logic Abstain sederhana
@@ -191,13 +176,10 @@ async def predict(
                 temp_path = tmp.name
 
         # 3. Jalankan CNN (Visual Detection)
-        # Ini berjalan cepat (< 0.2 detik)
         cnn_result = run_cnn_inference(temp_path)
-
         gemini_result = None
 
         # 4. JIKA Prediksi Valid -> TEMBAK GEMINI LANGSUNG
-        # (Tanpa Cache, Langsung Request setiap kali)
         if not cnn_result.should_abstain and cnn_result.predicted_label:
 
             print(f"Detect: {cnn_result.predicted_label}. Asking Gemini...")
@@ -206,7 +188,6 @@ async def predict(
             readable_label = cnn_result.predicted_label.replace("_", " ").title()
 
             # --- DIRECT REQUEST KE GEMINI ---
-            # Kita gunakan 'await' karena fungsi di gemini_service adalah async
             gemini_result = await get_gemini_advice(
                 predicted_label=readable_label,
                 confidence=cnn_result.confidence
