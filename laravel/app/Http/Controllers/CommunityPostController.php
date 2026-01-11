@@ -57,8 +57,16 @@ class CommunityPostController extends Controller
             // Validasi
             $validated = $request->validate([
                 'category' => 'required|string',
-                'content' => 'required|string',
+                'content' => 'required|string|min:10|max:5000',
                 'image' => 'nullable|string',
+            ], [
+                'category.required' => 'Silakan pilih kategori postingan.',
+                'category.string' => 'Kategori harus berupa teks yang valid.',
+                'content.required' => 'Konten postingan tidak boleh kosong.',
+                'content.string' => 'Konten harus berupa teks yang valid.',
+                'content.min' => 'Konten postingan minimal harus 10 karakter.',
+                'content.max' => 'Konten postingan maksimal 5000 karakter.',
+                'image.string' => 'Format gambar tidak valid.',
             ]);
 
             // Handle image upload jika ada
@@ -113,10 +121,12 @@ class CommunityPostController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->errors();
+            $firstError = collect($errors)->flatten()->first();
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'message' => $firstError ?? 'Validasi gagal',
+                'errors' => $errors
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -142,8 +152,16 @@ class CommunityPostController extends Controller
             // Validasi
             $validated = $request->validate([
                 'category' => 'required|string',
-                'content' => 'required|string',
+                'content' => 'required|string|min:10|max:5000',
                 'image' => 'nullable|string',
+            ], [
+                'category.required' => 'Silakan pilih kategori postingan.',
+                'category.string' => 'Kategori harus berupa teks yang valid.',
+                'content.required' => 'Konten postingan tidak boleh kosong.',
+                'content.string' => 'Konten harus berupa teks yang valid.',
+                'content.min' => 'Konten postingan minimal harus 10 karakter.',
+                'content.max' => 'Konten postingan maksimal 5000 karakter.',
+                'image.string' => 'Format gambar tidak valid.',
             ]);
 
             // Handle image upload
@@ -206,10 +224,12 @@ class CommunityPostController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->errors();
+            $firstError = collect($errors)->flatten()->first();
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'message' => $firstError ?? 'Validasi gagal',
+                'errors' => $errors
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -300,8 +320,14 @@ class CommunityPostController extends Controller
     {
         try {
             $validated = $request->validate([
-                'content' => 'required|string|max:1000',
+                'content' => 'required|string|min:2|max:1000',
                 'parent_id' => 'nullable|exists:community_comments,id'
+            ], [
+                'content.required' => 'Komentar tidak boleh kosong.',
+                'content.string' => 'Komentar harus berupa teks yang valid.',
+                'content.min' => 'Komentar minimal harus 2 karakter.',
+                'content.max' => 'Komentar maksimal 1000 karakter.',
+                'parent_id.exists' => 'Komentar yang ingin dibalas tidak ditemukan.',
             ]);
 
             $comment = CommunityComments::create([
@@ -386,6 +412,11 @@ class CommunityPostController extends Controller
             $validated = $request->validate([
                 'reason' => 'required|in:spam,inappropriate,harassment,misinformation,other',
                 'description' => 'nullable|string|max:500',
+            ], [
+                'reason.required' => 'Silakan pilih alasan pelaporan.',
+                'reason.in' => 'Alasan pelaporan tidak valid. Pilih salah satu dari opsi yang tersedia.',
+                'description.string' => 'Deskripsi harus berupa teks yang valid.',
+                'description.max' => 'Deskripsi maksimal 500 karakter.',
             ]);
 
             CommunityReport::create([
@@ -401,10 +432,12 @@ class CommunityPostController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->errors();
+            $firstError = collect($errors)->flatten()->first();
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'message' => $firstError ?? 'Validasi gagal',
+                'errors' => $errors
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
